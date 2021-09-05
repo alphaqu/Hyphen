@@ -1,5 +1,5 @@
 name: Hyphen
-on: [push]
+on: [ push ]
 jobs:
   Test:
     runs-on: ubuntu-latest
@@ -13,5 +13,7 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Setup wrapper
+        run: ./gradlew wrapper
       - name: Build with Gradle
         run: ./gradlew build
