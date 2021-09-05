@@ -1,12 +1,12 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.io.DirectBufferIO;
-import net.oskarstrom.hyphen.io.HeapBufferIO;
+import net.oskarstrom.hyphen.io.ByteBufferIO;
 import net.oskarstrom.hyphen.io.IOInterface;
 import net.oskarstrom.hyphen.io.UnsafeIO;
 import org.junit.jupiter.api.*;
 
-import java.util.Arrays;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -210,9 +210,8 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = new UnsafeIO(16);
+			ioInterface = UnsafeIO.create(16);
 		}
-
 	}
 
 	@Nested
@@ -221,7 +220,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = new HeapBufferIO(16);
+			ioInterface = ByteBufferIO.create(16);
 		}
 
 	}
@@ -232,7 +231,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = new DirectBufferIO(16);
+			ioInterface = ByteBufferIO.createDirect(16);
 		}
 
 	}

@@ -2,10 +2,13 @@ package net.oskarstrom.hyphen.io;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.ByteBuffer;
+import java.util.Objects;
 
 @SuppressWarnings("AccessStaticViaInstance") // if the jvm sees us import unsafe, it will explode:tm::tm:
 public final class UnsafeIO implements IOInterface {
 	private static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
+	private static final int objectOffset = UNSAFE.ARRAY_OBJECT_BASE_OFFSET;
 	private static final int booleanOffset = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int byteOffset = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
 	private static final int charOffset = UNSAFE.ARRAY_CHAR_BASE_OFFSET;
@@ -18,8 +21,12 @@ public final class UnsafeIO implements IOInterface {
 	private int pos = 0;
 
 
-	public UnsafeIO(long size) {
-		this.address = UNSAFE.allocateMemory(size);
+	private UnsafeIO(long address) {
+		this.address = address;
+	}
+
+	public static UnsafeIO create(int size) {
+		return new UnsafeIO(UNSAFE.allocateMemory(size));
 	}
 
 	private static sun.misc.Unsafe getUnsafeInstance() {

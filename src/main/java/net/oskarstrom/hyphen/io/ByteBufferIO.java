@@ -2,12 +2,21 @@ package net.oskarstrom.hyphen.io;
 
 import java.nio.ByteBuffer;
 
-public final class HeapBufferIO implements IOInterface {
+public final class ByteBufferIO implements IOInterface {
 	private final ByteBuffer byteBuffer;
 
-	public HeapBufferIO(int size) {
-		this.byteBuffer = ByteBuffer.allocate(size);
+	private ByteBufferIO(ByteBuffer buffer) {
+		this.byteBuffer = buffer;
 	}
+
+	public static ByteBufferIO create(int size) {
+		return new ByteBufferIO(ByteBuffer.allocate(size));
+	}
+
+	public static ByteBufferIO createDirect(int size) {
+		return new ByteBufferIO(ByteBuffer.allocateDirect(size));
+	}
+
 
 	@Override
 	public boolean getBoolean() {
