@@ -5,9 +5,6 @@ import net.oskarstrom.hyphen.io.IOInterface;
 import net.oskarstrom.hyphen.io.UnsafeIO;
 import org.junit.jupiter.api.*;
 
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class IOTest {
