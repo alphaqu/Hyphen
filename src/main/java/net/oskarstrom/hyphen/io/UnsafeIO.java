@@ -2,21 +2,18 @@ package net.oskarstrom.hyphen.io;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.nio.ByteBuffer;
-import java.util.Objects;
 
 @SuppressWarnings("AccessStaticViaInstance") // if the jvm sees us import unsafe, it will explode:tm::tm:
 public final class UnsafeIO implements IOInterface {
 	private static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
-	private static final int objectOffset = UNSAFE.ARRAY_OBJECT_BASE_OFFSET;
-	private static final int booleanOffset = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
-	private static final int byteOffset = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
-	private static final int charOffset = UNSAFE.ARRAY_CHAR_BASE_OFFSET;
-	private static final int shortOffset = UNSAFE.ARRAY_SHORT_BASE_OFFSET;
-	private static final int intOffset = UNSAFE.ARRAY_INT_BASE_OFFSET;
-	private static final int longOffset = UNSAFE.ARRAY_LONG_BASE_OFFSET;
-	private static final int floatOffset = UNSAFE.ARRAY_FLOAT_BASE_OFFSET;
-	private static final int doubleOffset = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
+	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
+	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
+	private static final int CHAR_OFFSET = UNSAFE.ARRAY_CHAR_BASE_OFFSET;
+	private static final int SHORT_OFFSET = UNSAFE.ARRAY_SHORT_BASE_OFFSET;
+	private static final int INT__OFFSET = UNSAFE.ARRAY_INT_BASE_OFFSET;
+	private static final int LONG_OFFSET = UNSAFE.ARRAY_LONG_BASE_OFFSET;
+	private static final int FLOAT_OFFSET = UNSAFE.ARRAY_FLOAT_BASE_OFFSET;
+	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private final long address;
 	private int pos = 0;
 
@@ -159,14 +156,14 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public boolean[] getBooleanArray(int length) {
 		boolean[] array = new boolean[length];
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, booleanOffset, length);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, BOOLEAN_OFFSET, length);
 		return array;
 	}
 
 	@Override
 	public byte[] getByteArray(int length) {
 		byte[] array = new byte[length];
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, byteOffset, length);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, BYTE_OFFSET, length);
 		pos += length;
 		return array;
 	}
@@ -175,7 +172,7 @@ public final class UnsafeIO implements IOInterface {
 	public char[] getCharArray(int length) {
 		final char[] array = new char[length];
 		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, charOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, CHAR_OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -184,7 +181,7 @@ public final class UnsafeIO implements IOInterface {
 	public short[] getShortArray(int length) {
 		final short[] array = new short[length];
 		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, shortOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, SHORT_OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -193,7 +190,7 @@ public final class UnsafeIO implements IOInterface {
 	public int[] getIntArray(int length) {
 		final int[] array = new int[length];
 		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, intOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, INT__OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -202,7 +199,7 @@ public final class UnsafeIO implements IOInterface {
 	public long[] getLongArray(int length) {
 		final long[] array = new long[length];
 		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, longOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, LONG_OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -211,7 +208,7 @@ public final class UnsafeIO implements IOInterface {
 	public float[] getFloatArray(int length) {
 		final float[] array = new float[length];
 		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, floatOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, FLOAT_OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -220,7 +217,7 @@ public final class UnsafeIO implements IOInterface {
 	public double[] getDoubleArray(int length) {
 		final double[] array = new double[length];
 		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, address + pos + byteOffset, array, doubleOffset, bytes);
+		UNSAFE.copyMemory(null, address + pos + BYTE_OFFSET, array, DOUBLE_OFFSET, bytes);
 		pos += bytes;
 		return array;
 	}
@@ -229,7 +226,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putBooleanArray(boolean[] value) {
 		final int length = value.length;
-		UNSAFE.copyMemory(value, booleanOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -237,7 +234,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putByteArray(byte[] value) {
 		final int length = value.length;
-		UNSAFE.copyMemory(value, byteOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, BYTE_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -245,7 +242,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putCharArray(char[] value) {
 		final int length = value.length * 2;
-		UNSAFE.copyMemory(value, charOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, CHAR_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -253,7 +250,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putShortArray(short[] value) {
 		final int length = value.length * 2;
-		UNSAFE.copyMemory(value, shortOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, SHORT_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -261,7 +258,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putIntArray(int[] value) {
 		final int length = value.length * 4;
-		UNSAFE.copyMemory(value, intOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, INT__OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -269,7 +266,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putLongArray(long[] value) {
 		final int length = value.length * 8;
-		UNSAFE.copyMemory(value, longOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, LONG_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -277,7 +274,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putFloatArray(float[] value) {
 		final int length = value.length * 4;
-		UNSAFE.copyMemory(value, floatOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, FLOAT_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
@@ -285,7 +282,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public IOInterface putDoubleArray(double[] value) {
 		final int length = value.length * 8;
-		UNSAFE.copyMemory(value, doubleOffset, null, address + pos + byteOffset, length);
+		UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, address + pos + BYTE_OFFSET, length);
 		pos += length;
 		return this;
 	}
