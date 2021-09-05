@@ -3,8 +3,6 @@ package net.oskarstrom.hyphen;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,12 +10,7 @@ public class ObjectTest {
 
 	@Test
 	public void mainTest() {
-		int iter = 1000;
-		Instant instant = Instant.now();
-		for (int i = 0; i < iter; i++) {
-			SerializerFactory.create().build(SpedTest.class);
-		}
-		System.out.println((Duration.between(instant, Instant.now()).toMillis() / ((float) iter)) + "ms");
+		SerializerFactory.create().build(SpedTest3.class);
 	}
 
 	public static class SpedTest3 {
