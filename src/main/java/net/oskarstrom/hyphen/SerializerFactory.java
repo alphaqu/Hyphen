@@ -1,11 +1,10 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.data.ClassInfo;
-import net.oskarstrom.hyphen.data.FieldInfo;
-import net.oskarstrom.hyphen.data.ImplDetails;
-import net.oskarstrom.hyphen.data.SerializerMethod;
+import net.oskarstrom.hyphen.data.*;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
+import net.oskarstrom.hyphen.util.Color;
+import net.oskarstrom.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ public class SerializerFactory {
 	private final DebugHandler debugMode;
 	private final ImplMap implMap;
 	private final Map<ClassInfo, SerializerMethod> implMethods = new HashMap<>();
+	private final SubclassMap subclasses = new SubclassMap();
 
 
 	protected SerializerFactory(@Nullable DebugHandler debugMode) {
@@ -44,8 +44,12 @@ public class SerializerFactory {
 		implMap.put(clazz, creator);
 	}
 
+	public void addSubclasses(Class<?> clazz, Class<?>... subclasses) {
+		this.subclasses.addSubclasses(clazz, subclasses);
+	}
+
 	public void build(Class<?> clazz) {
-		final ClassInfo sourceClass = new ClassInfo(clazz);
+		final ClassInfo sourceClass = ClassInfo.create(null, clazz, null);
 		scanClass(sourceClass);
 		if (debugMode != null) {
 			debugMode.printMethods(implMethods);
@@ -60,13 +64,16 @@ public class SerializerFactory {
 		}
 
 		List<ImplDetails> implementation = new ArrayList<>();
-		for (FieldInfo field : clazz.getFields()) {
+		for (FieldInfo field : clazz.getFields(subclasses)) {
 			ImplDetails impl = implMap.getFieldImpl(field);
 			if (impl == null) {
 				scanClass(field);
 				impl = implMap.createImplDetails(clazz, field);
 			}
-
+			if (field.subclasses != null) {
+				for (ClassInfo subclass : field.subclasses)
+					scanClass(subclass);
+			}
 			implementation.add(impl);
 		}
 		clazz.methodName = clazz.parseMethodName();
@@ -96,31 +103,8 @@ public class SerializerFactory {
 			if (containsImpl(fieldInfo)) {
 				return createImplDetails(fieldInfo.source, fieldInfo);
 			}
-			return searchSubclasses(fieldInfo.source, fieldInfo);
+			return ScanUtils.search(fieldInfo.source, this::containsImpl, classInfo -> createImplDetails(classInfo, fieldInfo));
 		}
-
-		@Nullable
-		private ImplDetails searchSubclasses(ClassInfo classInfo, FieldInfo fieldInfo) {
-			final ClassInfo[] subClasses = classInfo.getSuperAndInterfaces();
-			if (subClasses != null) {
-				for (ClassInfo info : subClasses) {
-					if (containsImpl(info)) {
-						return createImplDetails(info, fieldInfo);
-					}
-				}
-
-				//if no implementations scan deeper to see if interface / superclass has impl
-				for (ClassInfo info : subClasses) {
-					final ImplDetails impl = searchSubclasses(info, fieldInfo);
-					if (impl != null) {
-						return impl;
-					}
-				}
-			}
-
-			return null;
-		}
-
 	}
 
 

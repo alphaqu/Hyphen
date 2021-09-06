@@ -10,111 +10,56 @@ public class ObjectTest {
 
 	@Test
 	public void mainTest() {
-		SerializerFactory.create().build(SpedTest3.class);
+		SerializerFactory debug = SerializerFactory.createDebug();
+		debug.addSubclasses(ParameterizedSubclass.class, ParameterizedSubclass.Subclass2.class, ParameterizedSubclass.SubclassWithParameter.class);
+		debug.build(SubclassTest.class);
 	}
 
-	public static class SpedTest3 {
-		@Serialize
-		SpedTest2 testObject;
-		@Serialize
-		SpedTest2 testObjecft;
-		@Serialize
-		SpedTest2 testOfbject;
-		@Serialize
-		SpedTest2 tfestObject;
-		@Serialize
-		SpedTest2 tefstObject;
-		@Serialize
-		SpedTest2 tgestObject;
-		@Serialize
-		SpedTest2 tesgtObject;
-		@Serialize
-		SpedTest2 testObgject;
-		@Serialize
-		SpedTest2 testObjegct;
-		@Serialize
-		SpedTest2 testObjecgt;
-		@Serialize
-		SpedTest2 testObjecht;
-		@Serialize
-		SpedTest2 testObjehct;
-		@Serialize
-		SpedTest2 testObhject;
-		@Serialize
-		SpedTest2 testhObject;
-		@Serialize
-		SpedTest2 tehstObject;
-		@Serialize
-		SpedTest2 thestObject;
-		@Serialize
-		SpedTest2 tejstObject;
-		@Serialize
-		SpedTest2 testOjbject;
-		@Serialize
-		SpedTest2 tejstObjehct;
+	public interface SubclassInterface {
+
+		class Subclass implements SubclassInterface {
+			@Serialize
+			public int integer;
+		}
+
+		class Subclass2 implements SubclassInterface {
+			@Serialize
+			public boolean bool;
+		}
 	}
 
-	public static class SpedTest2 {
+	public static class SubclassTest {
 		@Serialize
-		SpedTest testObject;
-		@Serialize
-		SpedTest testObjecft;
-		@Serialize
-		SpedTest testOfbject;
-		@Serialize
-		SpedTest tfestObject;
-		@Serialize
-		SpedTest tefstObject;
-		@Serialize
-		SpedTest tgestObject;
-		@Serialize
-		SpedTest tesgtObject;
-		@Serialize
-		SpedTest testObgject;
-		@Serialize
-		SpedTest testObjegct;
-		@Serialize
-		SpedTest testObjecgt;
-		@Serialize
-		SpedTest testObjecht;
-		@Serialize
-		SpedTest testObjehct;
-		@Serialize
-		SpedTest testObhject;
-		@Serialize
-		SpedTest testhObject;
-		@Serialize
-		SpedTest tehstObject;
-		@Serialize
-		SpedTest thestObject;
-		@Serialize
-		SpedTest tejstObject;
-		@Serialize
-		SpedTest testOjbject;
-		@Serialize
-		SpedTest tejstObjehct;
+		ParameterizedSubclass<String> subclassInterface;
 	}
 
+	public static class ArrayTest {
+		@Serialize
+		int[] array;
+		@Serialize
+		ParamArrayTest<String> paramArrayTest;
+	}
+
+	public static class ParamArrayTest<K> {
+		@Serialize
+		K[] array;
+
+	}
 	public static class SpedTest {
 		@Serialize
 		TestObject testObject;
-		@Serialize
-		TestObject testObjecft;
-		@Serialize
-		TestObject testOfbject;
 		@Serialize
 		int integer2;
 		@Serialize
 		int integer;
 	}
 
-
 	public static class TestObject {
 		@Serialize
 		public TestObjectWithType<HashMap<Integer, List<TestObjectWithType<String>>>> thingie4;
 
 		@Serialize
-		public TestObjectWithType<HashMap<List<TestObjectWithType<String>>, Integer>> thingie3;
+		public List<?> thingie3;
 	}
 
 	public static class TestObjectWithType<K> {
@@ -128,4 +73,26 @@ public class ObjectTest {
 		@Serialize
 		public boolean bool;
 	}
+
+	public abstract class ParameterizedSubclass<K> {
+		@Serialize
+		public K extraData;
+
+		class SubclassWithParameter<K> extends ParameterizedSubclass<K> {
+
+			@Serialize
+			public int integer;
+
+			@Serialize
+			public K parameter;
+		}
+
+		class Subclass2 extends ParameterizedSubclass<Integer> {
+
+			@Serialize
+			public boolean bool;
+		}
+
+	}
+
 }

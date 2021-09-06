@@ -17,7 +17,6 @@ public final class ByteBufferIO implements IOInterface {
 		return new ByteBufferIO(ByteBuffer.allocateDirect(size));
 	}
 
-
 	@Override
 	public boolean getBoolean() {
 		return byteBuffer.get() == 1;

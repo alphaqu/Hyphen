@@ -7,6 +7,13 @@ import java.util.LinkedHashMap;
 
 public class TypeMap extends LinkedHashMap<String, ClassInfo> {
 
+	public TypeMap mapClassInfo(ClassInfo info) {
+		if (info.genericType instanceof ParameterizedType parameterizedType) {
+			return mapTypes(info.getClazz(), parameterizedType);
+		}
+		return new TypeMap();
+	}
+
 	public TypeMap mapTypes(Class<?> clazz, ParameterizedType genericClassType) {
 		var classTypeMap = new TypeMap();
 		var classTypes = clazz.getTypeParameters();
@@ -28,12 +35,12 @@ public class TypeMap extends LinkedHashMap<String, ClassInfo> {
 	private ClassInfo mapClass(Type oldType) {
 		//check if this has a static class assigned to it (Field<Integer>)
 		if (oldType instanceof Class<?> classType)
-			return new ClassInfo(classType);
+			return ClassInfo.create(null, classType, oldType);
 
 		//if this has a static class and a parameter, we want to scan it again for its inner types
 		if (oldType instanceof ParameterizedType type) {
 			final Class<?> rawType = (Class<?>) type.getRawType();
-			return new ClassInfo(rawType, mapTypes(rawType, type));
+			return ClassInfo.create(rawType, mapTypes(rawType, type), type);
 		}
 		//check if the type name exists (public class Holder<K> / Field<K>)
 		var aClass = get(oldType.getTypeName());

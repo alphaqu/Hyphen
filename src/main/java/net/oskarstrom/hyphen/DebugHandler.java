@@ -16,10 +16,11 @@ public class DebugHandler {
 			final ClassInfo classInfo = classInfoStringEntry.getKey();
 			final SerializerMethod method = classInfoStringEntry.getValue();
 			printClass(builder, Color.YELLOW, classInfo);
-			builder.append(Color.WHITE).append(" /= ");
-			builder.append(Color.WHITE).append(method.name).append("()\n");
+			builder.append(Color.RED).append("\n | ");
+			builder.append(Color.WHITE).append("method => ").append(method.name).append("()\n");
 			for (ImplDetails implDetail : method.implDetails) {
 				final FieldInfo field = implDetail.field();
+				builder.append(Color.RED).append("    - ");
 				builder.append(Color.RESET).append(field.getName());
 				builder.append(Color.RED).append(" : ");
 				String clazzName;
@@ -55,9 +56,28 @@ public class DebugHandler {
 	}
 
 	public void printClass(StringBuilder sb, Color color, ClassInfo info) {
+		if (info instanceof FieldInfo fieldInfo) {
+			printField(sb, color, fieldInfo);
+		} else {
+			sb.append(color);
+			sb.append(info.getClazz().getSimpleName());
+			printTypes(sb, info.typeMap);
+		}
+	}
+
+	private void printField(StringBuilder sb, Color color, FieldInfo info) {
 		sb.append(color);
 		sb.append(info.getClazz().getSimpleName());
 		printTypes(sb, info.typeMap);
+		if (info.subclasses != null) {
+			for (ClassInfo subclass : info.subclasses) {
+				sb.append("\n");
+				sb.append(Color.RED);
+				sb.append(" | ");
+				printClass(sb, Color.BLUE, subclass);
+
+			}
+		}
 	}
 
 }

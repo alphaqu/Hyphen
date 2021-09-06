@@ -1,5 +1,8 @@
 package net.oskarstrom.hyphen.io;
 
+/**
+ * Should only by used as a referance. Never implement it as it will hurt performance and make the jvm not inline.
+ */
 public interface IOInterface {
 	boolean getBoolean();
 	byte getByte();
