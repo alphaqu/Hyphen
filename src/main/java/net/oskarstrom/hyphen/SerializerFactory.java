@@ -1,29 +1,29 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.data.*;
+import net.oskarstrom.hyphen.annotation.Serialize;
+import net.oskarstrom.hyphen.data.ArrayInfo;
+import net.oskarstrom.hyphen.data.ClassInfo;
+import net.oskarstrom.hyphen.data.ParameterizedClassInfo;
+import net.oskarstrom.hyphen.data.SerializerMethodMetadata;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
-import net.oskarstrom.hyphen.util.Color;
-import net.oskarstrom.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
+import java.lang.reflect.*;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 public class SerializerFactory {
 	@Nullable
-	private final DebugHandler debugMode;
-	private final ImplMap implMap;
-	private final Map<ClassInfo, SerializerMethod> implMethods = new HashMap<>();
-	private final SubclassMap subclasses = new SubclassMap();
+	private final DebugHandler debugHandler;
+	private final Map<ClassInfo, SerializerMethodMetadata> methods = new HashMap<>();
+	private final Map<Class<?>, Function<ClassInfo, ObjectSerializationDef>> implementations = new HashMap<>();
 
 
 	protected SerializerFactory(@Nullable DebugHandler debugMode) {
-		this.debugMode = debugMode;
-		this.implMap = new ImplMap();
+		this.debugHandler = debugMode;
 	}
 
 	public static SerializerFactory create() {
@@ -40,71 +40,86 @@ public class SerializerFactory {
 		return serializerFactory;
 	}
 
-	public void addImpl(Class<?> clazz, Function<FieldInfo, ObjectSerializationDef> creator) {
-		implMap.put(clazz, creator);
-	}
-
-	public void addSubclasses(Class<?> clazz, Class<?>... subclasses) {
-		this.subclasses.addSubclasses(clazz, subclasses);
+	public void addImpl(Class<?> clazz, Function<ClassInfo, ObjectSerializationDef> creator) {
+		implementations.put(clazz, creator);
 	}
 
 	public void build(Class<?> clazz) {
-		final ClassInfo sourceClass = ClassInfo.create(null, clazz, null);
-		scanClass(sourceClass);
-		if (debugMode != null) {
-			debugMode.printMethods(implMethods);
+		if (clazz.getTypeParameters().length > 0) {
+			throw new RuntimeException("Data class can not have any type parameters, as it is impossible to trace");
+		}
+
+		scanClass(new ClassInfo(clazz, this));
+
+		if (debugHandler != null) {
+			debugHandler.printMethods(methods);
 		}
 	}
 
 	private void scanClass(ClassInfo clazz) {
 		//check if a method already exists for this class
-		if (implMethods.containsKey(clazz)) {
-			clazz.methodName = (implMethods.get(clazz).name);
+		if (methods.containsKey(clazz)) {
 			return;
 		}
 
-		List<ImplDetails> implementation = new ArrayList<>();
-		for (FieldInfo field : clazz.getFields(subclasses)) {
-			ImplDetails impl = implMap.getFieldImpl(field);
-			if (impl == null) {
-				scanClass(field);
-				impl = implMap.createImplDetails(clazz, field);
+		SerializerMethodMetadata methodMetadata = new SerializerMethodMetadata(clazz);
+		for (Field field : clazz.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null)) {
+			var classInfo = createClassInfo(clazz, field.getType(), field.getGenericType());
+			var def = (ObjectSerializationDef) null;
+			if (implementations.containsKey(classInfo.clazz)) {
+				def = implementations.get(classInfo.clazz).apply(classInfo);
+			} else {
+				scanClass(classInfo);
+				def = new MethodCallDef(classInfo);
 			}
-			if (field.subclasses != null) {
-				for (ClassInfo subclass : field.subclasses)
-					scanClass(subclass);
-			}
-			implementation.add(impl);
+			methodMetadata.fields.put(field, def);
 		}
-		clazz.methodName = clazz.parseMethodName();
-		implMethods.put(clazz, new SerializerMethod(implementation, clazz.methodName));
+		methods.put(clazz, methodMetadata);
 	}
 
 
-	private static class ImplMap extends HashMap<Class<?>, Function<FieldInfo, ObjectSerializationDef>> {
+	protected ClassInfo createClassInfo(ClassInfo source, Class<?> classType, Type genericType) {
+		//Object / int / Object[] / int[]
+		if (genericType instanceof Class clazz) {
+			return new ClassInfo(clazz, this);
+		}
 
-		public ImplDetails createImplDetails(ClassInfo source, FieldInfo fieldInfo) {
-			ObjectSerializationDef out;
-			var serializerDefCreator = get(fieldInfo.getClazz());
-			if (serializerDefCreator == null) {
-				out = new MethodCallDef();
-			} else {
-				out = serializerDefCreator.apply(fieldInfo);
+		//Thing<T,T>
+		if (genericType instanceof ParameterizedType type) {
+			LinkedHashMap<String, ClassInfo> out = mapTypes(source, type);
+			return new ParameterizedClassInfo((Class<?>) type.getRawType(), out, this);
+		}
+
+		//T thing
+		if (genericType instanceof TypeVariable typeVariable) {
+			LinkedHashMap<String, ClassInfo> typeMap;
+			if (source instanceof ParameterizedClassInfo info) {
+				typeMap = info.types;
+			} else typeMap = new LinkedHashMap<>();
+			return typeMap.get(typeVariable.getName());
+		}
+
+		//T[] arrrrrrrr
+		if (genericType instanceof GenericArrayType genericArrayType) {
+			if (classType == null) {
+				throw new RuntimeException("what, i see, a T[]T array yes");//null below this comment is the thing that can cause this.
 			}
-			return new ImplDetails(out, source, fieldInfo);
+			return new ArrayInfo(classType, createClassInfo(source, null, genericArrayType.getGenericComponentType()), this);
 		}
 
-		public boolean containsImpl(ClassInfo info) {
-			return containsKey(info.getClazz());
-		}
+		throw new UnsupportedOperationException(genericType.getClass() + " lol");
+	}
 
-		@Nullable
-		public ImplDetails getFieldImpl(FieldInfo fieldInfo) {
-			if (containsImpl(fieldInfo)) {
-				return createImplDetails(fieldInfo.source, fieldInfo);
-			}
-			return ScanUtils.search(fieldInfo.source, this::containsImpl, classInfo -> createImplDetails(classInfo, fieldInfo));
+	private LinkedHashMap<String, ClassInfo> mapTypes(ClassInfo source, ParameterizedType type) {
+		var out = new LinkedHashMap<String, ClassInfo>();
+
+		var clazz = (Class<?>) type.getRawType();
+		var innerTypes = clazz.getTypeParameters();
+		var parameters = type.getActualTypeArguments();
+		for (int i = 0; i < parameters.length; i++) {
+			out.put(innerTypes[i].getName(), createClassInfo(source, clazz, parameters[i]));
 		}
+		return out;
 	}
 
 
