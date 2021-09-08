@@ -1,6 +1,8 @@
 package net.oskarstrom.hyphen.util;
 
-public enum Color {
+import org.jetbrains.annotations.NotNull;
+
+public enum Color implements CharSequence {
 	RESET("\u001B[0m"),
 	BLACK("\u001B[30m"),
 	RED("\u001B[31m"),
@@ -15,6 +17,22 @@ public enum Color {
 
 	Color(String code) {
 		this.code = code;
+	}
+
+	@Override
+	public int length() {
+		return code.length();
+	}
+
+	@Override
+	public char charAt(int index) {
+		return code.charAt(index);
+	}
+
+	@NotNull
+	@Override
+	public CharSequence subSequence(int start, int end) {
+		return code.subSequence(start, end);
 	}
 
 	@Override

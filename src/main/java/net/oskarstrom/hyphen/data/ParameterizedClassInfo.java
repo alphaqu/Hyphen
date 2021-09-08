@@ -1,21 +1,20 @@
 package net.oskarstrom.hyphen.data;
 
 import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.util.Color;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class ParameterizedClassInfo extends ClassInfo implements ParameterizedType {
 	public final LinkedHashMap<String, ClassInfo> types;
 
-	public ParameterizedClassInfo(Class<?> clazz, LinkedHashMap<String, ClassInfo> types, SerializerFactory factory) {
-		super(clazz, factory);
+	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, LinkedHashMap<String, ClassInfo> types) {
+		super(clazz, annotations, factory);
 		this.types = types;
 	}
-
 
 	@Override
 	public String toString() {
@@ -42,6 +41,15 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public String toFancyString() {
+		StringJoiner parameterJoiner = new StringJoiner(Color.WHITE + ", ", Color.PURPLE + "<", Color.PURPLE + ">");
+		parameterJoiner.setEmptyValue("");
+		for (ClassInfo t : types.values()) {
+			parameterJoiner.add(Color.CYAN + t.toString());
+		}
+		return super.toString() + parameterJoiner;
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -54,5 +62,13 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	@Override
 	public int hashCode() {
 		return Objects.hash(super.hashCode(), types);
+	}
+
+
+	@Override
+	public ClassInfo copy() {
+		LinkedHashMap<String, ClassInfo> typesCloned = new LinkedHashMap<>();
+		types.forEach((s, info) -> typesCloned.put(s, info.copy()));
+		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), factory, typesCloned);
 	}
 }

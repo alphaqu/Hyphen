@@ -1,17 +1,26 @@
 package net.oskarstrom.hyphen.data;
 
 import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.util.Color;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class ArrayInfo extends ClassInfo {
 	public final ClassInfo values;
 
-	public ArrayInfo(Class<?> clazz, ClassInfo values, SerializerFactory factory) {
-		super(clazz, factory);
+	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, ClassInfo values) {
+		super(clazz, annotations, factory);
 		this.values = values;
 	}
 
+
+	@Override
+	public String toFancyString() {
+		return super.toFancyString() + Color.YELLOW + "[]";
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -29,5 +38,10 @@ public class ArrayInfo extends ClassInfo {
 	@Override
 	public String toString() {
 		return values.toString() + "[]";
+	}
+
+	@Override
+	public ClassInfo copy() {
+		return new ArrayInfo(clazz, new HashMap<>(annotations), factory, values.copy());
 	}
 }

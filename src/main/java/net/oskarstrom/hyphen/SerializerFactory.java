@@ -1,16 +1,20 @@
 package net.oskarstrom.hyphen;
 
+import net.oskarstrom.hyphen.annotation.SerNull;
+import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.data.ArrayInfo;
-import net.oskarstrom.hyphen.data.ClassInfo;
-import net.oskarstrom.hyphen.data.ParameterizedClassInfo;
-import net.oskarstrom.hyphen.data.SerializerMethodMetadata;
+import net.oskarstrom.hyphen.data.*;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
+import net.oskarstrom.hyphen.options.AnnotationParser;
+import net.oskarstrom.hyphen.options.ArrayOption;
+import net.oskarstrom.hyphen.options.ExistsOption;
+import net.oskarstrom.hyphen.options.OptionParser;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -23,6 +27,7 @@ public class SerializerFactory {
 	private final DebugHandler debugHandler;
 	private final Map<ClassInfo, SerializerMethodMetadata> methods = new HashMap<>();
 	private final Map<Class<?>, Function<ClassInfo, ObjectSerializationDef>> implementations = new HashMap<>();
+	private final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations = new AnnotationParser.AnnotationOptionMap<>();
 
 
 	protected SerializerFactory(@Nullable DebugHandler debugMode) {
@@ -40,6 +45,8 @@ public class SerializerFactory {
 	private static SerializerFactory createInternal(boolean debugMode) {
 		final SerializerFactory serializerFactory = new SerializerFactory(debugMode ? new DebugHandler() : null);
 		serializerFactory.addImpl(int.class, (field) -> new IntDef());
+		serializerFactory.addOption(SerNull.class, new ExistsOption());
+		serializerFactory.addOption(SerSubclasses.class, new ArrayOption<>(SerSubclasses::value));
 		return serializerFactory;
 	}
 
@@ -47,12 +54,16 @@ public class SerializerFactory {
 		implementations.put(clazz, creator);
 	}
 
+	public void addOption(Class<? extends Annotation> annotationClass, OptionParser<?> option) {
+		hyphenAnnotations.put(annotationClass, option);
+	}
+
 	public void build(Class<?> clazz) {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
 
-		scanClass(new ClassInfo(clazz, this));
+		scanClass(new ClassInfo(clazz, AnnotationParser.parseAnnotations(null, hyphenAnnotations), this));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
@@ -70,8 +81,9 @@ public class SerializerFactory {
 		checkConstructor(allFields, clazz);
 
 		var methodMetadata = new SerializerMethodMetadata(clazz);
-		for (Field field : allFields) {
-			var classInfo = createClassInfo(clazz, field.getType(), field.getGenericType());
+		for (FieldInfo fieldInfo : allFields) {
+			var field = fieldInfo.field;
+			var classInfo = createClassInfo(clazz, field.getType(), field.getGenericType(), field.getAnnotatedType());
 			var def = (ObjectSerializationDef) null;
 			if (implementations.containsKey(classInfo.clazz)) {
 				def = implementations.get(classInfo.clazz).apply(classInfo);
@@ -87,9 +99,9 @@ public class SerializerFactory {
 		methods.put(clazz, methodMetadata);
 	}
 
-	private void checkConstructor(List<Field> fields, ClassInfo source) {
+	private void checkConstructor(List<FieldInfo> fields, ClassInfo source) {
 		try {
-			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(Field::getType).toArray(Class[]::new));
+			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.field.getType()).toArray(Class[]::new));
 			ThrowHandler.checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));
 		} catch (NoSuchMethodException e) {
 			throw ThrowHandler.constructorNotFoundFail(fields, source);
@@ -97,16 +109,22 @@ public class SerializerFactory {
 	}
 
 
-	protected ClassInfo createClassInfo(ClassInfo source, Class<?> classType, Type genericType) {
+	protected ClassInfo createClassInfo(ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
+		var options = AnnotationParser.parseAnnotations(annotatedType, hyphenAnnotations);
 		//Object / int / Object[] / int[]
+
 		if (genericType instanceof Class clazz) {
-			return new ClassInfo(clazz, this);
+			return new ClassInfo(clazz, options, this);
 		}
+
 
 		//Thing<T,T>
 		if (genericType instanceof ParameterizedType type) {
-			LinkedHashMap<String, ClassInfo> out = mapTypes(source, type);
-			return new ParameterizedClassInfo((Class<?>) type.getRawType(), out, this);
+			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
+				LinkedHashMap<String, ClassInfo> out = mapTypes(source, type, parameterizedType);
+				return new ParameterizedClassInfo((Class<?>) type.getRawType(), options, this, out);
+			}
+			throw new RuntimeException();
 		}
 
 		//T thing
@@ -120,33 +138,36 @@ public class SerializerFactory {
 			if (classInfo == null) {
 				throw ThrowHandler.typeFail("Type could not be identified", source, classType, typeVariable);
 			}
-			return classInfo;
+			//safety first!
+			return classInfo.copy();
 		}
 
 		//T[] arrrrrrrr
 		if (genericType instanceof GenericArrayType genericArrayType) {
 			//get component class
-			var componentType = genericArrayType.getGenericComponentType();
-			var classInfo = createClassInfo(source, classType, componentType);
-
-			if (classInfo == null) {
-				throw ThrowHandler.typeFail("Array component could not be identified", source, classType, componentType);
+			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
+				var componentType = genericArrayType.getGenericComponentType();
+				var classInfo = createClassInfo(source, classType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
+				if (classInfo == null) {
+					throw ThrowHandler.typeFail("Array component could not be identified", source, classType, componentType);
+				}
+				return new ArrayInfo(classType, options, this, classInfo);
 			}
-			return new ArrayInfo(classType, classInfo, this);
+			throw new RuntimeException();
 		}
 
 		return null;
 	}
 
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
-	private LinkedHashMap<String, ClassInfo> mapTypes(ClassInfo source, ParameterizedType type) {
+	private LinkedHashMap<String, ClassInfo> mapTypes(ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
 		var out = new LinkedHashMap<String, ClassInfo>();
-
 		var clazz = (Class<?>) type.getRawType();
 		var innerTypes = clazz.getTypeParameters();
+		var annotatedParameters = annotatedType.getAnnotatedActualTypeArguments();
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
-			out.put(innerTypes[i].getName(), createClassInfo(source, clazz, parameters[i]));
+			out.put(innerTypes[i].getName(), createClassInfo(source, clazz, parameters[i], annotatedParameters[i]));
 		}
 		return out;
 	}

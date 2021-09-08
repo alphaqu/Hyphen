@@ -1,7 +1,12 @@
 package net.oskarstrom.hyphen;
 
+import net.oskarstrom.hyphen.annotation.SerNull;
+import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ObjectTest {
 
@@ -13,14 +18,17 @@ public class ObjectTest {
 
 	public static class BasicScanTest {
 		@Serialize
+		@SerNull
 		public int integer;
 
 		@Serialize
+		@SerNull
 		public TestingObjectScan object;
 
 		@Serialize
 		public TestingObjectScan testingDeduplication;
 
+		@SerSubclasses(Integer.class)
 		@Serialize
 		public TestingInhiritedField inhiritedField;
 
@@ -46,9 +54,8 @@ public class ObjectTest {
 		@Serialize
 		public int something;
 
-
-		public TestingInhiritedField(int something, int SUPERFIELD) {
-			super(SUPERFIELD);
+		public TestingInhiritedField(int something, int SUPERFIELD, ArrayList<@SerNull Integer> list) {
+			super(SUPERFIELD, list);
 			this.something = something;
 		}
 	}
@@ -56,9 +63,13 @@ public class ObjectTest {
 	public static class ImYoSuper {
 		@Serialize
 		public int SUPERFIELD;
+		@Serialize
+		@SerNull
+		public ArrayList<@SerNull Integer> list;
 
-		private ImYoSuper(int SUPERFIELD) {
+		public ImYoSuper(int SUPERFIELD, ArrayList<@SerNull Integer> list) {
 			this.SUPERFIELD = SUPERFIELD;
+			this.list = list;
 		}
 	}
 }
