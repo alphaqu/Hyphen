@@ -66,7 +66,7 @@ public class SerializerFactory {
 		}
 
 		var allFields = clazz.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
-		//check if it exist / if its accessible
+		//check if it exists / if its accessible
 		checkConstructor(allFields, clazz);
 
 		var methodMetadata = new SerializerMethodMetadata(clazz);
@@ -77,7 +77,7 @@ public class SerializerFactory {
 				def = implementations.get(classInfo.clazz).apply(classInfo);
 			} else {
 				//check if field is legal
-				//we dont do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
+				//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
 				ThrowHandler.checkAccess(field.getModifiers(), () -> ThrowHandler.fieldAccessFail(field, clazz));
 				scanClass(classInfo);
 				def = new MethodCallDef(classInfo);

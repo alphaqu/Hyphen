@@ -3,7 +3,6 @@ package net.oskarstrom.hyphen.data;
 import net.oskarstrom.hyphen.ObjectSerializationDef;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

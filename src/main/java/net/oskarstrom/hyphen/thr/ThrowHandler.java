@@ -58,14 +58,14 @@ public class ThrowHandler {
 
 
 	public static RuntimeException constructorNotFoundFail(List<Field> fields, ClassInfo info) {
-		ThrowHandler.Throwable[] throwables = new ThrowHandler.Throwable[2 + fields.size()];
-		throwables[0] = ThrowHandler.ThrowEntry.of("Source Class", info.clazz.getSimpleName());
-		throwables[1] = ThrowHandler.ThrowEntry.of("Expected Constructor Parameters", "");
+		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
+		throwable[0] = ThrowHandler.ThrowEntry.of("Source Class", info.clazz.getSimpleName());
+		throwable[1] = ThrowHandler.ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
 			Field field = fields.get(i);
-			throwables[i + 2] = ThrowHandler.ThrowEntry.of("\t" + field.getName(), field.getType().getSimpleName());
+			throwable[i + 2] = ThrowHandler.ThrowEntry.of("\t" + field.getName(), field.getType().getSimpleName());
 		}
-		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwables);
+		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);
 	}
 
 
