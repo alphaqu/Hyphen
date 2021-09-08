@@ -18,7 +18,7 @@ public class ClassInfo implements Type {
 
 	public ClassInfo(Class<?> clazz, SerializerFactory factory) {
 		this.clazz = clazz;
-		this.superClasses = getSuperClasses(clazz, 0);
+		this.superClasses = getSuperClasses(clazz.getSuperclass(), 0);
 		this.factory = factory;
 	}
 

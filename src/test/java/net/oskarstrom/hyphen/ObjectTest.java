@@ -13,16 +13,23 @@ public class ObjectTest {
 
 	public static class BasicScanTest {
 		@Serialize
-		int integer;
+		public int integer;
 
 		@Serialize
-		TestingObjectScan object;
+		public TestingObjectScan object;
 
 		@Serialize
-		TestingObjectScan testingDeduplication;
+		public TestingObjectScan testingDeduplication;
 
 		@Serialize
-		TestingInhiritedField inhiritedField;
+		public TestingInhiritedField inhiritedField;
+
+		public BasicScanTest(int integer, TestingObjectScan object, TestingObjectScan testingDeduplication, TestingInhiritedField inhiritedField) {
+			this.integer = integer;
+			this.object = object;
+			this.testingDeduplication = testingDeduplication;
+			this.inhiritedField = inhiritedField;
+		}
 	}
 
 
@@ -30,6 +37,9 @@ public class ObjectTest {
 		@Serialize
 		public int something;
 
+		public TestingObjectScan(int something) {
+			this.something = something;
+		}
 	}
 
 	public static class TestingInhiritedField extends ImYoSuper {
@@ -37,10 +47,18 @@ public class ObjectTest {
 		public int something;
 
 
+		public TestingInhiritedField(int SUPERFIELD, int something) {
+			super(SUPERFIELD);
+			this.something = something;
+		}
 	}
 
 	public static class ImYoSuper {
 		@Serialize
 		public int SUPERFIELD;
+
+		public ImYoSuper(int SUPERFIELD) {
+			this.SUPERFIELD = SUPERFIELD;
+		}
 	}
 }

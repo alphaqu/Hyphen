@@ -1,12 +1,13 @@
 
-package net.oskarstrom.hyphen.util;
+package net.oskarstrom.hyphen.thr;
 
 import java.util.function.Function;
 
 public class ThrowHandler {
 
 	//dollar for the styles.
-	public static void fatal(Function<String, RuntimeException> ex, String reason, Throwable... throwable) {
+	//returns just for javac to stfu in some spots
+	public static RuntimeException fatal(Function<String, RuntimeException> ex, String reason, Throwable... throwable) {
 		StringBuilder builder = new StringBuilder();
 		builder.append('\n');
 		builder.append('\n');
