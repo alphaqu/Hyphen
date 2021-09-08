@@ -47,7 +47,7 @@ public class ObjectTest {
 		public int something;
 
 
-		public TestingInhiritedField(int SUPERFIELD, int something) {
+		public TestingInhiritedField(int something, int SUPERFIELD) {
 			super(SUPERFIELD);
 			this.something = something;
 		}
@@ -57,7 +57,7 @@ public class ObjectTest {
 		@Serialize
 		public int SUPERFIELD;
 
-		public ImYoSuper(int SUPERFIELD) {
+		private ImYoSuper(int SUPERFIELD) {
 			this.SUPERFIELD = SUPERFIELD;
 		}
 	}
