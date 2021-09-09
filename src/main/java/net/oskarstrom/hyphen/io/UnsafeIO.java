@@ -79,7 +79,7 @@ public final class UnsafeIO implements IOInterface {
 		final byte[] array = new byte[length];
 		UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, array, BYTE_OFFSET, length);
 		currentAddress += length + 4;
-		return new String(array, 0, length, StandardCharsets.UTF_8);
+		return new String(array, 0, length, StandardCharsets.US_ASCII);
 	}
 
 	public final void putBoolean(final boolean value) {
@@ -126,7 +126,7 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public void putString(String value) {
-		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		final byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
 		final int length = bytes.length;
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
 		UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
@@ -269,7 +269,7 @@ public final class UnsafeIO implements IOInterface {
 	public void putStringArray(String[] value) {
 		int totalLength = 0;
 		for (String s : value) {
-			final byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+			final byte[] bytes = s.getBytes(StandardCharsets.US_ASCII);
 			final int length = bytes.length;
 			totalLength += length + 4;
 			UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
@@ -288,4 +288,7 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 
+	public final void close() {
+		UNSAFE.freeMemory(address);
+	}
 }

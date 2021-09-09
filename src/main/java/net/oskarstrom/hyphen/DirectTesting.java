@@ -1,7 +1,5 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.io.ByteBufferIO;
-import net.oskarstrom.hyphen.io.IOInterface;
 import net.oskarstrom.hyphen.io.MeasureIO;
 import net.oskarstrom.hyphen.io.UnsafeIO;
 
@@ -12,12 +10,26 @@ import java.util.Objects;
 
 public final class DirectTesting {
 
-	public static void encode_Data(Data data, IOInterface unsafeIO) {
+	public static void measure_Data(final Data data, final MeasureIO unsafeIO) {
 		unsafeIO.putString(data.integer);
 		unsafeIO.putString(data.long1);
 	}
 
-	public static void encode_DataArray(DataArray data, IOInterface unsafeIO) {
+	public static void measure_DataArray(final DataArray data, final MeasureIO unsafeIO) {
+		final Data[] array = data.array;
+		unsafeIO.putInt(array.length);
+		for (Data data1 : array) {
+			measure_Data(data1, unsafeIO);
+		}
+	}
+
+
+	public static void encode_Data(final Data data, final UnsafeIO unsafeIO) {
+		unsafeIO.putString(data.integer);
+		unsafeIO.putString(data.long1);
+	}
+
+	public static void encode_DataArray(final DataArray data, final UnsafeIO unsafeIO) {
 		final Data[] array = data.array;
 		unsafeIO.putInt(array.length);
 		for (Data data1 : array) {
@@ -25,36 +37,11 @@ public final class DirectTesting {
 		}
 	}
 
-	public static Data decode_Data(IOInterface unsafeIO) {
+	public static Data decode_Data(final UnsafeIO unsafeIO) {
 		return new Data(unsafeIO.getString(), unsafeIO.getString());
 	}
 
-	public static DataArray decode_DataArray(IOInterface unsafeIO) {
-		final Data[] array = new Data[unsafeIO.getInt()];
-		for (int i = 0, a = array.length; i < a; i++) {
-			array[i] = decode_Data(unsafeIO);
-		}
-		return new DataArray(array);
-	}
-
-	public static void encode_Data(Data data, UnsafeIO unsafeIO) {
-		unsafeIO.putString(data.integer);
-		unsafeIO.putString(data.long1);
-	}
-
-	public static void encode_DataArray(DataArray data, UnsafeIO unsafeIO) {
-		final Data[] array = data.array;
-		unsafeIO.putInt(array.length);
-		for (Data data1 : array) {
-			encode_Data(data1, unsafeIO);
-		}
-	}
-
-	public static Data decode_Data(UnsafeIO unsafeIO) {
-		return new Data(unsafeIO.getString(), unsafeIO.getString());
-	}
-
-	public static DataArray decode_DataArray(UnsafeIO unsafeIO) {
+	public static DataArray decode_DataArray(final UnsafeIO unsafeIO) {
 		final Data[] array = new Data[unsafeIO.getInt()];
 		for (int i = 0, a = array.length; i < a; i++) {
 			array[i] = decode_Data(unsafeIO);
@@ -73,7 +60,7 @@ public final class DirectTesting {
 		//MEASURE
 		Instant measureTime = Instant.now();
 		MeasureIO measure = new MeasureIO();
-		encode_DataArray(dataArray, measure);
+		measure_DataArray(dataArray, measure);
 		System.out.println("Measure [" + Duration.between(measureTime, Instant.now()).toMillis() + "ms]");
 
 		//shh
@@ -87,16 +74,19 @@ public final class DirectTesting {
 		System.out.println("Encode [" + Duration.between(encodeTime, Instant.now()).toMillis() + "ms]");
 
 
-		//DECODE
+		int times = 10;
+		DataArray decodeData = null;
 		Instant decodeTime = Instant.now();
-		unsafeIO.rewind();
-		DataArray decodeData = decode_DataArray(unsafeIO);
-		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() + "ms]");
+		for (int i = 0; i < times; i++) {
+			//DECODE
+			unsafeIO.rewind();
+			decodeData = decode_DataArray(unsafeIO);
+			System.out.println(i);
+		}
+		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() / times + "ms]");
+		System.out.println(decodeData.array.length);
 
 
-
-
-		System.out.println(dataArray.equals(decodeData));
 	}
 
 	public static final class DataArray {

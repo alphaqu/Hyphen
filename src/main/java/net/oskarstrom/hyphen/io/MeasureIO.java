@@ -178,6 +178,9 @@ public final class MeasureIO implements IOInterface {
 		throw new UnsupportedOperationException();
 	}
 
+	public final void close() {
+		//bruh
+	}
 
 	public final int pos() {
 		return currentSize;
