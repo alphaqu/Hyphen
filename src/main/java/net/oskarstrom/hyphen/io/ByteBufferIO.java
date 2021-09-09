@@ -1,6 +1,7 @@
 package net.oskarstrom.hyphen.io;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public final class ByteBufferIO implements IOInterface {
 	private final ByteBuffer byteBuffer;
@@ -10,11 +11,15 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	public static ByteBufferIO create(int size) {
-		return new ByteBufferIO(ByteBuffer.allocate(size));
+		ByteBuffer buffer = ByteBuffer.allocate(size);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		return new ByteBufferIO(buffer);
 	}
 
 	public static ByteBufferIO createDirect(int size) {
-		return new ByteBufferIO(ByteBuffer.allocateDirect(size));
+		ByteBuffer buffer = ByteBuffer.allocateDirect(size);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		return new ByteBufferIO(buffer);
 	}
 
 	@Override
@@ -68,7 +73,7 @@ public final class ByteBufferIO implements IOInterface {
 	@Override
 	public byte[] getByteArray(int length) {
 		byte[] out = new byte[length];
-		byteBuffer.get(out, byteBuffer.position(), length);
+		byteBuffer.get(out, 0, length);
 		return out;
 	}
 
@@ -219,5 +224,10 @@ public final class ByteBufferIO implements IOInterface {
 	@Override
 	public void rewind() {
 		byteBuffer.rewind();
+	}
+
+	@Override
+	public int pos() {
+		return byteBuffer.position();
 	}
 }
