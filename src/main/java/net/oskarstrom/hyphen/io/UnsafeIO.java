@@ -1,11 +1,13 @@
 package net.oskarstrom.hyphen.io;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * <h2>This is the créme de créme of all IO. Highly unsafe but really fast.</h2>
  */
-@SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass"})
+@SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
-public final class UnsafeIO {
+public final class UnsafeIO implements IOInterface {
 	private static final sun.misc.Unsafe UNSAFE = net.oskarstrom.hyphen.util.UnsafeUtil.getUnsafeInstance();
 	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
@@ -72,6 +74,14 @@ public final class UnsafeIO {
 		return f;
 	}
 
+	public final String getString() {
+		final int length = UNSAFE.getInt(null, currentAddress + INT__OFFSET);
+		final byte[] array = new byte[length];
+		UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, array, BYTE_OFFSET, length);
+		currentAddress += length + 4;
+		return new String(array, 0, length, StandardCharsets.UTF_8);
+	}
+
 	public final void putBoolean(final boolean value) {
 		UNSAFE.putBoolean(null, currentAddress++ + BOOLEAN_OFFSET, value);
 	}
@@ -91,7 +101,6 @@ public final class UnsafeIO {
 		UNSAFE.putShort(null, currentAddress + SHORT_OFFSET, value);
 		currentAddress += 2;
 	}
-
 
 	public final void putInt(final int value) {
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, value);
@@ -114,6 +123,14 @@ public final class UnsafeIO {
 	public final void putDouble(final double value) {
 		UNSAFE.putDouble(null, currentAddress + DOUBLE_OFFSET, value);
 		currentAddress += 8;
+	}
+
+	public void putString(String value) {
+		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		final int length = bytes.length;
+		UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
+		UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
+		currentAddress += length + 4;
 	}
 
 
@@ -186,6 +203,13 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	public String[] getStringArray(int length) {
+		final String[] out = new String[length];
+		for (int i = 0; i < length; i++)
+			out[i] = getString();
+		return out;
+	}
+
 
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
@@ -242,6 +266,17 @@ public final class UnsafeIO {
 		currentAddress += bytes;
 	}
 
+	public void putStringArray(String[] value) {
+		int totalLength = 0;
+		for (String s : value) {
+			final byte[] bytes = s.getBytes(StandardCharsets.UTF_8);
+			final int length = bytes.length;
+			totalLength += length + 4;
+			UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
+			UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
+		}
+		currentAddress += totalLength;
+	}
 
 	public final void rewind() {
 		currentAddress = address;

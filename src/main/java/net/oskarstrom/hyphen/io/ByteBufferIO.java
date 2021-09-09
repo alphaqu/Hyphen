@@ -2,6 +2,7 @@ package net.oskarstrom.hyphen.io;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * <h2>Useful for debug and when UnsafeIO is unavailable.</h2>
@@ -59,6 +60,12 @@ public final class ByteBufferIO implements IOInterface {
 	@Override
 	public double getDouble() {
 		return byteBuffer.getDouble();
+	}
+
+	@Override
+	public String getString() {
+		final byte[] byteArray = getByteArray(byteBuffer.getInt());
+		return new String(byteArray, 0, byteArray.length, StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -125,99 +132,119 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public IOInterface putBoolean(boolean value) {
+	public String[] getStringArray(int length) {
+		final String[] out = new String[length];
+		for (int i = 0; i < length; i++)
+			out[i] = getString();
+		return out;
+	}
+
+	@Override
+	public void putBoolean(boolean value) {
 		byteBuffer.put((byte) (value ? 1 : 0));
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putByte(byte value) {
+	public void putByte(byte value) {
 		byteBuffer.put(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putChar(char value) {
+	public void putChar(char value) {
 		byteBuffer.putChar(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putShort(short value) {
+	public void putShort(short value) {
 		byteBuffer.putShort(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putInt(int value) {
+	public void putInt(int value) {
 		byteBuffer.putInt(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putLong(long value) {
+	public void putLong(long value) {
 		byteBuffer.putLong(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putFloat(float value) {
+	public void putFloat(float value) {
 		byteBuffer.putFloat(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putDouble(double value) {
+	public void putDouble(double value) {
 		byteBuffer.putDouble(value);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putBooleanArray(boolean[] value) {
+	public void putString(String value) {
+		byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		putInt(bytes.length);
+		putByteArray(bytes);
+	}
+
+	@Override
+	public void putBooleanArray(boolean[] value) {
 		for (boolean b : value) byteBuffer.put((byte) (b ? 1 : 0));
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putByteArray(byte[] value) {
+	public void putByteArray(byte[] value) {
 		for (byte b : value) byteBuffer.put(b);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putCharArray(char[] value) {
+	public void putCharArray(char[] value) {
 		for (char c : value) byteBuffer.putChar(c);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putShortArray(short[] value) {
+	public void putShortArray(short[] value) {
 		for (short s : value) byteBuffer.putShort(s);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putIntArray(int[] value) {
+	public void putIntArray(int[] value) {
 		for (int i : value) byteBuffer.putInt(i);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putLongArray(long[] value) {
+	public void putLongArray(long[] value) {
 		for (long l : value) byteBuffer.putLong(l);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putFloatArray(float[] value) {
+	public void putFloatArray(float[] value) {
 		for (float f : value) byteBuffer.putFloat(f);
-		return this;
+
 	}
 
 	@Override
-	public IOInterface putDoubleArray(double[] value) {
+	public void putDoubleArray(double[] value) {
 		for (double d : value) byteBuffer.putDouble(d);
-		return this;
+
+	}
+
+	@Override
+	public void putStringArray(String[] value) {
+		for (String s : value) putString(s);
 	}
 
 	@Override

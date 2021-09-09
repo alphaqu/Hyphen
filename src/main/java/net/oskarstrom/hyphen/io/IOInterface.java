@@ -1,8 +1,6 @@
 package net.oskarstrom.hyphen.io;
 
-/**
- * Should only by used as a referance. Never implement it as it will hurt performance and make the jvm not inline.
- */
+@SuppressWarnings("unused") // good morning intellij this is a library
 public interface IOInterface {
 	boolean getBoolean();
 	byte getByte();
@@ -12,6 +10,7 @@ public interface IOInterface {
 	long getLong();
 	float getFloat();
 	double getDouble();
+	String getString();
 	boolean[] getBooleanArray(int length);
 	byte[] getByteArray(int length);
 	char[] getCharArray(int length);
@@ -20,22 +19,25 @@ public interface IOInterface {
 	long[] getLongArray(int length);
 	float[] getFloatArray(int length);
 	double[] getDoubleArray(int length);
-	IOInterface putBoolean(boolean value);
-	IOInterface putByte(byte value);
-	IOInterface putChar(char value);
-	IOInterface putShort(short value);
-	IOInterface putInt(int value);
-	IOInterface putLong(long value);
-	IOInterface putFloat(float value);
-	IOInterface putDouble(double value);
-	IOInterface putBooleanArray(boolean[] value);
-	IOInterface putByteArray(byte[] value);
-	IOInterface putCharArray(char[] value);
-	IOInterface putShortArray(short[] value);
-	IOInterface putIntArray(int[] value);
-	IOInterface putLongArray(long[] value);
-	IOInterface putFloatArray(float[] value);
-	IOInterface putDoubleArray(double[] value);
+	String[] getStringArray(int length);
+	void putBoolean(boolean value);
+	void putByte(byte value);
+	void putChar(char value);
+	void putShort(short value);
+	void putInt(int value);
+	void putLong(long value);
+	void putFloat(float value);
+	void putDouble(double value);
+	void putString(String value);
+	void putBooleanArray(boolean[] value);
+	void putByteArray(byte[] value);
+	void putCharArray(char[] value);
+	void putShortArray(short[] value);
+	void putIntArray(int[] value);
+	void putLongArray(long[] value);
+	void putFloatArray(float[] value);
+	void putDoubleArray(double[] value);
+	void putStringArray(String[] value);
 	void rewind();
 	int pos();
 }

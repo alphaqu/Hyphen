@@ -249,7 +249,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = null;
+			ioInterface = UnsafeIO.create(2000);
 			ioInterface.putLong(6980000);
 		}
 	}
@@ -260,7 +260,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.create(200);
+			ioInterface = ByteBufferIO.create(2000);
 			ioInterface.putLong(6980000);
 		}
 
@@ -272,7 +272,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.createDirect(200);
+			ioInterface = ByteBufferIO.createDirect(2000);
 			ioInterface.putLong(6980000);
 		}
 
