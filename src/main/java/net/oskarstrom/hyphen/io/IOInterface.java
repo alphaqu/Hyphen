@@ -37,4 +37,5 @@ public interface IOInterface {
 	IOInterface putFloatArray(float[] value);
 	IOInterface putDoubleArray(double[] value);
 	void rewind();
+	int pos();
 }

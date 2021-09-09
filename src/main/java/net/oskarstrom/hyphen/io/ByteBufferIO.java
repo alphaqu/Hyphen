@@ -3,6 +3,9 @@ package net.oskarstrom.hyphen.io;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * <h2>Useful for debug and when UnsafeIO is unavailable.</h2>
+ */
 public final class ByteBufferIO implements IOInterface {
 	private final ByteBuffer byteBuffer;
 
@@ -11,15 +14,11 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	public static ByteBufferIO create(int size) {
-		ByteBuffer buffer = ByteBuffer.allocate(size);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		return new ByteBufferIO(buffer);
+		return new ByteBufferIO(ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN));
 	}
 
 	public static ByteBufferIO createDirect(int size) {
-		ByteBuffer buffer = ByteBuffer.allocateDirect(size);
-		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		return new ByteBufferIO(buffer);
+		return new ByteBufferIO(ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN));
 	}
 
 	@Override

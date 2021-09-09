@@ -5,200 +5,242 @@ import net.oskarstrom.hyphen.io.IOInterface;
 import net.oskarstrom.hyphen.io.UnsafeIO;
 import org.junit.jupiter.api.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IOTest {
 
 	public abstract static class IOTestClass {
-		IOInterface ioInterface;
-
-		@BeforeEach
-		public void prepare() {
-			ioInterface.rewind();
-		}
+		static IOInterface ioInterface;
+		static boolean booleanValue = false;
+		static byte byteValue = Byte.MIN_VALUE;
+		static char charValue = Character.MIN_VALUE;
+		static short shortValue = Short.MIN_VALUE;
+		static int intValue = Integer.MIN_VALUE;
+		static long longValue = Long.MIN_VALUE;
+		static float floatValue = Float.MIN_VALUE;
+		static double doubleValue = Double.MIN_VALUE;
+		static boolean[] booleanValueArray = new boolean[]{true, false, true, true, false};
+		static byte[] byteValueArray = "gello there my name is alpha".getBytes(StandardCharsets.UTF_8);
+		static char[] charValueArray = new char[]{Character.MAX_VALUE, 'a', 'l', 'p', 'h', 'a', Character.MIN_VALUE};
+		static short[] shortValueArray = new short[]{Short.MAX_VALUE, 643, 124, Short.MIN_VALUE};
+		static int[] intValueArray = new int[]{453254, 4312543, 54367, 3457, 3454563, 8456};
+		static long[] longValueArray = new long[]{45354254, 431212543, 5423367, 345657, 345754563, 8453656};
+		static float[] floatValueArray = new float[]{69.422430f, 69.44520f, 69.420234f};
+		static double[] doubleValueArray = new double[]{69.426430f, 69.426430f, 69.4220f};
 
 		@Nested
-		public class getBooleanTest {
-			@Test
-			public void test() {
-				ioInterface.putBoolean(true);
-				ioInterface.rewind();
-				assertTrue(ioInterface.getBoolean());
+		@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+		public class Read {
+			@RepeatedTest(2)
+			@Order(0)
+			void getBoolean() {
+				assertEquals(booleanValue, ioInterface.getBoolean());
+			}
+
+			@RepeatedTest(2)
+			@Order(1)
+			void getByte() {
+				assertEquals(byteValue, ioInterface.getByte());
+			}
+
+			@RepeatedTest(2)
+			@Order(2)
+			void getChar() {
+				assertEquals(charValue, ioInterface.getChar());
+			}
+
+			@RepeatedTest(2)
+			@Order(3)
+			void getShort() {
+				assertEquals(shortValue, ioInterface.getShort());
+			}
+
+			@RepeatedTest(2)
+			@Order(4)
+			void getInt() {
+				assertEquals(intValue, ioInterface.getInt());
+			}
+
+			@RepeatedTest(2)
+			@Order(5)
+			void getLong() {
+				assertEquals(longValue, ioInterface.getLong());
+			}
+
+			@RepeatedTest(2)
+			@Order(6)
+			void getFloat() {
+				assertEquals(floatValue, ioInterface.getFloat());
+			}
+
+			@RepeatedTest(2)
+			@Order(7)
+			void getDouble() {
+				assertEquals(doubleValue, ioInterface.getDouble());
+			}
+
+			@RepeatedTest(2)
+			@Order(8)
+			void getBooleanArray() {
+				assertArrayEquals(booleanValueArray, ioInterface.getBooleanArray(booleanValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(9)
+			void getByteArray() {
+				assertArrayEquals(byteValueArray, ioInterface.getByteArray(byteValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(10)
+			void getCharArray() {
+				assertArrayEquals(charValueArray, ioInterface.getCharArray(charValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(11)
+			void getShortArray() {
+				assertArrayEquals(shortValueArray, ioInterface.getShortArray(shortValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(12)
+			void getIntArray() {
+				assertArrayEquals(intValueArray, ioInterface.getIntArray(intValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(13)
+			void getLongArray() {
+				assertArrayEquals(longValueArray, ioInterface.getLongArray(longValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(14)
+			void getFloatArray() {
+				assertArrayEquals(floatValueArray, ioInterface.getFloatArray(floatValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(15)
+			void getDoubleArray() {
+				assertArrayEquals(doubleValueArray, ioInterface.getDoubleArray(doubleValueArray.length));
 			}
 		}
 
 		@Nested
-		public class getBooleanArrayTest {
-			@Test
-			public void test() {
-				boolean[] value = {true,true, false, true};
-				ioInterface.putBooleanArray(value);
+		public class Rewind {
+			@RepeatedTest(2)
+			@Order(0)
+			void rewind() {
 				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getBooleanArray(value.length));
+				assertEquals(6980000, ioInterface.getLong());
 			}
 		}
 
 		@Nested
-		public class getByteTest {
-			@Test
-			public void test() {
-				var value = (byte) 69;
-				ioInterface.putByte(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getByte());
+		@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+		public class Write {
+			@RepeatedTest(2)
+			@Order(0)
+			void putBoolean() {
+				ioInterface.putBoolean(booleanValue);
+			}
 
+			@RepeatedTest(2)
+			@Order(1)
+			void putByte() {
+				ioInterface.putByte(byteValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(2)
+			void putChar() {
+				ioInterface.putChar(charValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(3)
+			void putShort() {
+				ioInterface.putShort(shortValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(4)
+			void putInt() {
+				ioInterface.putInt(intValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(5)
+			void putLong() {
+				ioInterface.putLong(longValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(6)
+			void putFloat() {
+				ioInterface.putFloat(floatValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(7)
+			void putDouble() {
+				ioInterface.putDouble(doubleValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(8)
+			void putBooleanArray() {
+				ioInterface.putBooleanArray(booleanValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(9)
+			void putByteArray() {
+				ioInterface.putByteArray(byteValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(10)
+			void putCharArray() {
+				ioInterface.putCharArray(charValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(11)
+			void putShortArray() {
+				ioInterface.putShortArray(shortValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(12)
+			void putIntArray() {
+				ioInterface.putIntArray(intValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(13)
+			void putLongArray() {
+				ioInterface.putLongArray(longValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(14)
+			void putFloatArray() {
+				ioInterface.putFloatArray(floatValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(15)
+			void putDoubleArray() {
+				ioInterface.putDoubleArray(doubleValueArray);
 			}
 		}
 
-		@Nested
-		public class getByteArrayTest {
-			@Test
-			public void test() {
-				byte[] value = {69, 69};
-				ioInterface.putByteArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getByteArray(value.length));
-
-			}
-		}
-
-		@Nested
-		public class getCharTest {
-			@Test
-			public void test() {
-				var value = 'f';
-				ioInterface.putChar(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getChar());
-
-			}
-		}
-
-		@Nested
-		public class getCharArrayTest {
-			@Test
-			public void test() {
-				char[] value = {'n', 'i', 'c', 'e'};
-				ioInterface.putCharArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getCharArray(value.length));
-
-			}
-		}
-
-		@Nested
-		public class getShortTest {
-			@Test
-			public void test() {
-				var value = (short) 69;
-				ioInterface.putShort(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getShort());
-
-			}
-		}
-
-		@Nested
-		public class getShortArrayTest {
-			@Test
-			public void test() {
-				short[] value = {420, 69};
-				ioInterface.putShortArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getShortArray(value.length));
-			}
-		}
-
-		@Nested
-		public class getIntTest {
-			@Test
-			public void test() {
-				var value = 69;
-				ioInterface.putInt(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getInt());
-
-			}
-		}
-
-		@Nested
-		public class getIntArrayTest {
-			@Test
-			public void test() {
-				int[] value = {420, 69};
-				ioInterface.putIntArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getIntArray(value.length));
-			}
-		}
-
-		@Nested
-		public class getLongTest {
-			@Test
-			public void test() {
-				var value = 96969696969696969L;
-				ioInterface.putLong(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getLong());
-
-			}
-		}
-
-		@Nested
-		public class getLongArrayTest {
-			@Test
-			public void test() {
-				long[] value = {420, 69};
-				ioInterface.putLongArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getLongArray(value.length));
-			}
-		}
-
-		@Nested
-		public class getFloatTest {
-			@Test
-			public void test() {
-				var value = 69.420f;
-				ioInterface.putFloat(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getFloat());
-
-			}
-		}
-
-		@Nested
-		public class getFloatArrayTest {
-			@Test
-			public void test() {
-				float[] value = {420.69f, 69.420f};
-				ioInterface.putFloatArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getFloatArray(value.length));
-			}
-		}
-
-		@Nested
-		public class getDoubleTest {
-			@Test
-			public void test() {
-				var value = 69.420420420420420420420420420D;
-				ioInterface.putDouble(value);
-				ioInterface.rewind();
-				assertEquals(value, ioInterface.getDouble());
-			}
-		}
-
-		@Nested
-		public class getDoubleArrayTest {
-			@Test
-			public void test() {
-				double[] value = {420.69f, 69.420f};
-				ioInterface.putDoubleArray(value);
-				ioInterface.rewind();
-				assertArrayEquals(value, ioInterface.getDoubleArray(value.length));
-			}
-		}
 	}
 
 	@Nested
@@ -207,7 +249,8 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = UnsafeIO.create(16);
+			ioInterface = null;
+			ioInterface.putLong(6980000);
 		}
 	}
 
@@ -217,7 +260,8 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.create(16);
+			ioInterface = ByteBufferIO.create(200);
+			ioInterface.putLong(6980000);
 		}
 
 	}
@@ -228,7 +272,8 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.createDirect(16);
+			ioInterface = ByteBufferIO.createDirect(200);
+			ioInterface.putLong(6980000);
 		}
 
 	}
