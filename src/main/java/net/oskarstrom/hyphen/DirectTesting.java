@@ -74,14 +74,14 @@ public final class DirectTesting {
 		System.out.println("Encode [" + Duration.between(encodeTime, Instant.now()).toMillis() + "ms]");
 
 
-		int times = 10;
+		int times = 1;
 		DataArray decodeData = null;
 		Instant decodeTime = Instant.now();
 		for (int i = 0; i < times; i++) {
 			//DECODE
 			unsafeIO.rewind();
 			decodeData = decode_DataArray(unsafeIO);
-			System.out.println(i);
+			System.out.println(decodeData.array[0].integer);
 		}
 		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() / times + "ms]");
 		System.out.println(decodeData.array.length);

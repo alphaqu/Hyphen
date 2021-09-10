@@ -1,7 +1,5 @@
 package net.oskarstrom.hyphen.io;
 
-import java.nio.charset.StandardCharsets;
-
 /**
  * <h2>This is the créme de créme of all IO. Highly unsafe but really fast.</h2>
  */
@@ -17,6 +15,16 @@ public final class UnsafeIO implements IOInterface {
 	private static final int LONG_OFFSET = UNSAFE.ARRAY_LONG_BASE_OFFSET;
 	private static final int FLOAT_OFFSET = UNSAFE.ARRAY_FLOAT_BASE_OFFSET;
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
+	private static final long STRING_FIELD_OFFSET;
+
+	static {
+		try {
+			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
+		} catch (NoSuchFieldException e) {
+			throw new RuntimeException();
+		}
+	}
+
 	private final long address;
 	private long currentAddress;
 
@@ -75,11 +83,16 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public final String getString() {
-		final int length = UNSAFE.getInt(null, currentAddress + INT__OFFSET);
-		final byte[] array = new byte[length];
-		UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, array, BYTE_OFFSET, length);
-		currentAddress += length + 4;
-		return new String(array, 0, length, StandardCharsets.US_ASCII);
+		try {
+			final String s = (String) UNSAFE.allocateInstance(String.class);
+			final byte[] array = new byte[UNSAFE.getInt(null, currentAddress + INT__OFFSET)];
+			UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, array, BYTE_OFFSET, array.length);
+			UNSAFE.putObject(s, STRING_FIELD_OFFSET, array);
+			currentAddress += array.length + 4;
+			return s;
+		} catch (InstantiationException e) {
+			throw new RuntimeException("String creation failed: ", e);
+		}
 	}
 
 	public final void putBoolean(final boolean value) {
@@ -126,7 +139,7 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public void putString(String value) {
-		final byte[] bytes = value.getBytes(StandardCharsets.US_ASCII);
+		final byte[] bytes = (byte[]) UNSAFE.getObject(value, STRING_FIELD_OFFSET);
 		final int length = bytes.length;
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
 		UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
@@ -267,15 +280,7 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public void putStringArray(String[] value) {
-		int totalLength = 0;
-		for (String s : value) {
-			final byte[] bytes = s.getBytes(StandardCharsets.US_ASCII);
-			final int length = bytes.length;
-			totalLength += length + 4;
-			UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
-			UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
-		}
-		currentAddress += totalLength;
+		for (String s : value) putString(s);
 	}
 
 	public final void rewind() {
