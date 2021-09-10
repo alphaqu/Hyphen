@@ -50,9 +50,9 @@ public final class DirectTesting {
 	}
 
 	public static void main(String[] args) {
-		Data data = new Data("69", "420");
+		Data data = new Data("69696969696969696969696969696969696969696969696969696969696969\u263C", "420");
 
-		Data[] data1 = new Data[2_500_000];
+		Data[] data1 = new Data[100_000];
 		Arrays.fill(data1, data);
 		DataArray dataArray = new DataArray(data1);
 
@@ -74,6 +74,7 @@ public final class DirectTesting {
 		System.out.println("Encode [" + Duration.between(encodeTime, Instant.now()).toMillis() + "ms]");
 
 
+
 		int times = 1;
 		DataArray decodeData = null;
 		Instant decodeTime = Instant.now();
@@ -81,6 +82,7 @@ public final class DirectTesting {
 			//DECODE
 			unsafeIO.rewind();
 			decodeData = decode_DataArray(unsafeIO);
+			System.out.print("=".repeat(40 / times));
 			System.out.println(decodeData.array[0].integer);
 		}
 		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() / times + "ms]");

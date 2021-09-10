@@ -16,10 +16,12 @@ public final class UnsafeIO implements IOInterface {
 	private static final int FLOAT_OFFSET = UNSAFE.ARRAY_FLOAT_BASE_OFFSET;
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private static final long STRING_FIELD_OFFSET;
+	private static final long STRING_ENCODING_OFFSET;
 
 	static {
 		try {
 			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
+			STRING_ENCODING_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("coder"));
 		} catch (NoSuchFieldException e) {
 			throw new RuntimeException();
 		}
@@ -84,12 +86,15 @@ public final class UnsafeIO implements IOInterface {
 
 	public final String getString() {
 		try {
-			final String s = (String) UNSAFE.allocateInstance(String.class);
-			final byte[] array = new byte[UNSAFE.getInt(null, currentAddress + INT__OFFSET)];
-			UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, array, BYTE_OFFSET, array.length);
-			UNSAFE.putObject(s, STRING_FIELD_OFFSET, array);
-			currentAddress += array.length + 4;
-			return s;
+			final var string = (String) UNSAFE.allocateInstance(String.class);
+			final var infoBytes = UNSAFE.getInt(null, currentAddress + INT__OFFSET);
+			final var byteArray = new byte[Math.abs(infoBytes) /*length*/];
+			final var arrayLength = byteArray.length;
+			UNSAFE.copyMemory(null, currentAddress + 4 + BYTE_OFFSET, byteArray, BYTE_OFFSET, arrayLength);
+			UNSAFE.putObject(string, STRING_FIELD_OFFSET, byteArray);
+			UNSAFE.putByte(string, STRING_ENCODING_OFFSET, (byte) (infoBytes < 0 ? 1 : 0));
+			currentAddress += arrayLength + 4;
+			return string;
 		} catch (InstantiationException e) {
 			throw new RuntimeException("String creation failed: ", e);
 		}
@@ -141,7 +146,7 @@ public final class UnsafeIO implements IOInterface {
 	public void putString(String value) {
 		final byte[] bytes = (byte[]) UNSAFE.getObject(value, STRING_FIELD_OFFSET);
 		final int length = bytes.length;
-		UNSAFE.putInt(null, currentAddress + INT__OFFSET, length);
+		UNSAFE.putInt(null, currentAddress + INT__OFFSET, UNSAFE.getByte(value, STRING_ENCODING_OFFSET) == 0 ? length : -length);
 		UNSAFE.copyMemory(bytes, BYTE_OFFSET, null, currentAddress + 4 + BYTE_OFFSET, length);
 		currentAddress += length + 4;
 	}
