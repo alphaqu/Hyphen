@@ -24,18 +24,12 @@ public class ClassInfo implements Type {
 	}
 
 	private Class<?>[] getSuperClasses(Class<?> in, int depth) {
-		if (in == null) {
+		if (in == null)
 			return new Class<?>[depth];
-		}
 
-		Class<?> superclass = in.getSuperclass();
-		Class<?>[] out = getSuperClasses(superclass, depth + 1);
-		if (out != null) {
-			out[depth] = in;
-			return out;
-		}
-
-		return null;
+		Class<?>[] out = getSuperClasses(in.getSuperclass(), depth + 1);
+		out[depth] = in;
+		return out;
 	}
 
 	public List<FieldInfo> getAllFields(Function<Field, Boolean> filter) {
@@ -62,6 +56,7 @@ public class ClassInfo implements Type {
 	public String toFancyString() {
 		return clazz.getSimpleName();
 	}
+
 	@Override
 	public String toString() {
 		return clazz.getSimpleName();
