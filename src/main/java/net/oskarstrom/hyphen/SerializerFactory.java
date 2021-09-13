@@ -26,6 +26,7 @@ public class SerializerFactory {
 	@Nullable
 	private final DebugHandler debugHandler;
 	private final Map<ClassInfo, SerializerMethodMetadata> methods = new HashMap<>();
+	private final Map<ClassInfo, Map<Field, ObjectSerializationDef>> fieldCache = new HashMap<>();
 	private final Map<Class<?>, Function<ClassInfo, ObjectSerializationDef>> implementations = new HashMap<>();
 	private final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations = new AnnotationParser.AnnotationOptionMap<>();
 
@@ -76,11 +77,13 @@ public class SerializerFactory {
 			return;
 		}
 
+		var methodMetadata = new SerializerMethodMetadata(clazz);
+		methods.put(clazz, methodMetadata);
+
+		//get the fields
 		var allFields = clazz.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
 		//check if it exists / if its accessible
 		checkConstructor(allFields, clazz);
-
-		var methodMetadata = new SerializerMethodMetadata(clazz);
 		for (FieldInfo fieldInfo : allFields) {
 			var field = fieldInfo.field;
 			var classInfo = createClassInfo(clazz, field.getType(), field.getGenericType(), field.getAnnotatedType());
@@ -96,7 +99,6 @@ public class SerializerFactory {
 			}
 			methodMetadata.fields.put(field, def);
 		}
-		methods.put(clazz, methodMetadata);
 	}
 
 	private void checkConstructor(List<FieldInfo> fields, ClassInfo source) {
