@@ -161,13 +161,12 @@ public class SerializerFactory {
 	}
 
 	private PolymorphicTypeInfo createPolymorphicClass(ClassInfo source, Class<?> classType, Type genericType, Map<Class<Annotation>, Object> options, AnnotatedType annotatedType) {
-		System.out.println("doing " + classType);
-		System.out.println(options.containsKey(SerSubclasses.class));
-		System.out.println(options.containsKey(SerComplexSubClass.class));
-		System.out.println(options.containsKey(SerComplexSubClasses.class));
-
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
-			throw new IllegalStateException("NYI");
+			throw ThrowHandler.fatal(
+					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
+					ThrowHandler.ThrowEntry.of("Source", source),
+					ThrowHandler.ThrowEntry.of("ClassType", classType),
+					ThrowHandler.ThrowEntry.of("Annotations", options));
 		}
 
 		Class<?>[] subclasses = (Class<?>[]) options.get(SerSubclasses.class);
@@ -487,7 +486,7 @@ public class SerializerFactory {
 				Type[] bounds = typeVariable.getBounds();
 
 				for (Type bound : bounds) {
-					if(bound == Object.class){
+					if (bound == Object.class) {
 						// TODO: i think this shouldn't be a special case here and instead be handled by class/class unifying?
 						continue;
 					}
