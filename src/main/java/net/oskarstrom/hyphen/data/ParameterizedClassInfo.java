@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class ParameterizedClassInfo extends ClassInfo implements ParameterizedType {
-	public final LinkedHashMap<String, ClassInfo> types;
+	public final LinkedHashMap<String, TypeInfo> types;
 
-	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, LinkedHashMap<String, ClassInfo> types) {
+	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, LinkedHashMap<String, TypeInfo> types) {
 		super(clazz, annotations, factory);
 		this.types = types;
 	}
@@ -20,7 +20,7 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	public String toString() {
 		StringJoiner parameterJoiner = new StringJoiner(", ", "<", ">");
 		parameterJoiner.setEmptyValue("");
-		for (ClassInfo t : types.values()) {
+		for (TypeInfo t : types.values()) {
 			parameterJoiner.add(t.toString());
 		}
 		return super.toString() + parameterJoiner;
@@ -43,12 +43,15 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 
 	@Override
 	public String toFancyString() {
-		StringJoiner parameterJoiner = new StringJoiner(Color.WHITE + ", ", Color.PURPLE + "<", Color.PURPLE + ">");
+		StringJoiner parameterJoiner = new StringJoiner(
+				Color.WHITE + ", ",
+				super.toFancyString() + Color.PURPLE + "<",
+				Color.PURPLE + ">");
 		parameterJoiner.setEmptyValue("");
-		for (ClassInfo t : types.values()) {
-			parameterJoiner.add(Color.CYAN + t.toString());
+		for (TypeInfo t : types.values()) {
+			parameterJoiner.add(t.toFancyString());
 		}
-		return super.toString() + parameterJoiner;
+		return parameterJoiner.toString();
 	}
 
 	@Override
@@ -67,7 +70,7 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 
 	@Override
 	public ClassInfo copy() {
-		LinkedHashMap<String, ClassInfo> typesCloned = new LinkedHashMap<>();
+		LinkedHashMap<String, TypeInfo> typesCloned = new LinkedHashMap<>();
 		types.forEach((s, info) -> typesCloned.put(s, info.copy()));
 		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), factory, typesCloned);
 	}

@@ -8,18 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class ArrayInfo extends ClassInfo {
-	public final ClassInfo values;
+public class ArrayInfo extends TypeInfo {
+	public final TypeInfo values;
 
-	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, ClassInfo values) {
-		super(clazz, annotations, factory);
+	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values) {
+		super(clazz, annotations);
 		this.values = values;
 	}
 
 
 	@Override
 	public String toFancyString() {
-		return super.toFancyString() + Color.YELLOW + "[]";
+		return this.clazz.getSimpleName() + Color.YELLOW + "[]";
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class ArrayInfo extends ClassInfo {
 	}
 
 	@Override
-	public ClassInfo copy() {
-		return new ArrayInfo(clazz, new HashMap<>(annotations), factory, values.copy());
+	public ArrayInfo copy() {
+		return new ArrayInfo(clazz, new HashMap<>(annotations), values.copy());
 	}
 }

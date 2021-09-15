@@ -6,12 +6,11 @@ import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SerializerMethodMetadata {
-	public final ClassInfo clazz;
+public class ClassSerializerMetadata extends SerializerMetadata {
 	public final Map<Field, ObjectSerializationDef> fields;
 
-	public SerializerMethodMetadata(ClassInfo clazz) {
-		this.clazz = clazz;
+	public ClassSerializerMetadata(ClassInfo clazz) {
+		super(clazz);
 		this.fields = new LinkedHashMap<>();
 	}
 }
