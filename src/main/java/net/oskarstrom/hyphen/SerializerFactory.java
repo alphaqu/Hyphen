@@ -149,19 +149,19 @@ public class SerializerFactory {
 		//check if it exists / if its accessible
 		checkConstructor(allFields, clazz);
 		for (FieldMetadata fieldInfo : allFields) {
-			var def = this.getDefinition(fieldInfo);
+			var def = this.getDefinition(fieldInfo, clazz);
 			methodMetadata.fields.put(fieldInfo, def);
 		}
 	}
 
-	private ObjectSerializationDef getDefinition(FieldMetadata field) {
+	private ObjectSerializationDef getDefinition(FieldMetadata field, ClassInfo source) {
 		var classInfo = field.clazz;
 		if (!(classInfo instanceof PolymorphicTypeInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
 			//check if field is legal
 			//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
-			ThrowHandler.checkAccess(field.modifier, () -> ThrowHandler.fieldAccessFail(field, clazz));
+			ThrowHandler.checkAccess(field.modifier, () -> ThrowHandler.fieldAccessFail(field, source));
 
 			this.createSerializeMetadata(classInfo);
 			return new MethodCallDef(classInfo);

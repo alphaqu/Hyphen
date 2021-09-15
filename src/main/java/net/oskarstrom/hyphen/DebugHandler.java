@@ -36,7 +36,7 @@ public class DebugHandler {
 			if(field == null){
 				sb.append('\t').append(Color.RESET).append("THIS").append(Color.RED).append(" : ").append(objectSerializationDef.toFancyString()).append('\n');
 			} else {
-				sb.append('\t').append(Color.RESET).append(field.getName()).append(Color.RED).append(" : ").append(objectSerializationDef.toFancyString()).append('\n');
+				sb.append('\t').append(Color.RESET).append(field.name).append(Color.RED).append(" : ").append(objectSerializationDef.toFancyString()).append('\n');
 			}
 		});
 		sb.append('\n');

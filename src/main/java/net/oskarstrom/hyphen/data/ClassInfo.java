@@ -25,7 +25,13 @@ public class ClassInfo extends TypeInfo implements Type {
 		if (superclass == null)
 			return new ClassInfo[depth];
 
-		ClassInfo info = factory.createClassInfo(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+		TypeInfo typeInfo = factory.createClassInfo(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+
+		if(!(typeInfo instanceof ClassInfo info)){
+			// this should always return a class info, unless you put a `SubClasses` annotations on an extends clause
+			throw new IllegalStateException("I think you put `@SubClasses` on a extends clause?");
+		}
+
 		ClassInfo[] out = getSuperClasses(info, depth + 1);
 		out[depth] = info;
 		return out;
@@ -36,16 +42,11 @@ public class ClassInfo extends TypeInfo implements Type {
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
-				ClassInfo classInfo = factory.createClassInfo(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				TypeInfo classInfo = factory.createClassInfo(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
 				info.add(new FieldMetadata(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
 			}
 		}
 		return info;
-	}
-
-	//returns for things like constructors
-	public Class<?> getRawClass() {
-		return clazz;
 	}
 
 	public List<FieldMetadata> getAllFields(Predicate<Field> filter) {
