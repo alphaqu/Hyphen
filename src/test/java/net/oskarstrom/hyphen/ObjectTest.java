@@ -83,7 +83,7 @@ public class ObjectTest {
 		@Serialize
 		public int something;
 
-		public TestingInhiritedField(int something, int SUPERFIELD, ArrayList<@SerNull Integer> list,TestingInhiritedField field) {
+		public TestingInhiritedField(int something, int SUPERFIELD, List<@SerNull Integer> list,TestingInhiritedField field) {
 			super(SUPERFIELD, list);
 			this.something = something;
 		}
@@ -101,7 +101,7 @@ public class ObjectTest {
 		@Serialize
 		public TestingInhiritedField field;
 
-		public ImYoSuper(int SUPERFIELD, ArrayList<@SerNull Integer> list) {
+		public ImYoSuper(int SUPERFIELD, List<@SerNull Integer> list) {
 			this.SUPERFIELD = SUPERFIELD;
 			this.list = list;
 		}
