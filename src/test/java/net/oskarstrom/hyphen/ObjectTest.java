@@ -6,6 +6,8 @@ import net.oskarstrom.hyphen.annotation.Serialize;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ObjectTest {
 
@@ -53,7 +55,7 @@ public class ObjectTest {
 		@Serialize
 		public int something;
 
-		public TestingInhiritedField(int something, int SUPERFIELD, ArrayList<@SerNull Integer> list) {
+		public TestingInhiritedField(int something, int SUPERFIELD, ArrayList<@SerNull Integer> list,TestingInhiritedField field) {
 			super(SUPERFIELD, list);
 			this.something = something;
 		}
@@ -62,9 +64,14 @@ public class ObjectTest {
 	public static class ImYoSuper {
 		@Serialize
 		public int SUPERFIELD;
+
 		@Serialize
 		@SerNull
-		public ArrayList<@SerNull Integer> list;
+		@SerSubclasses({LinkedList.class, ArrayList.class})
+		public List<@SerNull Integer> list;
+
+		@Serialize
+		public TestingInhiritedField field;
 
 		public ImYoSuper(int SUPERFIELD, ArrayList<@SerNull Integer> list) {
 			this.SUPERFIELD = SUPERFIELD;
