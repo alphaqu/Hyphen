@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -29,7 +30,8 @@ public class ObjectTest {
 	@TestFactory
 	public Stream<DynamicNode> polyTest() {
 		return Arrays.stream(PolymorphicGenericTypeTests.class.getDeclaredClasses()).map(clz ->
-				DynamicTest.dynamicTest(clz.getSimpleName(), () -> {
+				DynamicTest.dynamicTest(clz.getSimpleName(), URI.create("class:" + clz.getName()),() -> {
+					System.out.println(clz.getName());
 					SerializerFactory debug = SerializerFactory.createDebug();
 					debug.build(clz);
 				})
@@ -39,9 +41,9 @@ public class ObjectTest {
 	public static class BasicSimpleScanTest {
 
 		@Serialize
-		public Foo2<Integer> foo2integer;
+		public Foo<Foo<Integer>> foo2integer;
 
-		public BasicSimpleScanTest(Foo2<Integer> foo2integer) {
+		public BasicSimpleScanTest(Foo<Foo<Integer>> foo2integer) {
 			this.foo2integer = foo2integer;
 		}
 	}
@@ -154,21 +156,44 @@ public class ObjectTest {
 		@Serialize
 		public K k;
 
-		public Bar(K k, T t) {
+		public Bar(T t, K k) {
 			super(t);
 			this.k = k;
 		}
 	}
 
 	public static class Baz<F> extends Bar<String, F> {
-		public Baz(String s, F t) {
-			super(s, t);
+		public Baz(F t, String s) {
+			super(t, s);
+		}
+
+		// FIXME
+		public Baz(F t, Object s) {
+			this(t, (String) s);
+		}
+	}
+
+	public static class FooObe<FooT> extends Foo<Foo<FooT>> {
+		public FooObe(Foo<FooT> ts) {
+			super(ts);
+		}
+
+		// FIXME
+		public FooObe(Object ts) {
+			//noinspection unchecked
+			super((Foo<FooT>) ts);
 		}
 	}
 
 	public static class Obe<T> extends Foo<List<T>> {
 		public Obe(List<T> ts) {
 			super(ts);
+		}
+
+		// FIXME
+		public Obe(Object ts) {
+			//noinspection unchecked
+			super((List<T>) ts);
 		}
 	}
 
@@ -179,6 +204,22 @@ public class ObjectTest {
 		public Caz(K kkk, T ks) {
 			super(ks);
 			this.kkk = kkk;
+		}
+	}
+
+	public static class FooCaz<K, FooK extends Foo<K>> extends Foo<FooK> {
+		@Serialize
+		public K kkk;
+
+		public FooCaz(K kkk, FooK ks) {
+			super(ks);
+			this.kkk = kkk;
+		}
+
+		// FIXME
+		public FooCaz(K kkk, Object ks) {
+			//noinspection unchecked
+			this(kkk, (FooK) ks);
 		}
 	}
 
@@ -213,6 +254,16 @@ public class ObjectTest {
 			}
 		}
 
+		public static class FooDeFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, FooObe.class})
+			public Foo<Foo<Integer>> simplish;
+
+			public FooDeFoo(Foo<Foo<Integer>> simplish) {
+				this.simplish = simplish;
+			}
+		}
+
 		public static class Complex {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class})
@@ -224,13 +275,18 @@ public class ObjectTest {
 			)
 			public Foo<Integer> complex;
 
-			public Complex(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<Integer> complex) {
+			public Complex(Foo<Integer> complex) {
 				this.complex = complex;
+			}
+		}
+
+		public static class ErrorsMissingType {
+			@Serialize
+			@SerSubclasses({Foo.class, Bar.class})
+			public Foo<Integer> errors;
+
+			public ErrorsMissingType(Foo<Integer> errors) {
+				this.errors = errors;
 			}
 		}
 
@@ -245,12 +301,7 @@ public class ObjectTest {
 			)
 			public Foo<Integer> errors;
 
-			public Errors(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<Integer> errors) {
+			public Errors(Foo<Integer> errors) {
 				this.errors = errors;
 			}
 		}
@@ -286,6 +337,119 @@ public class ObjectTest {
 			}
 		}
 
+		public static class SimplerFooFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, Foo2.class})
+			public Foo<Foo<Integer>> FooArrayList;
+
+			public SimplerFooFoo(Foo<Foo<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimpleFooFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, Baz.class})
+			public Foo<Foo<Integer>> FooArrayList;
+
+			public SimpleFooFoo(Foo<Foo<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimplerStackedFooFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, Foo2.class})
+			public Foo<@SerSubclasses({Foo.class, Foo2.class}) Foo<Integer>> FooArrayList;
+
+			public SimplerStackedFooFoo(Foo<Foo<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimpleStackedFooFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, Baz.class})
+			public Foo<@SerSubclasses({Foo.class, Foo2.class}) Foo<Integer>> FooArrayList;
+
+			public SimpleStackedFooFoo(Foo<Foo<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+/*
+		public static class SimpleSuperStackedFooFoo {
+			@Serialize
+			public
+			@SerSubclasses({Foo.class, Baz.class}) Foo<
+					@SerSubclasses({Foo.class, Foo2.class}) Foo<
+							@SerSubclasses({Foo.class, Baz.class}) Foo<
+									@SerSubclasses({Foo.class, Foo2.class}) Foo<
+											@SerSubclasses({Foo.class, Baz.class}) Foo<
+													@SerSubclasses({Foo.class, Foo2.class}) Foo<
+															@SerSubclasses({Foo.class, Baz.class}) Foo<
+																	@SerSubclasses({Foo.class, Foo2.class}) Foo<
+																			@SerSubclasses({Foo.class, Baz.class}) Foo<
+																					@SerSubclasses({Foo.class, Foo2.class}) Foo<
+																							@SerSubclasses({Foo.class, Baz.class}) Foo<
+																									@SerSubclasses({Foo.class, Foo2.class}) Foo<
+																											@SerSubclasses({Foo.class, Baz.class}) Foo<
+																													@SerSubclasses({Foo.class, Foo2.class}) Foo<
+																															@SerSubclasses({Foo.class, Baz.class}) Foo<
+																																	@SerSubclasses({Foo.class, Foo2.class}) Foo<
+							Integer>>>>>>>>>>>>>>>> FooArrayList;
+
+			public SimpleSuperStackedFooFoo(Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Foo<Integer>>>>>>>>>>>>>>>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}*/
+
+
+		public static class FooFoo {
+			@Serialize
+			@SerSubclasses({Foo.class, Baz.class})
+			@SerComplexSubClass(
+					value = Bar.class,
+					types = {@SerDefined(name = "K", values = {
+							String.class, Boolean.class
+					})}
+			)
+			public Foo<Foo<Integer>> FooArrayList;
+
+			public FooFoo(Foo<Foo<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimplerFooArrayList {
+			@Serialize
+			@SerSubclasses({Foo.class, Foo2.class})
+			public Foo<ArrayList<Integer>> FooArrayList;
+
+			public SimplerFooArrayList(Foo<ArrayList<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimpleFooArrayList {
+			@Serialize
+			@SerSubclasses({Foo.class, Baz.class})
+			public Foo<ArrayList<Integer>> FooArrayList;
+
+			public SimpleFooArrayList(Foo<ArrayList<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
+		public static class SimplishFooArrayList {
+			@Serialize
+			@SerSubclasses({Foo.class, Obe.class})
+			public Foo<ArrayList<Integer>> FooArrayList;
+
+			public SimplishFooArrayList(Foo<ArrayList<Integer>> fooArrayList) {
+				this.FooArrayList = fooArrayList;
+			}
+		}
+
 		public static class FooArrayList {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
@@ -297,12 +461,7 @@ public class ObjectTest {
 			)
 			public Foo<ArrayList<Integer>> FooArrayList;
 
-			public FooArrayList(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<ArrayList<Integer>> fooArrayList) {
+			public FooArrayList(Foo<ArrayList<Integer>> fooArrayList) {
 				this.FooArrayList = fooArrayList;
 			}
 		}
@@ -325,6 +484,16 @@ public class ObjectTest {
 					})}
 			) Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> fooList) {
 				this.FooList = fooList;
+			}
+		}
+
+		public static class SimplerNumber {
+			@Serialize
+			@SerSubclasses({Foo.class, Foo2.class})
+			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number;
+
+			public SimplerNumber(Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number) {
+				this.simple_number = simple_number;
 			}
 		}
 
@@ -450,9 +619,30 @@ public class ObjectTest {
 			}
 		}
 
+		public static class CleanFooExtract {
+			@Serialize
+			@SerSubclasses({Foo.class, FooCaz.class})
+			public Foo<Foo<Integer>> extract;
+
+			public CleanFooExtract(Foo<Foo<Integer>> extract) {
+				this.extract = extract;
+			}
+		}
+
+		// means something is broken somewhere
+		// and i need a better error for it
+
+		public static class CleanFooExtendsExtract {
+			@Serialize
+			@SerSubclasses({Foo.class, FooCaz.class})
+			public Foo<Foo2<Integer>> extract;
+
+			public CleanFooExtendsExtract(Foo<Foo2<Integer>> extract) {
+				this.extract = extract;
+			}
+		}
+
 		public static class Extract {
-
-
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class, Caz.class})
 			public Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> extract;

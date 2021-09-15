@@ -106,6 +106,10 @@ public class ThrowHandler {
 			this.value = value;
 		}
 
+		public static ThrowEntry of(String key, Object value) {
+			return of(key, value == null ? null : value.getClass().getSimpleName() + ": " + value);
+		}
+
 		public static ThrowEntry of(String key, String value) {
 			return new ThrowEntry(key, value);
 		}
