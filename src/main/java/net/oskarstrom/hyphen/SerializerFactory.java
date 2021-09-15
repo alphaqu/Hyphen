@@ -1,25 +1,18 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.annotation.SerNull;
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.annotation.Serialize;
+import net.oskarstrom.hyphen.annotation.*;
 import net.oskarstrom.hyphen.data.*;
+import net.oskarstrom.hyphen.gen.impl.AbstractDef;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
-import net.oskarstrom.hyphen.options.AnnotationParser;
-import net.oskarstrom.hyphen.options.ArrayOption;
-import net.oskarstrom.hyphen.options.ExistsOption;
-import net.oskarstrom.hyphen.options.OptionParser;
+import net.oskarstrom.hyphen.options.*;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class SerializerFactory {
@@ -46,8 +39,32 @@ public class SerializerFactory {
 	private static SerializerFactory createInternal(boolean debugMode) {
 		final SerializerFactory serializerFactory = new SerializerFactory(debugMode ? new DebugHandler() : null);
 		serializerFactory.addImpl(int.class, (field) -> new IntDef());
+		serializerFactory.addImpl(Integer.class, (field) -> new AbstractDef() {
+			@Override
+			public Class<?> getType() {
+				return Integer.class;
+			}
+
+			@Override
+			public String toString() {
+				return "BoxedIntegerDef";
+			}
+		});
+		serializerFactory.addImpl(Float.class, (field) -> new AbstractDef() {
+			@Override
+			public Class<?> getType() {
+				return Integer.class;
+			}
+
+			@Override
+			public String toString() {
+				return "BoxedFloatDef";
+			}
+		});
 		serializerFactory.addOption(SerNull.class, new ExistsOption());
 		serializerFactory.addOption(SerSubclasses.class, new ArrayOption<>(SerSubclasses::value));
+		serializerFactory.addOption(SerComplexSubClass.class, new SimpleAnnotationOption<>());
+		serializerFactory.addOption(SerComplexSubClasses.class, new ArrayOption<>(SerComplexSubClasses::value));
 		return serializerFactory;
 	}
 
