@@ -7,8 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SerializerMethodMetadata {
+
 	public final ClassInfo clazz;
-	public final Map<Field, ObjectSerializationDef> fields;
+	public final Map<FieldMetadata, ObjectSerializationDef> fields;
 
 	public SerializerMethodMetadata(ClassInfo clazz) {
 		this.clazz = clazz;

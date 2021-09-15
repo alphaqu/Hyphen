@@ -59,9 +59,9 @@ public class ObjectTest {
 		public TestingObjectScan testingDeduplication;
 
 		@Serialize
-		public TestingInhiritedField inhiritedField;
+		public TestingInhiritedField<Integer> inhiritedField;
 
-		public BasicScanTest(int integer, TestingObjectScan object, TestingObjectScan testingDeduplication, TestingInhiritedField inhiritedField) {
+		public BasicScanTest(int integer, TestingObjectScan object, TestingObjectScan testingDeduplication, TestingInhiritedField<Integer> inhiritedField) {
 			this.integer = integer;
 			this.object = object;
 			this.testingDeduplication = testingDeduplication;
@@ -79,19 +79,22 @@ public class ObjectTest {
 		}
 	}
 
-	public static class TestingInhiritedField extends ImYoSuper {
+	public static class TestingInhiritedField<T> extends ImYoSuper<T> {
 		@Serialize
 		public int something;
 
-		public TestingInhiritedField(int something, int SUPERFIELD, ArrayList<@SerNull Integer> list,TestingInhiritedField field) {
-			super(SUPERFIELD, list);
+		public TestingInhiritedField(int SUPERFIELD, T parameters, List<@SerNull Integer> list, TestingInhiritedField<T> field, int something) {
+			super(SUPERFIELD, parameters, list, field);
 			this.something = something;
 		}
 	}
 
-	public static class ImYoSuper {
+	public static class ImYoSuper<K> {
 		@Serialize
 		public int SUPERFIELD;
+
+		@Serialize
+		public K parameters;
 
 		@Serialize
 		@SerNull
@@ -99,11 +102,13 @@ public class ObjectTest {
 		public List<@SerNull Integer> list;
 
 		@Serialize
-		public TestingInhiritedField field;
+		public TestingInhiritedField<K> field;
 
-		public ImYoSuper(int SUPERFIELD, ArrayList<@SerNull Integer> list) {
+		public ImYoSuper(int SUPERFIELD, K parameters, List<@SerNull Integer> list, TestingInhiritedField<K> field) {
 			this.SUPERFIELD = SUPERFIELD;
+			this.parameters = parameters;
 			this.list = list;
+			this.field = field;
 		}
 	}
 
@@ -116,7 +121,7 @@ public class ObjectTest {
 		}
 	}
 
-	public static class Foo2<E> extends Foo<E>{
+	public static class Foo2<E> extends Foo<E> {
 		@Serialize
 		public E e;
 
@@ -126,7 +131,7 @@ public class ObjectTest {
 		}
 	}
 
-	public static class Pair<A, B>{
+	public static class Pair<A, B> {
 		@Serialize
 		public A first;
 
@@ -139,7 +144,7 @@ public class ObjectTest {
 		}
 	}
 
-	public static class SelfPair<T> extends Pair<T,T>{
+	public static class SelfPair<T> extends Pair<T, T> {
 		public SelfPair(T left, T right) {
 			super(left, right);
 		}
@@ -271,7 +276,7 @@ public class ObjectTest {
 			}
 		}
 
-		public static class Errors3{
+		public static class Errors3 {
 			@Serialize
 			@SerSubclasses({Pair.class, SelfPair.class})
 			public Pair<Integer, Float> errors3;
@@ -483,7 +488,7 @@ public class ObjectTest {
 			}
 		}
 
-		public static class Arrays{
+		public static class Arrays {
 			@Serialize
 			@SerSubclasses({Integer[].class, Float[].class})
 			public Number[] numbers;

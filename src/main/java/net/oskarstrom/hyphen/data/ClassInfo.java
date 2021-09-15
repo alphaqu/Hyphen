@@ -1,55 +1,60 @@
 package net.oskarstrom.hyphen.data;
 
 import net.oskarstrom.hyphen.SerializerFactory;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ClassInfo implements Type {
 	public final Class<?> clazz;
 	public final Map<Class<Annotation>, Object> annotations;
-	@Nullable
-	public final Class<?>[] superClasses;
 	protected final SerializerFactory factory;
 
 	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory) {
 		this.clazz = clazz;
-		this.superClasses = getSuperClasses(clazz.getSuperclass(), 0);
 		this.annotations = annotations;
 		this.factory = factory;
 	}
 
-	private Class<?>[] getSuperClasses(Class<?> in, int depth) {
-		if (in == null)
-			return new Class<?>[depth];
+	private ClassInfo[] getSuperClasses(ClassInfo in, int depth) {
+		Class<?> clazz = in.clazz;
+		Class<?> superclass = clazz.getSuperclass();
 
-		Class<?>[] out = getSuperClasses(in.getSuperclass(), depth + 1);
-		out[depth] = in;
+		if (superclass == null)
+			return new ClassInfo[depth];
+
+		ClassInfo info = factory.createClassInfo(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+		ClassInfo[] out = getSuperClasses(info, depth + 1);
+		out[depth] = info;
 		return out;
 	}
 
-	public List<FieldMetadata> getAllFields(Function<Field, Boolean> filter) {
-		List<FieldMetadata> out = new ArrayList<>();
+	protected List<FieldMetadata> getFields(Predicate<Field> filter) {
+		List<FieldMetadata> info = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
-			if (filter.apply(declaredField)) {
-				out.add(new FieldMetadata(declaredField, false));
+			if (filter.test(declaredField)) {
+				Type genericType = declaredField.getGenericType();
+				ClassInfo classInfo = factory.createClassInfo(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				info.add(new FieldMetadata(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
 			}
 		}
-		if (superClasses != null) {
-			for (Class<?> superClass : superClasses) {
-				if (superClass != null) {
-					for (Field declaredField : superClass.getDeclaredFields()) {
-						if (filter.apply(declaredField)) {
-							out.add(new FieldMetadata(declaredField, true));
-						}
-					}
-				}
-			}
+		return info;
+	}
+
+	//returns for things like constructors
+	public Class<?> getRawClass() {
+		return clazz;
+	}
+
+	public List<FieldMetadata> getAllFields(Predicate<Field> filter) {
+		List<FieldMetadata> out = new ArrayList<>();
+		for (ClassInfo superClass : getSuperClasses(this, 0)) {
+			out.addAll(superClass.getFields(filter));
 		}
+		out.addAll(getFields(filter));
 		return out;
 	}
 
