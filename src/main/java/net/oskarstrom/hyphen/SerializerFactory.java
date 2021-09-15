@@ -8,12 +8,14 @@ import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
 import net.oskarstrom.hyphen.options.*;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
-import net.oskarstrom.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class SerializerFactory {
@@ -147,17 +149,17 @@ public class SerializerFactory {
 
 		//T thing
 		if (genericType instanceof TypeVariable typeVariable) {
-			LinkedHashMap<String, ClassInfo> typeMap;
-			if (source instanceof ParameterizedClassInfo info) {
-				typeMap = info.types;
-			} else typeMap = new LinkedHashMap<>();
-			var classInfo = typeMap.get(typeVariable.getName());
 
-			if (classInfo == null) {
-				throw ThrowHandler.typeFail("Type could not be identified", source, classType, typeVariable);
+			if (source instanceof ParameterizedClassInfo info) {
+				ClassInfo classInfo = info.types.get(typeVariable.getName());
+				if (classInfo != null) {
+					// safety first!
+					// kropp: why are we copying?
+					return classInfo.copy();
+				}
 			}
-			//safety first!
-			return classInfo.copy();
+
+			throw ThrowHandler.typeFail("Type could not be identified", source, classType, typeVariable);
 		}
 
 		//T[] arrrrrrrr
