@@ -32,11 +32,11 @@ public class ClassInfo implements Type {
 		return out;
 	}
 
-	public List<FieldInfo> getAllFields(Function<Field, Boolean> filter) {
-		List<FieldInfo> out = new ArrayList<>();
+	public List<FieldMetadata> getAllFields(Function<Field, Boolean> filter) {
+		List<FieldMetadata> out = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.apply(declaredField)) {
-				out.add(new FieldInfo(declaredField, false));
+				out.add(new FieldMetadata(declaredField, false));
 			}
 		}
 		if (superClasses != null) {
@@ -44,7 +44,7 @@ public class ClassInfo implements Type {
 				if (superClass != null) {
 					for (Field declaredField : superClass.getDeclaredFields()) {
 						if (filter.apply(declaredField)) {
-							out.add(new FieldInfo(declaredField, true));
+							out.add(new FieldMetadata(declaredField, true));
 						}
 					}
 				}

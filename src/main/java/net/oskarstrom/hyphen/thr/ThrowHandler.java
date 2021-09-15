@@ -1,7 +1,7 @@
 package net.oskarstrom.hyphen.thr;
 
 import net.oskarstrom.hyphen.data.ClassInfo;
-import net.oskarstrom.hyphen.data.FieldInfo;
+import net.oskarstrom.hyphen.data.FieldMetadata;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -58,12 +58,12 @@ public class ThrowHandler {
 	}
 
 
-	public static RuntimeException constructorNotFoundFail(List<FieldInfo> fields, ClassInfo info) {
+	public static RuntimeException constructorNotFoundFail(List<FieldMetadata> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
 		throwable[0] = ThrowHandler.ThrowEntry.of("Source Class", info.clazz.getSimpleName());
 		throwable[1] = ThrowHandler.ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
-			FieldInfo fieldInfo = fields.get(i);
+			FieldMetadata fieldInfo = fields.get(i);
 			Field field = fieldInfo.field;
 			throwable[i + 2] = ThrowHandler.ThrowEntry.of((fieldInfo.superField ? "\tSUPER-> " : "\t") + field.getName(), field.getType().getSimpleName());
 		}
