@@ -49,6 +49,17 @@ public class SerializerFactory {
 				return "BoxedIntegerDef";
 			}
 		});
+		serializerFactory.addImpl(List.class, (field) -> new AbstractDef() {
+			@Override
+			public Class<?> getType() {
+				return List.class;
+			}
+
+			@Override
+			public String toString() {
+				return "List";
+			}
+		});
 		serializerFactory.addImpl(Float.class, (field) -> new AbstractDef() {
 			@Override
 			public Class<?> getType() {
@@ -138,21 +149,19 @@ public class SerializerFactory {
 		//check if it exists / if its accessible
 		checkConstructor(allFields, clazz);
 		for (FieldMetadata fieldInfo : allFields) {
-			var field = fieldInfo.field;
-			var fieldTypeInfo = createClassInfo(clazz, field.getType(), field.getGenericType(), field.getAnnotatedType());
-
-			var def = this.getDefinition(clazz, field, fieldTypeInfo);
-			methodMetadata.fields.put(field, def);
+			var def = this.getDefinition(fieldInfo);
+			methodMetadata.fields.put(fieldInfo, def);
 		}
 	}
 
-	private ObjectSerializationDef getDefinition(ClassInfo clazz, Field field, TypeInfo classInfo) {
+	private ObjectSerializationDef getDefinition(FieldMetadata field) {
+		var classInfo = field.clazz;
 		if (!(classInfo instanceof PolymorphicTypeInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
 			//check if field is legal
 			//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
-			ThrowHandler.checkAccess(field.getModifiers(), () -> ThrowHandler.fieldAccessFail(field, clazz));
+			ThrowHandler.checkAccess(field.modifier, () -> ThrowHandler.fieldAccessFail(field, clazz));
 
 			this.createSerializeMetadata(classInfo);
 			return new MethodCallDef(classInfo);
@@ -179,9 +188,10 @@ public class SerializerFactory {
 
 		return new PolymorphicTypeInfo(classType, options, subInfos);
 	}
+
 	private void checkConstructor(List<FieldMetadata> fields, ClassInfo source) {
 		try {
-			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.field.getType()).toArray(Class[]::new));
+			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.clazz.getRawClass()).toArray(Class[]::new));
 			ThrowHandler.checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));
 		} catch (NoSuchMethodException e) {
 			throw ThrowHandler.constructorNotFoundFail(fields, source);
@@ -189,7 +199,7 @@ public class SerializerFactory {
 	}
 
 
-	protected TypeInfo createClassInfo(ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
+	public TypeInfo createClassInfo(ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
 		var options = AnnotationParser.parseAnnotations(annotatedType, hyphenAnnotations);
 
 		// check if field is polymorphic
@@ -216,11 +226,12 @@ public class SerializerFactory {
 		//T thing
 		if (genericType instanceof TypeVariable typeVariable) {
 			if (source instanceof ParameterizedClassInfo info) {
-				TypeInfo classInfo = info.types.get(typeVariable.getName());
+				String typeName = typeVariable.getName();
+				TypeInfo classInfo = info.types.get(typeName);
 				if (classInfo != null) {
 					// safety first!
 					// kropp: why are we copying?
-					return classInfo.copy();
+					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, this, typeName, (Class<?>) typeVariable.getBounds()[0]);
 				}
 			}
 

@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ClassSerializerMetadata extends SerializerMetadata {
-	public final Map<Field, ObjectSerializationDef> fields;
+	public final Map<FieldMetadata, ObjectSerializationDef> fields;
 
 	public ClassSerializerMetadata(ClassInfo clazz) {
 		super(clazz);
