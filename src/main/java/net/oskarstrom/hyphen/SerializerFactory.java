@@ -100,7 +100,8 @@ public class SerializerFactory {
 		} else if (typeInfo instanceof TypeClassInfo typeClassInfo) {
 			this.createSerializeMetadata(typeClassInfo.actual);
 		} else {
-			throw new IllegalArgumentException("uwu");
+			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected TypeInfo type",
+					ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo));
 		}
 	}
 
@@ -265,8 +266,7 @@ public class SerializerFactory {
 
 				if (types == null) {
 					throw ThrowHandler.fatal(
-							ClassScanException::new,
-							"Failed to find the type",
+							ClassScanException::new, "Failed to find the type",
 							ThrowHandler.ThrowEntry.of("SourceClass", source),
 							ThrowHandler.ThrowEntry.of("SubType", subType),
 							ThrowHandler.ThrowEntry.of("Poly", poly),
@@ -278,8 +278,10 @@ public class SerializerFactory {
 
 				return new ParameterizedClassInfo(subType, Map.of(), this, typeInfoMap);
 			} else {
-				// TODO: error
-				throw new IllegalArgumentException("UWU");
+				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
+						ThrowHandler.ThrowEntry.of("SourceClass", source),
+						ThrowHandler.ThrowEntry.of("SubType", subType),
+						ThrowHandler.ThrowEntry.of("Poly", poly));
 			}
 		}
 

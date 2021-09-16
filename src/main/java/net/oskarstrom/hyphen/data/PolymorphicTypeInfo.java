@@ -4,9 +4,8 @@ import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class PolymorphicTypeInfo extends TypeInfo{
+public class PolymorphicTypeInfo extends TypeInfo {
 	public final List<? extends TypeInfo> classInfos;
 
 	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, List<? extends TypeInfo> classInfos) {
@@ -23,6 +22,19 @@ public class PolymorphicTypeInfo extends TypeInfo{
 		parameterJoiner.setEmptyValue("");
 		for (TypeInfo t : this.classInfos) {
 			parameterJoiner.add(t.toFancyString());
+		}
+		return parameterJoiner.toString();
+	}
+
+	@Override
+	public String toString() {
+		StringJoiner parameterJoiner = new StringJoiner(
+				", ",
+				"Poly[",
+				"]");
+		parameterJoiner.setEmptyValue("");
+		for (TypeInfo t : this.classInfos) {
+			parameterJoiner.add(t.toString());
 		}
 		return parameterJoiner.toString();
 	}

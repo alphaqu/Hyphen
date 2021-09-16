@@ -30,7 +30,7 @@ public class ObjectTest {
 	@TestFactory
 	public Stream<DynamicNode> polyTest() {
 		return Arrays.stream(PolymorphicGenericTypeTests.class.getDeclaredClasses()).map(clz ->
-				DynamicTest.dynamicTest(clz.getSimpleName(), URI.create("class:" + clz.getName()),() -> {
+				DynamicTest.dynamicTest(clz.getSimpleName(), URI.create("class:" + clz.getName()), () -> {
 					System.out.println(clz.getName());
 					SerializerFactory debug = SerializerFactory.createDebug();
 					debug.build(clz);
@@ -123,6 +123,17 @@ public class ObjectTest {
 		}
 	}
 
+	public static class IntFoo extends Foo<Integer> {
+		public IntFoo(Integer t) {
+			super(t);
+		}
+
+		// FIXME
+		public IntFoo(Object t) {
+			this((Integer) t);
+		}
+	}
+
 	public static class Foo2<E> extends Foo<E> {
 		@Serialize
 		public E e;
@@ -149,6 +160,17 @@ public class ObjectTest {
 	public static class SelfPair<T> extends Pair<T, T> {
 		public SelfPair(T left, T right) {
 			super(left, right);
+		}
+	}
+
+	public static class IntPair<T> extends Pair<Integer, T> {
+		public IntPair(Integer i, T right) {
+			super(i, right);
+		}
+
+		// FIXME
+		public IntPair(Object i, T right) {
+			this((Integer) i, right);
 		}
 	}
 
@@ -204,6 +226,12 @@ public class ObjectTest {
 		public Caz(K kkk, T ks) {
 			super(ks);
 			this.kkk = kkk;
+		}
+
+		// FIXME
+		public Caz(K kkk, Object ks) {
+			//noinspection unchecked
+			this(kkk, (T) ks);
 		}
 	}
 
@@ -264,6 +292,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #2
 		public static class Complex {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class})
@@ -280,6 +309,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #3
 		public static class ErrorsMissingType {
 			@Serialize
 			@SerSubclasses({Foo.class, Bar.class})
@@ -290,15 +320,10 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issues #3, #4
 		public static class Errors {
 			@Serialize
-			@SerSubclasses({Foo.class, Baz.class, Obe.class, Caz.class})
-			@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			)
+			@SerSubclasses({Foo.class, Obe.class})
 			public Foo<Integer> errors;
 
 			public Errors(Foo<Integer> errors) {
@@ -306,6 +331,8 @@ public class ObjectTest {
 			}
 		}
 
+
+		// Tracking issue #3
 		public static class Errors2 {
 			@Serialize
 			@SerComplexSubClass(
@@ -327,6 +354,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #3
 		public static class Errors3 {
 			@Serialize
 			@SerSubclasses({Pair.class, SelfPair.class})
@@ -377,6 +405,7 @@ public class ObjectTest {
 			}
 		}
 /*
+		// Tracking issue #
 		public static class SimpleSuperStackedFooFoo {
 			@Serialize
 			public
@@ -403,7 +432,7 @@ public class ObjectTest {
 			}
 		}*/
 
-
+		// Tracking issue #2
 		public static class FooFoo {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class})
@@ -440,6 +469,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue: #6
 		public static class SimplishFooArrayList {
 			@Serialize
 			@SerSubclasses({Foo.class, Obe.class})
@@ -450,6 +480,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #2
 		public static class FooArrayList {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
@@ -466,6 +497,7 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #2
 		public static class FooList {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
@@ -477,12 +509,7 @@ public class ObjectTest {
 			)
 			public Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> FooList;
 
-			public FooList(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> fooList) {
+			public FooList(Foo<List<Integer>> fooList) {
 				this.FooList = fooList;
 			}
 		}
@@ -492,7 +519,7 @@ public class ObjectTest {
 			@SerSubclasses({Foo.class, Foo2.class})
 			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number;
 
-			public SimplerNumber(Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number) {
+			public SimplerNumber(Foo<Number> simple_number) {
 				this.simple_number = simple_number;
 			}
 		}
@@ -502,11 +529,12 @@ public class ObjectTest {
 			@SerSubclasses({Foo.class, Baz.class})
 			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number;
 
-			public SimpleNumber(Foo<@SerSubclasses({Integer.class, Float.class}) Number> simple_number) {
+			public SimpleNumber(Foo<Number> simple_number) {
 				this.simple_number = simple_number;
 			}
 		}
 
+		// Tracking issue #2
 		public static class ComplexNumber {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class})
@@ -518,103 +546,112 @@ public class ObjectTest {
 			)
 			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> complex_number;
 
-			public ComplexNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({Integer.class, Float.class}) Number> complex_number) {
+			public ComplexNumber(Foo<Number> complex_number) {
 				this.complex_number = complex_number;
 			}
 		}
 
+		// Tracking issue #3
 		public static class ErrorsNumber {
 
 			@Serialize
-			@SerSubclasses({Foo.class, Baz.class, Obe.class, Caz.class})
-			@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			)
+			@SerSubclasses({Foo.class, Baz.class, Obe.class})
 			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> errors_number;
 
-			public ErrorsNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({Integer.class, Float.class}) Number> errors_number) {
+			public ErrorsNumber(Foo<Number> errors_number) {
 				this.errors_number = errors_number;
 			}
 		}
 
+		// Tracking issue #6
 		public static class FooArrayListNumber {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
-			@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			)
 			public Foo<ArrayList<@SerSubclasses({Integer.class, Float.class}) Number>> FooArrayList_number;
 
-			public FooArrayListNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<ArrayList<@SerSubclasses({Integer.class, Float.class}) Number>> fooArrayList_number) {
+			public FooArrayListNumber(Foo<ArrayList<Number>> fooArrayList_number) {
 				this.FooArrayList_number = fooArrayList_number;
 			}
 		}
 
+		// FIXME: I think this test is invalid
 		public static class FooListNumber {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
-			@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			)
 			public Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<
 					@SerSubclasses({Integer.class, Float.class}) Number>> FooList_number;
 
-			public FooListNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<@SerSubclasses({Integer.class, Float.class}) Number>> fooList_number) {
+			public FooListNumber(Foo<List<Number>> fooList_number) {
 				this.FooList_number = fooList_number;
 			}
 		}
 
+		// FIXME: possibly invalid as Obe extends Foo<List<T>> and not Foo<ArrayList<T>>
 		public static class PartiallyErrorsNumber {
 			@Serialize
 			@SerSubclasses({Foo.class, Baz.class, Obe.class})
-			@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			)
 			public Foo<
 					@SerSubclasses({Integer.class, Float.class})
 					@SerComplexSubClass(value = ArrayList.class, types =
 					@SerDefined(name = "E", values = {Integer.class, Float.class}))
 							Object> partiallyErrors_number;
 
-			public PartiallyErrorsNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({Integer.class, Float.class}) @SerComplexSubClass(value = ArrayList.class, types =
-			@SerDefined(name = "E", values = {Integer.class, Float.class})) Object> partiallyErrors_number) {
+			public PartiallyErrorsNumber(Foo<Object> partiallyErrors_number) {
+				this.partiallyErrors_number = partiallyErrors_number;
+			}
+		}
+
+		// FIXME: I think this test is invalid, IntFoo : Foo<Integer> is not assignable to Foo<Number>
+		public static class PartiallyErrorsNumber2 {
+			@Serialize
+			@SerSubclasses({Foo.class, IntFoo.class})
+			public Foo<@SerSubclasses({Integer.class, Float.class})
+					Number> partiallyErrors_number;
+
+			public PartiallyErrorsNumber2(Foo<Number> partiallyErrors_number) {
+				this.partiallyErrors_number = partiallyErrors_number;
+			}
+		}
+
+		// FIXME: I think this test is invalid, Pair<Integer, ?> is not assignable to Pair<Number, ?>
+		public static class PartiallyErrorsNumber3 {
+			@Serialize
+			@SerSubclasses({Pair.class, IntPair.class})
+			public Pair<
+					@SerSubclasses({Integer.class, Float.class}) Number,
+					@SerSubclasses({Integer.class, Float.class}) Number
+					> partiallyErrors_number;
+
+			public PartiallyErrorsNumber3(Pair<Number, Number> partiallyErrors_number) {
+				this.partiallyErrors_number = partiallyErrors_number;
+			}
+		}
+
+		public static class PartiallyErrorsNumber2Extends {
+			@Serialize
+			@SerSubclasses({Foo.class, IntFoo.class})
+			public Foo<@SerSubclasses({Integer.class, Float.class})
+					? extends Number> partiallyErrors_number;
+
+			public PartiallyErrorsNumber2Extends(Foo<? extends Number> partiallyErrors_number) {
+				this.partiallyErrors_number = partiallyErrors_number;
+			}
+		}
+
+		// FIXME: I think this test is invalid, Pair<Integer, ?> is not assignable to Pair<Number, ?>
+		public static class PartiallyErrorsNumber3Extends {
+			@Serialize
+			@SerSubclasses({Pair.class, IntPair.class})
+			public Pair<
+					@SerSubclasses({Integer.class, Float.class}) ? extends Number,
+					@SerSubclasses({Integer.class, Float.class}) ? extends Number
+					> partiallyErrors_number;
+
+			// TODO: is there a difference between
+			//  @SerSubclasses({Integer.class, Float.class}) ? extends Number
+			//  ? extends @SerSubclasses({Integer.class, Float.class}) Number
+
+			public PartiallyErrorsNumber3Extends(Pair<? extends Number, ? extends Number> partiallyErrors_number) {
 				this.partiallyErrors_number = partiallyErrors_number;
 			}
 		}
@@ -629,9 +666,7 @@ public class ObjectTest {
 			}
 		}
 
-		// means something is broken somewhere
-		// and i need a better error for it
-
+		// Tracking issue #6
 		public static class CleanFooExtendsExtract {
 			@Serialize
 			@SerSubclasses({Foo.class, FooCaz.class})
@@ -644,7 +679,7 @@ public class ObjectTest {
 
 		public static class Extract {
 			@Serialize
-			@SerSubclasses({Foo.class, Baz.class, Obe.class, Caz.class})
+			@SerSubclasses({Foo.class, Baz.class, Caz.class})
 			public Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> extract;
 
 			public Extract(Foo<@SerSubclasses({ArrayList.class, LinkedList.class}) List<Integer>> extract) {
@@ -652,9 +687,10 @@ public class ObjectTest {
 			}
 		}
 
+		// Tracking issue #2
 		public static class PartiallyErrorsExtractNumber {
 			@Serialize
-			@SerSubclasses({Foo.class, Baz.class, Obe.class, Caz.class})
+			@SerSubclasses({Foo.class, Baz.class, Caz.class})
 			@SerComplexSubClass(
 					value = Bar.class,
 					types = {@SerDefined(name = "K", values = {
@@ -667,13 +703,7 @@ public class ObjectTest {
 					@SerDefined(name = "E", values = {Integer.class, Float.class}))
 							Object> partiallyErrorsExtract_number;
 
-			public PartiallyErrorsExtractNumber(@SerComplexSubClass(
-					value = Bar.class,
-					types = {@SerDefined(name = "K", values = {
-							String.class, Boolean.class
-					})}
-			) Foo<@SerSubclasses({Integer.class, Float.class}) @SerComplexSubClass(value = ArrayList.class, types =
-			@SerDefined(name = "E", values = {Integer.class, Float.class})) Object> partiallyErrorsExtract_number) {
+			public PartiallyErrorsExtractNumber(Foo<Object> partiallyErrorsExtract_number) {
 				this.partiallyErrorsExtract_number = partiallyErrorsExtract_number;
 			}
 		}
@@ -683,7 +713,28 @@ public class ObjectTest {
 			@SerSubclasses({Integer[].class, Float[].class})
 			public Number[] numbers;
 
-			public Arrays(@SerSubclasses({Integer[].class, Float[].class}) Number[] numbers) {
+			public Arrays(Number[] numbers) {
+				this.numbers = numbers;
+			}
+		}
+
+		// Tracking issue #8
+		public static class FooExtendsNumber {
+			@Serialize
+			@SerSubclasses({Foo.class, Bar.class, Foo2.class})
+			public Foo<@SerSubclasses({Integer.class, Float.class}) ? extends Number> numbers;
+
+			public FooExtendsNumber(Foo<? extends Number> numbers) {
+				this.numbers = numbers;
+			}
+		}
+
+		// Tracking issue #9
+		public static class FooNumberArray {
+			@Serialize
+			public Foo<@SerSubclasses({Integer.class, Float.class}) Number> @SerSubclasses({Foo.class, Bar.class, Foo2.class})[] numbers;
+
+			public FooNumberArray(Foo<Number>[] numbers) {
 				this.numbers = numbers;
 			}
 		}
