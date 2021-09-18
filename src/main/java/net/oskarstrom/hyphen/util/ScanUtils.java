@@ -30,7 +30,7 @@ public class ScanUtils {
 			return new Type[depth];
 
 		for (Type aClass : getInheritedType(clazz)) {
-			Type[] classes = pathTo(castType(aClass), targetParent, depth + 1);
+			Type[] classes = pathTo(getClazz(aClass), targetParent, depth + 1);
 			if (classes != null) {
 				classes[depth] = aClass;
 				return classes;
@@ -109,13 +109,13 @@ public class ScanUtils {
 		}
 	}
 
-	public static Class<?> castType(Type type) {
+	public static Class<?> getClazz(Type type) {
 		if (type instanceof Class<?> c) {
 			return c;
 		} else if (type instanceof ParameterizedType parameterizedType) {
-			return castType(parameterizedType.getRawType());
+			return getClazz(parameterizedType.getRawType());
 		} else {
-			throw new IllegalStateException("Blame alpha: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
+			throw new IllegalStateException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
 		}
 	}
 }

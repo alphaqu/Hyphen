@@ -6,15 +6,15 @@ import net.oskarstrom.hyphen.data.info.PolymorphicTypeInfo;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
-import net.oskarstrom.hyphen.options.*;
+import net.oskarstrom.hyphen.options.OptionParser;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ScanHandler {

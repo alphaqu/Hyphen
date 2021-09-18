@@ -70,7 +70,7 @@ public abstract class TypeInfo {
 				if (classInfo != null) {
 					// safety first!
 					// kropp: why are we copying?
-					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.castType(typeVariable.getBounds()[0]), classInfo);
+					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
 				}
 			}
 

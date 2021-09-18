@@ -12,10 +12,7 @@ import net.oskarstrom.hyphen.thr.IllegalClassException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class SerializerFactory {
@@ -39,7 +36,7 @@ public class SerializerFactory {
 	private static SerializerFactory createInternal(boolean debugMode) {
 		final SerializerFactory scanHandler = new SerializerFactory(debugMode);
 		scanHandler.addImpl(int.class, (field) -> new IntDef());
-		scanHandler.addTestImpl(Integer.class, Float.class, ArrayList.class, LinkedList.class);
+		scanHandler.addTestImpl(Integer.class, Float.class, List.class);
 		scanHandler.addOption(SerNull.class, new ExistsOption());
 		scanHandler.addOption(SerSubclasses.class, new ArrayOption<>(SerSubclasses::value));
 		scanHandler.addOption(SerComplexSubClass.class, new SimpleAnnotationOption<>());
