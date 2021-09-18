@@ -2,6 +2,7 @@ package net.oskarstrom.hyphen.thr;
 
 import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.FieldEntry;
+import net.oskarstrom.hyphen.data.info.TypeInfo;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -21,7 +22,7 @@ public class ThrowHandler {
 	}
 
 	// some methods to shorten code
-	public static RuntimeException typeFail(String reason, ClassInfo info, Class<?> clazz, Type type) {
+	public static RuntimeException typeFail(String reason, TypeInfo info, Class<?> clazz, Type type) {
 		return fatal(ClassScanException::new, reason, new ThrowEntry[]{
 				of("Source Class", info.clazz.getName()),
 				of("Error Class", clazz.getName()),
@@ -30,7 +31,7 @@ public class ThrowHandler {
 		});
 	}
 
-	public static RuntimeException fieldAccessFail(FieldEntry field, ClassInfo source) {
+	public static RuntimeException fieldAccessFail(FieldEntry field, TypeInfo source) {
 		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier), new ThrowEntry[]{
 				of("Field Name", field.name),
 				of("Field Class", field.clazz.clazz.getSimpleName()),
@@ -38,7 +39,7 @@ public class ThrowHandler {
 		});
 	}
 
-	public static RuntimeException constructorAccessFail(Constructor<?> constructor, ClassInfo source) {
+	public static RuntimeException constructorAccessFail(Constructor<?> constructor, TypeInfo source) {
 		return fatal(AccessException::new, "Constructor is inaccessible as it's " + getModifierName(constructor.getModifiers()), new ThrowEntry[]{
 				of("Class", source.clazz.getName())
 		});

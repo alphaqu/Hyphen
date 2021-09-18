@@ -2,6 +2,7 @@ package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.util.Color;
 import net.oskarstrom.hyphen.util.ScanUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -12,13 +13,13 @@ import java.util.*;
 public class ParameterizedClassInfo extends ClassInfo implements ParameterizedType {
 	public final LinkedHashMap<String, TypeInfo> types;
 
-	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations, LinkedHashMap<String, TypeInfo> types) {
+	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
 		super(clazz, annotations);
 		this.types = types;
 	}
 
-	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation>  annotations, ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
-		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes( source, type, annotatedType);
+	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes(source, type, annotatedType);
 		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, out);
 
 	}

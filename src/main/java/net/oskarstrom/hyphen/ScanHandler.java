@@ -23,6 +23,22 @@ public class ScanHandler {
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations;
 	@Nullable
 	private final DebugHandler debugHandler;
+	public static final TypeInfo UNKNOWN_INFO = new TypeInfo(null, null) {
+		@Override
+		public SerializerMetadata createMeta(ScanHandler factory) {
+			return null;
+		}
+
+		@Override
+		public String toFancyString() {
+			return null;
+		}
+
+		@Override
+		public TypeInfo copy() {
+			return null;
+		}
+	};
 
 	protected ScanHandler(Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
 		this.implementations = implementations;
@@ -74,33 +90,4 @@ public class ScanHandler {
 			throw ThrowHandler.constructorNotFoundFail(fields, source);
 		}
 	}
-
-	public static class UNKNOWN implements AnnotatedType, Type {
-		public static final UNKNOWN UNKNOWN = new UNKNOWN();
-
-		private UNKNOWN() {
-		}
-
-		@Override
-		public Type getType() {
-			return this;
-		}
-
-		@Override
-		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-			return null;
-		}
-
-		@Override
-		public Annotation[] getAnnotations() {
-			return new Annotation[0];
-		}
-
-		@Override
-		public Annotation[] getDeclaredAnnotations() {
-			return new Annotation[0];
-		}
-	}
-
-
 }

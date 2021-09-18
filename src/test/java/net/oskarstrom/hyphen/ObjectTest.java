@@ -24,7 +24,7 @@ public class ObjectTest {
 	@Test
 	public void simpleTest() {
 		SerializerFactory debug = SerializerFactory.createDebug();
-		debug.build(BasicSimpleScanTest.class);
+		debug.build(PolymorphicGenericTypeTests.Simplish.class);
 	}
 
 	@TestFactory

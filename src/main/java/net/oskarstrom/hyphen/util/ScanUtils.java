@@ -1,15 +1,10 @@
 package net.oskarstrom.hyphen.util;
 
-import net.oskarstrom.hyphen.ScanHandler;
-import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
-import net.oskarstrom.hyphen.thr.ThrowHandler;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -30,191 +25,102 @@ public class ScanUtils {
 		return null;
 	}
 
+	public static Type[] pathTo(Class<?> clazz, Class<?> targetParent, int depth) {
+		if (clazz == targetParent)
+			return new Type[depth];
+
+		for (Type aClass : getInheritedType(clazz)) {
+			Type[] classes = pathTo(castType(aClass), targetParent, depth + 1);
+			if (classes != null) {
+				classes[depth] = aClass;
+				return classes;
+			}
+		}
+
+		return null;
+	}
+
+	public static Type[] getInheritedType(Class<?> clazz) {
+		Type superclass = clazz.getGenericSuperclass();
+		Type[] interfaces = clazz.getGenericInterfaces();
+
+		if (superclass == null) {
+			return interfaces;
+		} else {
+			Type[] out = new Type[interfaces.length + 1];
+			out[0] = superclass;
+			System.arraycopy(interfaces, 0, out, 1, interfaces.length);
+			return out;
+		}
+	}
+
+
+	public static Class<?>[] getInherited(Class<?> clazz) {
+		Class<?> superclass = clazz.getSuperclass();
+		Class<?>[] interfaces = clazz.getInterfaces();
+		if (superclass == null) {
+			return interfaces;
+		} else {
+			Class<?>[] out = new Class[interfaces.length + 1];
+			out[0] = superclass;
+			System.arraycopy(interfaces, 0, out, 1, interfaces.length);
+			return out;
+		}
+	}
+
+
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
-	public static LinkedHashMap<String, TypeInfo> mapTypes(ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
+	public static LinkedHashMap<String, TypeInfo> mapTypes(TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+		var annotatedParameters = annotatedType == null ? null : annotatedType.getAnnotatedActualTypeArguments();
 		var out = new LinkedHashMap<String, TypeInfo>();
 		var clazz = (Class<?>) type.getRawType();
 		var innerTypes = clazz.getTypeParameters();
-		var annotatedParameters = annotatedType.getAnnotatedActualTypeArguments();
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
-			out.put(innerTypes[i].getName(), TypeInfo.create(source, clazz, parameters[i], annotatedParameters[i]));
+			AnnotatedType annotatedParameter = annotatedParameters == null ? null : annotatedParameters[i];
+			out.put(innerTypes[i].getName(), TypeInfo.create(source, clazz, parameters[i], annotatedParameter));
 		}
 		return out;
 	}
 
-	public static TypeInfo mapType( ClassInfo source, AnnotatedType annotatedType) {
-		return TypeInfo.create(source, castType(annotatedType.getType()), annotatedType.getType(), annotatedType);
+	public static LinkedHashMap<String, TypeInfo> mapSubclassTypes(TypeInfo superInfo, ParameterizedType subType) {
+		var out = new LinkedHashMap<String, TypeInfo>();
+		var superclass = (Class<?>) subType.getRawType();
+		var actualTypeArguments = subType.getActualTypeArguments();
+		var typeParameters = superclass.getTypeParameters();
+		for (int j = 0; j < actualTypeArguments.length; j++) {
+			out.put(actualTypeArguments[j].getTypeName(), TypeInfo.create(superInfo, superclass, typeParameters[j], null));
+		}
+
+		return out;
 	}
 
-	public static Map<String, AnnotatedType> findTypes(Class<?> subType, Class<?> poly, ParameterizedType genericPoly, AnnotatedParameterizedType annotatedGenericPoly) {
-		if (subType == null) {
-			return null;
-		} else if (subType == poly) {
-			TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
-			AnnotatedType[] actualTypeArguments = annotatedGenericPoly.getAnnotatedActualTypeArguments();
-
-			assert typeParameters.length == actualTypeArguments.length;
-
-			Map<String, AnnotatedType> types = new HashMap<>(typeParameters.length);
-
-			for (int i = 0; i < typeParameters.length; i++) {
-				types.put(typeParameters[i].getName(), actualTypeArguments[i]);
-			}
-
-			return types;
+	@SuppressWarnings("ConstantConditions")
+	public static LinkedHashMap<String, TypeInfo> findTypes(TypeInfo source, Class<?> superType, Class<?> subClass, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
+		if (subClass == null) return null;
+		else if (subClass == superType) {
+			return mapTypes(source, type, annotatedType);
 		} else {
-			Type superclass = subType.getGenericSuperclass();
-			var types = findTypes(subType.getSuperclass(), poly, genericPoly, annotatedGenericPoly);
-			if (types == null) {
-				Type[] genericInterfaces = subType.getGenericInterfaces();
-				Class<?>[] interfaces = subType.getInterfaces();
-				for (int i = 0; i < interfaces.length; i++) {
-					types = findTypes(interfaces[i], poly, genericPoly, annotatedGenericPoly);
-					if (types != null) {
-						superclass = genericInterfaces[i];
-						break;
-					}
-				}
-			}
+			Type[] types = pathTo(subClass, superType, 0);
 
 			if (types == null) {
-				return null;
+				//TODO error
+				throw new RuntimeException();
 			}
 
-
-			if (superclass instanceof ParameterizedType parameterizedType
-			) {
-				Type[] superTypeArguments = parameterizedType.getActualTypeArguments();
-				TypeVariable<?>[] typeParameters = ((Class<?>) parameterizedType.getRawType()).getTypeParameters();
-
-				assert superTypeArguments.length == typeParameters.length;
-
-				var map = new HashMap<String, AnnotatedType>();
-
-				for (int i = 0; i < superTypeArguments.length; i++) {
-					resolveType(types, map, superTypeArguments[i], types.get(typeParameters[i].getName()));
-				}
-
-				for (TypeVariable<? extends Class<?>> typeParameter : subType.getTypeParameters()) {
-					if (!map.containsKey(typeParameter.getName())) {
-						map.put(typeParameter.getName(), ScanHandler.UNKNOWN.UNKNOWN);
-					}
-				}
-
-
-				return map;
+			source = TypeInfo.create(source, superType, type, null);
+			LinkedHashMap<String, TypeInfo> currentMapping = null;
+			for (int i = types.length - 1; i >= 0; i--) {
+				currentMapping = mapSubclassTypes(source, (ParameterizedType) types[i]);
 			}
-			throw new IllegalStateException("Not yet Implemented");
 
+			LinkedHashMap<String, TypeInfo> out = new LinkedHashMap<>();
+			for (var typeParameter : subClass.getTypeParameters()) {
+				String typeName = typeParameter.getTypeName();
+				out.put(typeName, currentMapping.get(typeName));
+			}
+			return out;
 		}
-	}
-
-	public static void resolveType(
-			Map<String, AnnotatedType> lookup,
-			Map<String, AnnotatedType> resolved,
-			Type superTypeArgument,
-			AnnotatedType type) {
-
-		if (superTypeArgument instanceof Class<?> clazz) {
-
-			if (type.getType() == clazz) {
-				// all is fine
-			} else if (type.getType() == ScanHandler.UNKNOWN.UNKNOWN) {
-				// resolve type that was unknown
-				// I don't think we have to do something here? Although I do think there might be invalid case that we
-				// need to consider
-			} else {
-				// TODO: handle `? extends` and `? super`
-				throw new IllegalArgumentException("Could not unify types, " + type + " with " + type.getType() + " and " + clazz.getName());
-			}
-		} else if (superTypeArgument instanceof TypeVariable<?> typeVariable) {
-			if (resolved.containsKey(typeVariable.getName())) {
-				// check if it's the same
-				if (resolved.get(typeVariable.getName()).equals(type)) {
-					// all is fine
-				} else {
-					throw ThrowHandler.fatal(IllegalArgumentException::new, "Invalid type unification",
-							ThrowHandler.ThrowEntry.of("Lookup", lookup),
-							ThrowHandler.ThrowEntry.of("Resolved", resolved),
-							ThrowHandler.ThrowEntry.of("SuperType", superTypeArgument),
-							ThrowHandler.ThrowEntry.of("Type", type),
-							ThrowHandler.ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
-					);
-				}
-			} else {
-				// TODO: check bounds?
-				resolved.put(typeVariable.getName(), type);
-
-				Type[] bounds = typeVariable.getBounds();
-
-				for (Type bound : bounds) {
-					if (bound == Object.class) {
-						// TODO: i think this shouldn't be a special case here and instead be handled by class/class unifying?
-						continue;
-					}
-
-					// eg Foo<A, B extends List<A>> extends Bar<B> with Bar<List<Int>>
-					resolveType(lookup, resolved, bound, type);
-				}
-
-			}
-		} else if (superTypeArgument instanceof ParameterizedType superParameterizedType &&
-				type.getType() instanceof ParameterizedType selfParameterizedType &&
-				type instanceof AnnotatedParameterizedType selfAnnotatedParameterizedType
-		) {
-			if (superParameterizedType.getRawType().equals(selfParameterizedType.getRawType())) {
-				Type[] superTypeArguments = superParameterizedType.getActualTypeArguments();
-				AnnotatedType[] selfTypeArguments = selfAnnotatedParameterizedType.getAnnotatedActualTypeArguments();
-
-				assert superTypeArguments.length == selfTypeArguments.length;
-
-				for (int i = 0; i < superTypeArguments.length; i++) {
-					AnnotatedType selfType = selfTypeArguments[i];
-					Type superType = superTypeArguments[i];
-
-					resolveType(lookup, resolved, superType, selfType);
-				}
-			} else {
-				throw ThrowHandler.fatal(IllegalStateException::new, "NYI: parameterized type unification through supertypes",
-						ThrowHandler.ThrowEntry.of("Lookup", lookup),
-						ThrowHandler.ThrowEntry.of("Resolved", resolved),
-						ThrowHandler.ThrowEntry.of("SuperType", superTypeArgument),
-						ThrowHandler.ThrowEntry.of("Type", type),
-						ThrowHandler.ThrowEntry.of("TypeType", type.getType())
-				);
-			}
-		} else {
-			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-					ThrowHandler.ThrowEntry.of("Lookup", lookup),
-					ThrowHandler.ThrowEntry.of("Resolved", resolved),
-					ThrowHandler.ThrowEntry.of("SuperType", superTypeArgument),
-					ThrowHandler.ThrowEntry.of("Type", type)
-			);
-		}
-	}
-
-	@NotNull
-	public static LinkedHashMap<String, TypeInfo> mapAllTypes(
-			ClassInfo source,
-			TypeVariable<? extends Class<?>>[] typeParameters,
-			Map<String, ? extends AnnotatedType> types) {
-
-		LinkedHashMap<String, TypeInfo> typeInfoMap = new LinkedHashMap<>(typeParameters.length);
-
-		for (TypeVariable<? extends Class<?>> typeParameter : typeParameters) {
-			AnnotatedType annotatedType = types.get(typeParameter.getName());
-
-			if (annotatedType == null || annotatedType == ScanHandler.UNKNOWN.UNKNOWN) {
-				throw ThrowHandler.fatal(IllegalStateException::new, "Did not find type",
-						ThrowHandler.ThrowEntry.of("TypeName", typeParameter.getName())
-				);
-			}
-
-			typeInfoMap.put(typeParameter.getName(), ScanUtils.mapType(source, annotatedType));
-		}
-
-		return typeInfoMap;
 	}
 
 	public static Class<?> castType(Type type) {

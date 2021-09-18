@@ -19,15 +19,15 @@ public abstract class TypeInfo {
 	public final Class<?> clazz;
 	public final Map<Class<Annotation>, Annotation>  annotations;
 
-	TypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
+	public TypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
 	}
 
-	public static TypeInfo create(ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
+	public static TypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, @Nullable AnnotatedType annotatedType) {
 		if (source == null) {
 			throw ThrowHandler.fatal(NullPointerException::new, "source is null",
-					ThrowHandler.ThrowEntry.of("ClassType", classType),
+					ThrowHandler.ThrowEntry.of("ClassType", fieldType),
 					ThrowHandler.ThrowEntry.of("Type", genericType),
 					ThrowHandler.ThrowEntry.of("AnnotatedType", annotatedType)
 			);
@@ -37,7 +37,7 @@ public abstract class TypeInfo {
 
 		// check if field is polymorphic
 		if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
-			return PolymorphicTypeInfo.create(source, classType, genericType, options, annotatedType);
+			return PolymorphicTypeInfo.create(source, fieldType, genericType, options, annotatedType);
 		}
 
 
@@ -51,6 +51,8 @@ public abstract class TypeInfo {
 		if (genericType instanceof ParameterizedType type) {
 			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
 				return ParameterizedClassInfo.create(options, source, type, parameterizedType);
+			} else if (annotatedType == null) {
+				return ParameterizedClassInfo.create(options, source, type, null);
 			}
 			throw new RuntimeException();
 		}
@@ -67,7 +69,8 @@ public abstract class TypeInfo {
 				}
 			}
 
-			throw ThrowHandler.typeFail("Type could not be identified", source, classType, typeVariable);
+			/*throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);*/
+			return ScanHandler.UNKNOWN_INFO;
 		}
 
 		//T[] arrrrrrrr
@@ -75,11 +78,11 @@ public abstract class TypeInfo {
 			//get component class
 			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
 				var componentType = genericArrayType.getGenericComponentType();
-				var classInfo = create(source, classType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
+				var classInfo = create(source, fieldType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
 				if (classInfo == null) {
-					throw ThrowHandler.typeFail("Array component could not be identified", source, classType, componentType);
+					throw ThrowHandler.typeFail("Array component could not be identified", source, fieldType, componentType);
 				}
-				return new ArrayInfo(classType, options, classInfo);
+				return new ArrayInfo(fieldType, options, classInfo);
 			}
 			throw new RuntimeException();
 		}
@@ -87,32 +90,31 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public static TypeInfo createFromPolymorphicType(ClassInfo source, Class<?> poly, Type genericType, AnnotatedType annotatedGenericType, Class<?> subType) {
+	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldType, Class<?> subType, Type genericType, AnnotatedType annotatedGenericType) {
 		TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
 
 		if (typeParameters.length != 0) {
 			// let's try to figure out the types
 			if (genericType instanceof ParameterizedType parameterizedType) {
-				Map<String, AnnotatedType> types = ScanUtils.findTypes(subType, poly, parameterizedType, (AnnotatedParameterizedType) annotatedGenericType);
+				LinkedHashMap<String, TypeInfo> types = ScanUtils.findTypes(source, fieldType, subType, parameterizedType, (AnnotatedParameterizedType) annotatedGenericType);
 
 				if (types == null) {
 					throw ThrowHandler.fatal(
 							ClassScanException::new, "Failed to find the type",
 							ThrowHandler.ThrowEntry.of("SourceClass", source),
 							ThrowHandler.ThrowEntry.of("SubType", subType),
-							ThrowHandler.ThrowEntry.of("Poly", poly),
+							ThrowHandler.ThrowEntry.of("Poly", fieldType),
 							ThrowHandler.ThrowEntry.of("Type", parameterizedType)
 					);
 				}
 
-				LinkedHashMap<String, TypeInfo> typeInfoMap = ScanUtils.mapAllTypes(source, typeParameters, types);
 
-				return new ParameterizedClassInfo(subType, Map.of(), typeInfoMap);
+				return new ParameterizedClassInfo(subType, Map.of(), types);
 			} else {
 				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
 						ThrowHandler.ThrowEntry.of("SourceClass", source),
 						ThrowHandler.ThrowEntry.of("SubType", subType),
-						ThrowHandler.ThrowEntry.of("Poly", poly));
+						ThrowHandler.ThrowEntry.of("Poly", fieldType));
 			}
 		}
 
@@ -142,7 +144,7 @@ public abstract class TypeInfo {
 			var classInfo = typeMap.get(typeVariable.getName());
 
 			if (classInfo == null) {
-				throw ThrowHandler.typeFail("Type could not be identified", source, poly, typeVariable);
+				throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);
 			}
 			//safety first!
 			return classInfo.copy();

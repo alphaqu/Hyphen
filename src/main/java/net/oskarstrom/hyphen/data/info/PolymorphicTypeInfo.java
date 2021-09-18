@@ -22,12 +22,12 @@ public class PolymorphicTypeInfo extends TypeInfo {
 		this.classInfos = classInfos;
 	}
 
-	public static PolymorphicTypeInfo create(ClassInfo source, Class<?> classType, Type genericType, Map<Class<Annotation>, Annotation>  options, AnnotatedType annotatedType) {
+	public static PolymorphicTypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, Map<Class<Annotation>, Annotation>  options, AnnotatedType annotatedType) {
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
 					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
 					ThrowHandler.ThrowEntry.of("Source", source),
-					ThrowHandler.ThrowEntry.of("ClassType", classType),
+					ThrowHandler.ThrowEntry.of("ClassType", fieldType),
 					ThrowHandler.ThrowEntry.of("Annotations", options));
 		}
 
@@ -36,11 +36,11 @@ public class PolymorphicTypeInfo extends TypeInfo {
 		List<TypeInfo> subInfos = new ArrayList<>(value.length);
 
 		for (Class<?> subclass : value) {
-			var subClassInfo = TypeInfo.createFromPolymorphicType(source, classType, genericType, annotatedType, subclass);
+			var subClassInfo = TypeInfo.createFromPolymorphicType(source, fieldType, subclass, genericType, annotatedType);
 			subInfos.add(subClassInfo);
 		}
 
-		return new PolymorphicTypeInfo(classType, options, subInfos);
+		return new PolymorphicTypeInfo(fieldType, options, subInfos);
 	}
 
 
