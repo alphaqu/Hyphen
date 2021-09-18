@@ -31,20 +31,20 @@ public class ScanUtils {
 	}
 
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
-	public static LinkedHashMap<String, TypeInfo> mapTypes(SerializerFactory factory, ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
+	public static LinkedHashMap<String, TypeInfo> mapTypes(ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
 		var out = new LinkedHashMap<String, TypeInfo>();
 		var clazz = (Class<?>) type.getRawType();
 		var innerTypes = clazz.getTypeParameters();
 		var annotatedParameters = annotatedType.getAnnotatedActualTypeArguments();
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
-			out.put(innerTypes[i].getName(), TypeInfo.create(factory, source, clazz, parameters[i], annotatedParameters[i]));
+			out.put(innerTypes[i].getName(), TypeInfo.create(source, clazz, parameters[i], annotatedParameters[i]));
 		}
 		return out;
 	}
 
-	public static TypeInfo mapType(SerializerFactory factory, ClassInfo source, AnnotatedType annotatedType) {
-		return TypeInfo.create(factory, source, castType(annotatedType.getType()), annotatedType.getType(), annotatedType);
+	public static TypeInfo mapType( ClassInfo source, AnnotatedType annotatedType) {
+		return TypeInfo.create(source, castType(annotatedType.getType()), annotatedType.getType(), annotatedType);
 	}
 
 	public static Map<String, AnnotatedType> findTypes(Class<?> subType, Class<?> poly, ParameterizedType genericPoly, AnnotatedParameterizedType annotatedGenericPoly) {
@@ -196,7 +196,6 @@ public class ScanUtils {
 
 	@NotNull
 	public static LinkedHashMap<String, TypeInfo> mapAllTypes(
-			SerializerFactory factory,
 			ClassInfo source,
 			TypeVariable<? extends Class<?>>[] typeParameters,
 			Map<String, ? extends AnnotatedType> types) {
@@ -212,7 +211,7 @@ public class ScanUtils {
 				);
 			}
 
-			typeInfoMap.put(typeParameter.getName(), ScanUtils.mapType(factory, source, annotatedType));
+			typeInfoMap.put(typeParameter.getName(), ScanUtils.mapType(source, annotatedType));
 		}
 
 		return typeInfoMap;

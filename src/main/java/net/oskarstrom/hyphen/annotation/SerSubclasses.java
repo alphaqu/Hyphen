@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD,ElementType.TYPE_USE})
+@HyphenOptionAnnotation
 public @interface SerSubclasses {
 	Class<?>[] value();
+
 }

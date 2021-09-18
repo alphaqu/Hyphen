@@ -1,6 +1,9 @@
 package net.oskarstrom.hyphen.options;
 
+import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.annotation.HyphenOptionAnnotation;
 import net.oskarstrom.hyphen.util.Color;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -10,37 +13,28 @@ import java.util.StringJoiner;
 
 public class AnnotationParser {
 
-	public static <A extends Annotation> Map<Class<A>, Object> parseAnnotations(AnnotatedType type, Map<Class<? extends Annotation>, OptionParser<?>> annotations) {
-		Map<Class<A>, Object> annotationsOut = new HashMap<>();
-		annotations.forEach((annotation, option) -> {
-			//noinspection unchecked
-			Class<A> boundAnnotation = (Class<A>) annotation;
-			if (type != null) {
-				Annotation apply = type.getDeclaredAnnotation(boundAnnotation);
-				if (apply != null) {
-					annotationsOut.put(boundAnnotation, option.getValueFromAnnotation(apply));
-				} else {
-					Object defaultValue = option.getDefaultValue();
-					if (defaultValue != null) {
-						annotationsOut.put(boundAnnotation, defaultValue);
-					}
-				}
-			} else {
-				Object defaultValue = option.getDefaultValue();
-				if (defaultValue != null) {
-					annotationsOut.put(boundAnnotation, defaultValue);
+	@SuppressWarnings("unchecked")
+	public static Map<Class<Annotation>, Annotation> parseAnnotations(@Nullable AnnotatedType type) {
+		Map<Class<Annotation>, Annotation> annotations = new HashMap<>();
+		if (type != null) {
+			for (Annotation declaredAnnotation : type.getDeclaredAnnotations()) {
+				Class<Annotation> aClass = (Class<Annotation>) declaredAnnotation.annotationType();
+				if (aClass.getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
+					annotations.put(aClass, declaredAnnotation);
 				}
 			}
-		});
-
-
-		return annotationsOut;
+		}
+		return annotations;
 	}
 
 
-	public static String toFancyString(Map<Class<Annotation>, Object> annotations) {
+	public static String toFancyString(Map<Class<Annotation>, Annotation> annotations, SerializerFactory factory) {
 		StringJoiner stringJoiner = new StringJoiner(Color.WHITE + ", ", Color.WHITE + "(", Color.WHITE + ")");
-		annotations.forEach((annotationClass, o) -> stringJoiner.add(Color.GREEN + "@" + annotationClass.getSimpleName() + ":" + o.toString()));
+
+		annotations.forEach((annotationClass, o) -> {
+			OptionParser<?> optionParser = factory.hyphenAnnotations.get(annotationClass);
+			stringJoiner.add(Color.GREEN + "@" + annotationClass.getSimpleName() + ":" + optionParser.getValueFromAnnotation(o));
+		});
 		return stringJoiner.toString();
 	}
 

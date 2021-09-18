@@ -13,11 +13,16 @@ import java.util.Map;
 @DebugOnly
 public class DebugHandler {
 
+	private final SerializerFactory factory;
+
+	public DebugHandler(SerializerFactory factory) {
+		this.factory = factory;
+	}
 
 	public void printMethods(Map<? extends TypeInfo, ? extends SerializerMetadata> methods) {
 		StringBuilder sb = new StringBuilder();
 		methods.forEach((typeInfo, serializerMethodMetadata) -> {
-			sb.append(Color.YELLOW).append(typeInfo.toFancyString()).append(" ").append(AnnotationParser.toFancyString(typeInfo.annotations)).append('\n');
+			sb.append(Color.YELLOW).append(typeInfo.toFancyString()).append(" ").append(AnnotationParser.toFancyString(typeInfo.annotations, factory)).append('\n');
 			if(serializerMethodMetadata instanceof ClassSerializerMetadata classSerializerMetadata){
 				this.printClass(sb, classSerializerMetadata);
 			} else if(serializerMethodMetadata instanceof JunctionSerializerMetadata junctionSerializerMetadata){

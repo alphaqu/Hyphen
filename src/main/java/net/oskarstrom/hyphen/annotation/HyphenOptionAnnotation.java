@@ -5,11 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Target(ElementType.ANNOTATION_TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE})
-@HyphenOptionAnnotation
-public @interface SerDefined {
-	String name();
-	Class<?>[] values();
-	// SerComplexSubClass[] poly() default {};
+public @interface HyphenOptionAnnotation {
 }

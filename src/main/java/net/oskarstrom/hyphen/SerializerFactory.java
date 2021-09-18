@@ -1,7 +1,10 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.annotation.*;
-import net.oskarstrom.hyphen.data.*;
+import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
+import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
+import net.oskarstrom.hyphen.annotation.SerNull;
+import net.oskarstrom.hyphen.annotation.SerSubclasses;
+import net.oskarstrom.hyphen.data.FieldEntry;
 import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.info.PolymorphicTypeInfo;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
@@ -29,9 +32,11 @@ public class SerializerFactory {
 	private final DebugHandler debugHandler;
 
 
-	protected SerializerFactory(@Nullable DebugHandler debugMode) {
-		this.debugHandler = debugMode;
+	protected SerializerFactory(boolean debug) {
+		if (debug) this.debugHandler = new DebugHandler(this);
+		else this.debugHandler = null;
 	}
+
 
 	public static SerializerFactory create() {
 		return createInternal(false);
@@ -42,7 +47,7 @@ public class SerializerFactory {
 	}
 
 	private static SerializerFactory createInternal(boolean debugMode) {
-		final SerializerFactory serializerFactory = new SerializerFactory(debugMode ? new DebugHandler() : null);
+		final SerializerFactory serializerFactory = new SerializerFactory(debugMode);
 		serializerFactory.addImpl(int.class, (field) -> new IntDef());
 		serializerFactory.addTestImpl(Integer.class, Float.class, ArrayList.class, LinkedList.class);
 		serializerFactory.addOption(SerNull.class, new ExistsOption());
@@ -85,7 +90,7 @@ public class SerializerFactory {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
 
-		createSerializeMetadataInternal(new ClassInfo(clazz, AnnotationParser.parseAnnotations(null, hyphenAnnotations), this));
+		createSerializeMetadataInternal(new ClassInfo(clazz, new HashMap<>()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);

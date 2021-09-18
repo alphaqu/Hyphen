@@ -13,20 +13,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class TypeInfo {
 	public final Class<?> clazz;
-	public final Map<Class<Annotation>, Object> annotations;
+	public final Map<Class<Annotation>, Annotation>  annotations;
 
-	TypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations) {
+	TypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
 	}
 
-	public static TypeInfo create(SerializerFactory factory, ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
+	public static TypeInfo create(ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
 		if (source == null) {
 			throw ThrowHandler.fatal(NullPointerException::new, "source is null",
 					ThrowHandler.ThrowEntry.of("ClassType", classType),
@@ -35,24 +33,24 @@ public abstract class TypeInfo {
 			);
 		}
 
-		var options = AnnotationParser.parseAnnotations(annotatedType, factory.hyphenAnnotations);
+		var options = AnnotationParser.parseAnnotations(annotatedType);
 
 		// check if field is polymorphic
 		if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
-			return PolymorphicTypeInfo.create(factory, source, classType, genericType, options, annotatedType);
+			return PolymorphicTypeInfo.create(source, classType, genericType, options, annotatedType);
 		}
 
 
 		//Object / int / Object[] / int[]
 		if (genericType instanceof Class clazz) {
-			return new ClassInfo(clazz, options, factory);
+			return new ClassInfo(clazz, options);
 		}
 
 
 		//Thing<T,T>
 		if (genericType instanceof ParameterizedType type) {
 			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
-				return ParameterizedClassInfo.create(factory, options, source, type, parameterizedType);
+				return ParameterizedClassInfo.create(options, source, type, parameterizedType);
 			}
 			throw new RuntimeException();
 		}
@@ -77,7 +75,7 @@ public abstract class TypeInfo {
 			//get component class
 			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
 				var componentType = genericArrayType.getGenericComponentType();
-				var classInfo = create(factory, source, classType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
+				var classInfo = create(source, classType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
 				if (classInfo == null) {
 					throw ThrowHandler.typeFail("Array component could not be identified", source, classType, componentType);
 				}
@@ -89,7 +87,7 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public static TypeInfo createFromPolymorphicType(SerializerFactory factory, ClassInfo source, Class<?> poly, Type genericType, AnnotatedType annotatedGenericType, Class<?> subType) {
+	public static TypeInfo createFromPolymorphicType(ClassInfo source, Class<?> poly, Type genericType, AnnotatedType annotatedGenericType, Class<?> subType) {
 		TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
 
 		if (typeParameters.length != 0) {
@@ -107,9 +105,9 @@ public abstract class TypeInfo {
 					);
 				}
 
-				LinkedHashMap<String, TypeInfo> typeInfoMap = ScanUtils.mapAllTypes(factory, source, typeParameters, types);
+				LinkedHashMap<String, TypeInfo> typeInfoMap = ScanUtils.mapAllTypes(source, typeParameters, types);
 
-				return new ParameterizedClassInfo(subType, Map.of(), factory, typeInfoMap);
+				return new ParameterizedClassInfo(subType, Map.of(), typeInfoMap);
 			} else {
 				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
 						ThrowHandler.ThrowEntry.of("SourceClass", source),
@@ -120,7 +118,7 @@ public abstract class TypeInfo {
 
 		//Object / int / Object[] / int[]
 		if (true /* genericType instanceof Class clazz */) {
-			return new ClassInfo(subType, Map.of(), factory);
+			return new ClassInfo(subType, new HashMap<>());
 		}
 
 
@@ -169,9 +167,9 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public abstract String toFancyString();
-
 	public abstract SerializerMetadata createMeta(SerializerFactory factory);
+
+	public abstract String toFancyString();
 
 	@Override
 	public boolean equals(Object o) {

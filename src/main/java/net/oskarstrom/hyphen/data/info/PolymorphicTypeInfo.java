@@ -17,12 +17,12 @@ import java.util.*;
 public class PolymorphicTypeInfo extends TypeInfo {
 	public final List<? extends TypeInfo> classInfos;
 
-	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, List<? extends TypeInfo> classInfos) {
+	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, List<? extends TypeInfo> classInfos) {
 		super(clazz, annotations);
 		this.classInfos = classInfos;
 	}
 
-	public static PolymorphicTypeInfo create(SerializerFactory factory, ClassInfo source, Class<?> classType, Type genericType, Map<Class<Annotation>, Object> options, AnnotatedType annotatedType) {
+	public static PolymorphicTypeInfo create(ClassInfo source, Class<?> classType, Type genericType, Map<Class<Annotation>, Annotation>  options, AnnotatedType annotatedType) {
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
 					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
@@ -31,11 +31,12 @@ public class PolymorphicTypeInfo extends TypeInfo {
 					ThrowHandler.ThrowEntry.of("Annotations", options));
 		}
 
-		Class<?>[] subclasses = (Class<?>[]) options.get(SerSubclasses.class);
-		List<TypeInfo> subInfos = new ArrayList<>(subclasses.length);
+		SerSubclasses subclasses = (SerSubclasses) options.get(SerSubclasses.class);
+		Class<?>[] value = subclasses.value();
+		List<TypeInfo> subInfos = new ArrayList<>(value.length);
 
-		for (Class<?> subclass : subclasses) {
-			var subClassInfo = TypeInfo.createFromPolymorphicType(factory, source, classType, genericType, annotatedType, subclass);
+		for (Class<?> subclass : value) {
+			var subClassInfo = TypeInfo.createFromPolymorphicType(source, classType, genericType, annotatedType, subclass);
 			subInfos.add(subClassInfo);
 		}
 

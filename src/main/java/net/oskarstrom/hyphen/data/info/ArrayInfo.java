@@ -6,26 +6,27 @@ import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;
 
-	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values) {
+	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations, TypeInfo values) {
 		super(clazz, annotations);
 		this.values = values;
 	}
 
 
 	@Override
-	public String toFancyString() {
-		return this.clazz.getSimpleName() + Color.YELLOW + "[]";
+	public SerializerMetadata createMeta(SerializerFactory factory) {
+		return new SerializerMetadata(this);
 	}
 
 	@Override
-	public SerializerMetadata createMeta(SerializerFactory factory) {
-		return new SerializerMetadata(this);
+	public String toFancyString() {
+		return this.clazz.getSimpleName() + Color.YELLOW + "[]";
 	}
 
 	@Override

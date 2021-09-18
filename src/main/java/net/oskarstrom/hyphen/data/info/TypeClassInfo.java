@@ -11,7 +11,7 @@ public class TypeClassInfo extends TypeInfo {
 	public final Class<?> type;
 	public final TypeInfo actual;
 
-	public TypeClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, String typeName, Class<?> type, TypeInfo actual) {
+	public TypeClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, String typeName, Class<?> type, TypeInfo actual) {
 		super(clazz, annotations);
 		this.typeName = typeName;
 		this.type = type;

@@ -2,8 +2,8 @@ package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
 import net.oskarstrom.hyphen.data.FieldEntry;
+import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.util.Color;
 
@@ -17,11 +17,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class ClassInfo extends TypeInfo implements Type {
-	protected final SerializerFactory factory;
 
-	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory) {
+	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
 		super(clazz, annotations);
-		this.factory = factory;
 	}
 
 
@@ -32,7 +30,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		if (superclass == null)
 			return new ClassInfo[depth];
 
-		TypeInfo typeInfo = TypeInfo.create(factory, in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+		TypeInfo typeInfo = TypeInfo.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
 
 		if (!(typeInfo instanceof ClassInfo info)) {
 			// this should always return a class info, unless you put a `SubClasses` annotations on an extends clause
@@ -49,11 +47,20 @@ public class ClassInfo extends TypeInfo implements Type {
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
-				TypeInfo classInfo = TypeInfo.create(factory, this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				TypeInfo classInfo = TypeInfo.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
 				info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
 			}
 		}
 		return info;
+	}
+
+	public List<FieldEntry> getAllFields(Predicate<Field> filter) {
+		List<FieldEntry> out = new ArrayList<>();
+		for (ClassInfo superClass : getSuperClasses(this, 0)) {
+			out.addAll(superClass.getFields(filter));
+		}
+		out.addAll(getFields(filter));
+		return out;
 	}
 
 	@Override
@@ -80,15 +87,6 @@ public class ClassInfo extends TypeInfo implements Type {
 		return methodMetadata;
 	}
 
-	public List<FieldEntry> getAllFields(Predicate<Field> filter) {
-		List<FieldEntry> out = new ArrayList<>();
-		for (ClassInfo superClass : getSuperClasses(this, 0)) {
-			out.addAll(superClass.getFields(filter));
-		}
-		out.addAll(getFields(filter));
-		return out;
-	}
-
 	@Override
 	public String toFancyString() {
 		return Color.YELLOW + this.clazz.getSimpleName();
@@ -101,6 +99,6 @@ public class ClassInfo extends TypeInfo implements Type {
 
 	@Override
 	public ClassInfo copy() {
-		return new ClassInfo(this.clazz, new HashMap<>(this.annotations), this.factory);
+		return new ClassInfo(this.clazz, new HashMap<>(this.annotations));
 	}
 }
