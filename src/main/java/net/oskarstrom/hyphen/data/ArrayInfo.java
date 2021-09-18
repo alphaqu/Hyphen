@@ -11,8 +11,8 @@ import java.util.Objects;
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;
 
-	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values) {
-		super(clazz, annotations);
+	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values, SerializerFactory factory) {
+		super(clazz, annotations, factory);
 		this.values = values;
 	}
 
@@ -42,6 +42,6 @@ public class ArrayInfo extends TypeInfo {
 
 	@Override
 	public ArrayInfo copy() {
-		return new ArrayInfo(clazz, new HashMap<>(annotations), values.copy());
+		return new ArrayInfo(clazz, new HashMap<>(annotations), values.copy(), this.factory);
 	}
 }

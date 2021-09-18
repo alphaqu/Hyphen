@@ -2,8 +2,10 @@ package net.oskarstrom.hyphen.data;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.util.Color;
+import net.oskarstrom.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -14,6 +16,12 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory, LinkedHashMap<String, TypeInfo> types) {
 		super(clazz, annotations, factory);
 		this.types = types;
+	}
+
+	public static ParameterizedClassInfo create(SerializerFactory factory, Map<Class<Annotation>, Object> annotations, ClassInfo source, ParameterizedType type, AnnotatedParameterizedType annotatedType) {
+		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes(factory, source, type, annotatedType);
+		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, factory, out);
+
 	}
 
 	@Override
