@@ -251,7 +251,31 @@ public class ObjectTest {
 		}
 	}
 
+	public static class RecursiveFoo<T> extends Foo<T> {
+		@Serialize
+		@SerSubclasses({Foo.class, RecursiveFoo.class})
+		public Foo<T> foo;
+
+		public RecursiveFoo(T t, Foo<T> foo) {
+			super(t);
+			this.foo = foo;
+		}
+	}
+
+
 	public static class PolymorphicGenericTypeTests {
+
+
+		public static class Recursive {
+			@Serialize
+			@SerSubclasses({Foo.class, RecursiveFoo.class})
+			public Foo<String> simpler;
+
+			public Recursive(Foo<String> simpler) {
+				this.simpler = simpler;
+			}
+		}
+
 		public static class Simpler {
 			@Serialize
 			@SerSubclasses({Integer.class, Float.class})
