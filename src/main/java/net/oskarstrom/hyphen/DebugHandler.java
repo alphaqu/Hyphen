@@ -1,10 +1,10 @@
 package net.oskarstrom.hyphen;
 
 import net.oskarstrom.hyphen.annotation.DebugOnly;
-import net.oskarstrom.hyphen.data.ClassSerializerMetadata;
-import net.oskarstrom.hyphen.data.JunctionSerializerMetadata;
-import net.oskarstrom.hyphen.data.SerializerMetadata;
-import net.oskarstrom.hyphen.data.TypeInfo;
+import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
+import net.oskarstrom.hyphen.data.metadata.JunctionSerializerMetadata;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
+import net.oskarstrom.hyphen.data.info.TypeInfo;
 import net.oskarstrom.hyphen.options.AnnotationParser;
 import net.oskarstrom.hyphen.util.Color;
 

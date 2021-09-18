@@ -1,7 +1,10 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.annotation.Serialize;
+import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
+import net.oskarstrom.hyphen.data.FieldEntry;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;
@@ -17,30 +20,10 @@ public class ClassInfo extends TypeInfo implements Type {
 	protected final SerializerFactory factory;
 
 	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory) {
-		super(clazz, annotations, factory);
+		super(clazz, annotations);
 		this.factory = factory;
 	}
 
-
-	public SerializerMetadata createMeta() {
-		var methodMetadata = new ClassSerializerMetadata(this);
-		factory.methods.put(this, methodMetadata);
-
-		if (factory.implementations.containsKey(this.clazz)) {
-			methodMetadata.fields.put(null, factory.implementations.get(this.clazz).apply(this));
-			return methodMetadata;
-		}
-
-		//get the fields
-		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
-		//check if it exists / if its accessible
-		factory.checkConstructor(allFields, this);
-		for (FieldMetadata fieldInfo : allFields) {
-			var def = factory.getDefinition(fieldInfo, this);
-			methodMetadata.fields.put(fieldInfo, def);
-		}
-		return methodMetadata;
-	}
 
 	private ClassInfo[] getSuperClasses(ClassInfo in, int depth) {
 		Class<?> clazz = in.clazz;
@@ -61,20 +44,44 @@ public class ClassInfo extends TypeInfo implements Type {
 		return out;
 	}
 
-	protected List<FieldMetadata> getFields(Predicate<? super Field> filter) {
-		List<FieldMetadata> info = new ArrayList<>();
+	protected List<FieldEntry> getFields(Predicate<? super Field> filter) {
+		List<FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
 				TypeInfo classInfo = TypeInfo.create(factory, this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
-				info.add(new FieldMetadata(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
+				info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
 			}
 		}
 		return info;
 	}
 
-	public List<FieldMetadata> getAllFields(Predicate<Field> filter) {
-		List<FieldMetadata> out = new ArrayList<>();
+	@Override
+	public SerializerMetadata createMeta(SerializerFactory factory) {
+		var methods = factory.methods;
+		var implementations = factory.implementations;
+
+		var methodMetadata = new ClassSerializerMetadata(this);
+		methods.put(this, methodMetadata);
+
+		if (implementations.containsKey(this.clazz)) {
+			methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
+			return methodMetadata;
+		}
+
+		//get the fields
+		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		//check if it exists / if its accessible
+		factory.checkConstructor(allFields, this);
+		for (FieldEntry fieldInfo : allFields) {
+			var def = factory.getDefinition(fieldInfo, this);
+			methodMetadata.fields.put(fieldInfo, def);
+		}
+		return methodMetadata;
+	}
+
+	public List<FieldEntry> getAllFields(Predicate<Field> filter) {
+		List<FieldEntry> out = new ArrayList<>();
 		for (ClassInfo superClass : getSuperClasses(this, 0)) {
 			out.addAll(superClass.getFields(filter));
 		}

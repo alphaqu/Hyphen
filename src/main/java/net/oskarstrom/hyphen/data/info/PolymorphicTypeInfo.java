@@ -1,9 +1,11 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
+import net.oskarstrom.hyphen.data.metadata.JunctionSerializerMetadata;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import net.oskarstrom.hyphen.util.Color;
 
@@ -15,8 +17,8 @@ import java.util.*;
 public class PolymorphicTypeInfo extends TypeInfo {
 	public final List<? extends TypeInfo> classInfos;
 
-	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, List<? extends TypeInfo> classInfos, SerializerFactory factory) {
-		super(clazz, annotations, factory);
+	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, List<? extends TypeInfo> classInfos) {
+		super(clazz, annotations);
 		this.classInfos = classInfos;
 	}
 
@@ -37,13 +39,12 @@ public class PolymorphicTypeInfo extends TypeInfo {
 			subInfos.add(subClassInfo);
 		}
 
-		return new PolymorphicTypeInfo(classType, options, subInfos, factory);
+		return new PolymorphicTypeInfo(classType, options, subInfos);
 	}
 
 
-	public JunctionSerializerMetadata createMeta() {
+	public SerializerMetadata createMeta(SerializerFactory factory) {
 		var methodMetadata = new JunctionSerializerMetadata(this);
-
 		var subTypeMap = methodMetadata.subtypes;
 
 		for (TypeInfo subTypeInfo : this.classInfos) {
@@ -85,6 +86,6 @@ public class PolymorphicTypeInfo extends TypeInfo {
 
 	@Override
 	public PolymorphicTypeInfo copy() {
-		return new PolymorphicTypeInfo(this.clazz, new HashMap<>(this.annotations), new ArrayList<>(this.classInfos), this.factory);
+		return new PolymorphicTypeInfo(this.clazz, new HashMap<>(this.annotations), new ArrayList<>(this.classInfos));
 	}
 }

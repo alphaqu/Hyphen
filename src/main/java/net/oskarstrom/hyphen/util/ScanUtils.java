@@ -1,8 +1,8 @@
 package net.oskarstrom.hyphen.util;
 
 import net.oskarstrom.hyphen.SerializerFactory;
-import net.oskarstrom.hyphen.data.ClassInfo;
-import net.oskarstrom.hyphen.data.TypeInfo;
+import net.oskarstrom.hyphen.data.info.ClassInfo;
+import net.oskarstrom.hyphen.data.info.TypeInfo;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,10 +1,11 @@
 package net.oskarstrom.hyphen;
 
-import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
-import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
-import net.oskarstrom.hyphen.annotation.SerNull;
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
+import net.oskarstrom.hyphen.annotation.*;
 import net.oskarstrom.hyphen.data.*;
+import net.oskarstrom.hyphen.data.info.ClassInfo;
+import net.oskarstrom.hyphen.data.info.PolymorphicTypeInfo;
+import net.oskarstrom.hyphen.data.info.TypeInfo;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.gen.impl.AbstractDef;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.gen.impl.MethodCallDef;
@@ -92,14 +93,7 @@ public class SerializerFactory {
 	}
 
 	private SerializerMetadata createSerializeMetadataInternal(TypeInfo typeInfo) {
-		if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) return polymorphicTypeInfo.createMeta();
-		else if (typeInfo instanceof ClassInfo classInfo) return classInfo.createMeta();
-		else if (typeInfo instanceof TypeClassInfo typeClassInfo)
-			return this.createSerializeMetadata(typeClassInfo.actual);
-		else {
-			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected TypeInfo type",
-					ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo));
-		}
+		return typeInfo.createMeta(this);
 	}
 
 	public SerializerMetadata createSerializeMetadata(TypeInfo typeInfo) {
@@ -112,7 +106,7 @@ public class SerializerFactory {
 		return serializerMetadata;
 	}
 
-	public ObjectSerializationDef getDefinition(FieldMetadata field, ClassInfo source) {
+	public ObjectSerializationDef getDefinition(FieldEntry field, ClassInfo source) {
 		var classInfo = field.clazz;
 		if (!(classInfo instanceof PolymorphicTypeInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
@@ -126,7 +120,7 @@ public class SerializerFactory {
 		}
 	}
 
-	public void checkConstructor(List<FieldMetadata> fields, ClassInfo source) {
+	public void checkConstructor(List<FieldEntry> fields, ClassInfo source) {
 		try {
 			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.clazz.getRawClass()).toArray(Class[]::new));
 			ThrowHandler.checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));

@@ -1,9 +1,10 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.options.AnnotationParser;
 import net.oskarstrom.hyphen.thr.ClassScanException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
@@ -19,12 +20,10 @@ import java.util.Objects;
 public abstract class TypeInfo {
 	public final Class<?> clazz;
 	public final Map<Class<Annotation>, Object> annotations;
-	protected final SerializerFactory factory;
 
-	TypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, SerializerFactory factory) {
+	TypeInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
-		this.factory = factory;
 	}
 
 	public static TypeInfo create(SerializerFactory factory, ClassInfo source, Class<?> classType, Type genericType, @Nullable AnnotatedType annotatedType) {
@@ -66,7 +65,7 @@ public abstract class TypeInfo {
 				if (classInfo != null) {
 					// safety first!
 					// kropp: why are we copying?
-					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.castType(typeVariable.getBounds()[0]), classInfo, factory);
+					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.castType(typeVariable.getBounds()[0]), classInfo);
 				}
 			}
 
@@ -82,7 +81,7 @@ public abstract class TypeInfo {
 				if (classInfo == null) {
 					throw ThrowHandler.typeFail("Array component could not be identified", source, classType, componentType);
 				}
-				return new ArrayInfo(classType, options, classInfo, factory);
+				return new ArrayInfo(classType, options, classInfo);
 			}
 			throw new RuntimeException();
 		}
@@ -171,6 +170,8 @@ public abstract class TypeInfo {
 	}
 
 	public abstract String toFancyString();
+
+	public abstract SerializerMetadata createMeta(SerializerFactory factory);
 
 	@Override
 	public boolean equals(Object o) {

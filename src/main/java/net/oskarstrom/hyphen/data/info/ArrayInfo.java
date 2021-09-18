@@ -1,6 +1,7 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;
@@ -11,8 +12,8 @@ import java.util.Objects;
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;
 
-	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values, SerializerFactory factory) {
-		super(clazz, annotations, factory);
+	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Object> annotations, TypeInfo values) {
+		super(clazz, annotations);
 		this.values = values;
 	}
 
@@ -20,6 +21,11 @@ public class ArrayInfo extends TypeInfo {
 	@Override
 	public String toFancyString() {
 		return this.clazz.getSimpleName() + Color.YELLOW + "[]";
+	}
+
+	@Override
+	public SerializerMetadata createMeta(SerializerFactory factory) {
+		return new SerializerMetadata(this);
 	}
 
 	@Override
@@ -42,6 +48,6 @@ public class ArrayInfo extends TypeInfo {
 
 	@Override
 	public ArrayInfo copy() {
-		return new ArrayInfo(clazz, new HashMap<>(annotations), values.copy(), this.factory);
+		return new ArrayInfo(clazz, new HashMap<>(annotations), values.copy());
 	}
 }

@@ -1,4 +1,4 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.SerializerFactory;
 import net.oskarstrom.hyphen.util.Color;

@@ -1,4 +1,6 @@
-package net.oskarstrom.hyphen.data;
+package net.oskarstrom.hyphen.data.metadata;
+
+import net.oskarstrom.hyphen.data.info.TypeInfo;
 
 public class SerializerMetadata {
 	public final TypeInfo clazz;

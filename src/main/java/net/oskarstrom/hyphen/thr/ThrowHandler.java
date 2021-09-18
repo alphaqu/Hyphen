@@ -1,7 +1,7 @@
 package net.oskarstrom.hyphen.thr;
 
-import net.oskarstrom.hyphen.data.ClassInfo;
-import net.oskarstrom.hyphen.data.FieldMetadata;
+import net.oskarstrom.hyphen.data.info.ClassInfo;
+import net.oskarstrom.hyphen.data.FieldEntry;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -30,7 +30,7 @@ public class ThrowHandler {
 		});
 	}
 
-	public static RuntimeException fieldAccessFail(FieldMetadata field, ClassInfo source) {
+	public static RuntimeException fieldAccessFail(FieldEntry field, ClassInfo source) {
 		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier), new ThrowEntry[]{
 				of("Field Name", field.name),
 				of("Field Class", field.clazz.clazz.getSimpleName()),
@@ -57,12 +57,12 @@ public class ThrowHandler {
 	}
 
 
-	public static RuntimeException constructorNotFoundFail(List<FieldMetadata> fields, ClassInfo info) {
+	public static RuntimeException constructorNotFoundFail(List<FieldEntry> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
 		throwable[0] = ThrowHandler.ThrowEntry.of("Source Class", info.clazz.getSimpleName());
 		throwable[1] = ThrowHandler.ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
-			FieldMetadata fieldInfo = fields.get(i);
+			FieldEntry fieldInfo = fields.get(i);
 			throwable[i + 2] = ThrowHandler.ThrowEntry.of('\t' + fieldInfo.name, fieldInfo.clazz.getRawClass().getSimpleName());
 		}
 		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);
