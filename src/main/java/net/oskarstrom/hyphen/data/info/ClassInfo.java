@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.data.info;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.data.FieldEntry;
 import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
@@ -64,7 +64,7 @@ public class ClassInfo extends TypeInfo implements Type {
 	}
 
 	@Override
-	public SerializerMetadata createMeta(SerializerFactory factory) {
+	public SerializerMetadata createMeta(ScanHandler factory) {
 		var methods = factory.methods;
 		var implementations = factory.implementations;
 

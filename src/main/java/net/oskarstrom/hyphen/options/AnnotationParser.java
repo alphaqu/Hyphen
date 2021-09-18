@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.options;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.annotation.HyphenOptionAnnotation;
 import net.oskarstrom.hyphen.util.Color;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +28,7 @@ public class AnnotationParser {
 	}
 
 
-	public static String toFancyString(Map<Class<Annotation>, Annotation> annotations, SerializerFactory factory) {
+	public static String toFancyString(Map<Class<Annotation>, Annotation> annotations, ScanHandler factory) {
 		StringJoiner stringJoiner = new StringJoiner(Color.WHITE + ", ", Color.WHITE + "(", Color.WHITE + ")");
 
 		annotations.forEach((annotationClass, o) -> {

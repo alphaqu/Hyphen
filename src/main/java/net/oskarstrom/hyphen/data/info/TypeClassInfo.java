@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.data.info;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 
 import java.lang.annotation.Annotation;
@@ -24,7 +24,7 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
-	public SerializerMetadata createMeta(SerializerFactory factory) {
+	public SerializerMetadata createMeta(ScanHandler factory) {
 		return actual.createMeta(factory);
 	}
 

@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.data.info;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
@@ -44,7 +44,7 @@ public class PolymorphicTypeInfo extends TypeInfo {
 	}
 
 
-	public SerializerMetadata createMeta(SerializerFactory factory) {
+	public SerializerMetadata createMeta(ScanHandler factory) {
 		var methodMetadata = new JunctionSerializerMetadata(this);
 		var subTypeMap = methodMetadata.subtypes;
 

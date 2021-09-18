@@ -1,12 +1,11 @@
 package net.oskarstrom.hyphen.data.info;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -20,7 +19,7 @@ public class ArrayInfo extends TypeInfo {
 
 
 	@Override
-	public SerializerMetadata createMeta(SerializerFactory factory) {
+	public SerializerMetadata createMeta(ScanHandler factory) {
 		return new SerializerMetadata(this);
 	}
 

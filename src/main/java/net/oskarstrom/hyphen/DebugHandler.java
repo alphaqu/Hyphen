@@ -13,9 +13,9 @@ import java.util.Map;
 @DebugOnly
 public class DebugHandler {
 
-	private final SerializerFactory factory;
+	private final ScanHandler factory;
 
-	public DebugHandler(SerializerFactory factory) {
+	public DebugHandler(ScanHandler factory) {
 		this.factory = factory;
 	}
 

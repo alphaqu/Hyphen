@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.util;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
@@ -98,7 +98,7 @@ public class ScanUtils {
 
 				for (TypeVariable<? extends Class<?>> typeParameter : subType.getTypeParameters()) {
 					if (!map.containsKey(typeParameter.getName())) {
-						map.put(typeParameter.getName(), SerializerFactory.UNKNOWN.UNKNOWN);
+						map.put(typeParameter.getName(), ScanHandler.UNKNOWN.UNKNOWN);
 					}
 				}
 
@@ -120,7 +120,7 @@ public class ScanUtils {
 
 			if (type.getType() == clazz) {
 				// all is fine
-			} else if (type.getType() == SerializerFactory.UNKNOWN.UNKNOWN) {
+			} else if (type.getType() == ScanHandler.UNKNOWN.UNKNOWN) {
 				// resolve type that was unknown
 				// I don't think we have to do something here? Although I do think there might be invalid case that we
 				// need to consider
@@ -205,7 +205,7 @@ public class ScanUtils {
 		for (TypeVariable<? extends Class<?>> typeParameter : typeParameters) {
 			AnnotatedType annotatedType = types.get(typeParameter.getName());
 
-			if (annotatedType == null || annotatedType == SerializerFactory.UNKNOWN.UNKNOWN) {
+			if (annotatedType == null || annotatedType == ScanHandler.UNKNOWN.UNKNOWN) {
 				throw ThrowHandler.fatal(IllegalStateException::new, "Did not find type",
 						ThrowHandler.ThrowEntry.of("TypeName", typeParameter.getName())
 				);

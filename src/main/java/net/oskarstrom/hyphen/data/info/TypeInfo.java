@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.data.info;
 
-import net.oskarstrom.hyphen.SerializerFactory;
+import net.oskarstrom.hyphen.ScanHandler;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
 import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
@@ -167,7 +167,7 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public abstract SerializerMetadata createMeta(SerializerFactory factory);
+	public abstract SerializerMetadata createMeta(ScanHandler factory);
 
 	public abstract String toFancyString();
 
