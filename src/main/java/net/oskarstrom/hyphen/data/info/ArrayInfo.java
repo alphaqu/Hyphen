@@ -1,6 +1,7 @@
 package net.oskarstrom.hyphen.data.info;
 
 import net.oskarstrom.hyphen.ScanHandler;
+import net.oskarstrom.hyphen.data.metadata.ArraySerializerMetadata;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.util.Color;
 
@@ -20,12 +21,12 @@ public class ArrayInfo extends TypeInfo {
 
 	@Override
 	public SerializerMetadata createMeta(ScanHandler factory) {
-		return new SerializerMetadata(this);
+		return new ArraySerializerMetadata(this, values);
 	}
 
 	@Override
 	public String toFancyString() {
-		return this.clazz.getSimpleName() + Color.YELLOW + "[]";
+		return this.values.toFancyString() + Color.YELLOW + "[]";
 	}
 
 	@Override

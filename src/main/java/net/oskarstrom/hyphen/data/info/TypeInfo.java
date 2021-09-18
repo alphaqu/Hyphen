@@ -43,7 +43,12 @@ public abstract class TypeInfo {
 
 		//Object / int / Object[] / int[]
 		if (genericType instanceof Class clazz) {
-			return new ClassInfo(clazz, options);
+			if (clazz.isArray()) {
+				Class componentType = clazz.getComponentType();
+				return new ArrayInfo(clazz, options, create(source, componentType, componentType, null));
+			} else {
+				return new ClassInfo(clazz, options);
+			}
 		}
 
 

@@ -23,22 +23,7 @@ public class ScanHandler {
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations;
 	@Nullable
 	private final DebugHandler debugHandler;
-	public static final TypeInfo UNKNOWN_INFO = new TypeInfo(null, null) {
-		@Override
-		public SerializerMetadata createMeta(ScanHandler factory) {
-			return null;
-		}
-
-		@Override
-		public String toFancyString() {
-			return null;
-		}
-
-		@Override
-		public TypeInfo copy() {
-			return null;
-		}
-	};
+	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, null);
 
 	protected ScanHandler(Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
 		this.implementations = implementations;

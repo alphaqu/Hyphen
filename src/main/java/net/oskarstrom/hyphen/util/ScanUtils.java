@@ -55,20 +55,6 @@ public class ScanUtils {
 	}
 
 
-	public static Class<?>[] getInherited(Class<?> clazz) {
-		Class<?> superclass = clazz.getSuperclass();
-		Class<?>[] interfaces = clazz.getInterfaces();
-		if (superclass == null) {
-			return interfaces;
-		} else {
-			Class<?>[] out = new Class[interfaces.length + 1];
-			out[0] = superclass;
-			System.arraycopy(interfaces, 0, out, 1, interfaces.length);
-			return out;
-		}
-	}
-
-
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
 	public static LinkedHashMap<String, TypeInfo> mapTypes(TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		var annotatedParameters = annotatedType == null ? null : annotatedType.getAnnotatedActualTypeArguments();
