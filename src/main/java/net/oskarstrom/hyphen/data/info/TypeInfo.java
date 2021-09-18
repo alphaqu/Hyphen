@@ -47,7 +47,7 @@ public abstract class TypeInfo {
 				Class componentType = clazz.getComponentType();
 				return new ArrayInfo(clazz, options, create(source, componentType, componentType, null));
 			} else {
-				return new ClassInfo(clazz, options);
+				return ClassInfo.create(clazz, options);
 			}
 		}
 
@@ -174,7 +174,7 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public abstract SerializerMetadata createMeta(ScanHandler factory);
+	public abstract SerializerMetadata createMetadata(ScanHandler factory);
 
 	public abstract String toFancyString();
 
@@ -196,4 +196,9 @@ public abstract class TypeInfo {
 	public Class<?> getRawClass() {
 		return this.clazz;
 	}
+
+
+	private record DedupKey(TypeInfo source, Class<?> fieldType, Type genericType, @Nullable AnnotatedType annotatedType) {
+	}
+
 }

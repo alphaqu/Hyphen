@@ -18,8 +18,8 @@ public class TestUtil {
 					}
 					return DynamicTest.dynamicTest(clz.getSimpleName() + desc, URI.create("class:" + clz.getName()), () -> {
 						System.out.println(clz.getName());
-						SerializerFactory debug = SerializerFactory.createDebug();
-						debug.build(clz);
+						SerializerFactory debug = SerializerFactory.createDebug(clz);
+						debug.build();
 					});
 				}
 		);

@@ -18,21 +18,22 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class ScanHandler {
-	public final Map<TypeInfo, SerializerMetadata> methods = new HashMap<>();
+	public final Map<TypeInfo, SerializerMetadata> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations;
 	@Nullable
 	private final DebugHandler debugHandler;
-	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, null);
+	public static final TypeInfo UNKNOWN_INFO = ClassInfo.create(null, null);
 
-	protected ScanHandler(Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
+	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
 		this.implementations = implementations;
 		this.hyphenAnnotations = hyphenAnnotations;
 		this.debugHandler = debug ? new DebugHandler(this) : null;
+		this.methods = methods;
 	}
 
 	public void scan(Class<?> clazz) {
-		createSerializeMetadataInternal(new ClassInfo(clazz, new HashMap<>()));
+		createSerializeMetadata(ClassInfo.create(clazz, new HashMap<>()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
@@ -40,7 +41,7 @@ public class ScanHandler {
 	}
 
 	private SerializerMetadata createSerializeMetadataInternal(TypeInfo typeInfo) {
-		return typeInfo.createMeta(this);
+		return typeInfo.createMetadata(this);
 	}
 
 	public SerializerMetadata createSerializeMetadata(TypeInfo typeInfo) {

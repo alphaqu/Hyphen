@@ -44,7 +44,7 @@ public class PolymorphicTypeInfo extends TypeInfo {
 	}
 
 
-	public SerializerMetadata createMeta(ScanHandler factory) {
+	public SerializerMetadata createMetadata(ScanHandler factory) {
 		var methodMetadata = new JunctionSerializerMetadata(this);
 		var subTypeMap = methodMetadata.subtypes;
 

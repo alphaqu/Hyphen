@@ -17,9 +17,20 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class ClassInfo extends TypeInfo implements Type {
+	private static final Map<ClassInfo, ClassInfo> dedupMap = new HashMap<>();
+	private SerializerMetadata metadata;
 
-	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
+
+	protected ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		super(clazz, annotations);
+	}
+
+	public static ClassInfo create(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
+		// the @Serialize annotation counts
+		ClassInfo classInfo = new ClassInfo(clazz, annotations);
+		if (dedupMap.containsKey(classInfo)) return dedupMap.get(classInfo);
+		dedupMap.put(classInfo, classInfo);
+		return classInfo;
 	}
 
 
@@ -42,7 +53,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		return out;
 	}
 
-	protected List<FieldEntry> getFields(Predicate<? super Field> filter) {
+	private List<FieldEntry> getFields(Predicate<? super Field> filter) {
 		List<FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
@@ -54,7 +65,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	public List<FieldEntry> getAllFields(Predicate<Field> filter) {
+	private List<FieldEntry> getAllFields(Predicate<Field> filter) {
 		List<FieldEntry> out = new ArrayList<>();
 		for (ClassInfo superClass : getSuperClasses(this, 0)) {
 			out.addAll(superClass.getFields(filter));
@@ -64,27 +75,30 @@ public class ClassInfo extends TypeInfo implements Type {
 	}
 
 	@Override
-	public SerializerMetadata createMeta(ScanHandler factory) {
-		var methods = factory.methods;
-		var implementations = factory.implementations;
+	public SerializerMetadata createMetadata(ScanHandler factory) {
+		if (metadata == null) {
+			var methods = factory.methods;
+			var implementations = factory.implementations;
 
-		var methodMetadata = new ClassSerializerMetadata(this);
-		methods.put(this, methodMetadata);
+			var methodMetadata = new ClassSerializerMetadata(this);
+			methods.put(this, methodMetadata);
 
-		if (implementations.containsKey(this.clazz)) {
-			methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
-			return methodMetadata;
+			if (implementations.containsKey(this.clazz)) {
+				methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
+				return methodMetadata;
+			}
+
+			//get the fields
+			var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+			//check if it exists / if its accessible
+			factory.checkConstructor(allFields, this);
+			for (FieldEntry fieldInfo : allFields) {
+				var def = factory.getDefinition(fieldInfo, this);
+				methodMetadata.fields.put(fieldInfo, def);
+			}
+			metadata = methodMetadata;
 		}
-
-		//get the fields
-		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
-		//check if it exists / if its accessible
-		factory.checkConstructor(allFields, this);
-		for (FieldEntry fieldInfo : allFields) {
-			var def = factory.getDefinition(fieldInfo, this);
-			methodMetadata.fields.put(fieldInfo, def);
-		}
-		return methodMetadata;
+		return metadata;
 	}
 
 	@Override

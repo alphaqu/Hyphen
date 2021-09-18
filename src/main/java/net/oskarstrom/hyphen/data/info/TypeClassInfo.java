@@ -24,8 +24,8 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
-	public SerializerMetadata createMeta(ScanHandler factory) {
-		return actual.createMeta(factory);
+	public SerializerMetadata createMetadata(ScanHandler factory) {
+		return actual.createMetadata(factory);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerNull;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
+import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.gen.impl.AbstractDef;
 import net.oskarstrom.hyphen.gen.impl.IntDef;
 import net.oskarstrom.hyphen.options.*;
@@ -12,29 +13,34 @@ import net.oskarstrom.hyphen.thr.IllegalClassException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class SerializerFactory {
-	private final boolean debug;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations = new HashMap<>();
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations = new AnnotationParser.AnnotationOptionMap<>();
+	public final Map<TypeInfo, SerializerMetadata> methods = new HashMap<>();
+	private final boolean debug;
+	private final Class<?> clazz;
 
-	protected SerializerFactory(boolean debug) {
+	protected SerializerFactory(boolean debug, Class<?> clazz) {
 		this.debug = debug;
+		this.clazz = clazz;
 	}
 
 
-	public static SerializerFactory create() {
-		return createInternal(false);
+	public static SerializerFactory create(Class<?> clazz) {
+		return createInternal(false, clazz);
 	}
 
-	public static SerializerFactory createDebug() {
-		return createInternal(true);
+	public static SerializerFactory createDebug(Class<?> clazz) {
+		return createInternal(true, clazz);
 	}
 
-	private static SerializerFactory createInternal(boolean debugMode) {
-		final SerializerFactory scanHandler = new SerializerFactory(debugMode);
+	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
+		final SerializerFactory scanHandler = new SerializerFactory(debugMode, clazz);
 		scanHandler.addImpl(int.class, (field) -> new IntDef());
 		scanHandler.addTestImpl(Integer.class, Float.class, List.class);
 		scanHandler.addOption(SerNull.class, new ExistsOption());
@@ -72,13 +78,11 @@ public class SerializerFactory {
 		this.hyphenAnnotations.put(annotationClass, option);
 	}
 
-	public void build(Class<?> clazz) {
+	public void build() {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
-
-		ScanHandler scanner = new ScanHandler(implementations, hyphenAnnotations, debug);
+		ScanHandler scanner = new ScanHandler(methods, implementations, hyphenAnnotations, debug);
 		scanner.scan(clazz);
-
 	}
 }

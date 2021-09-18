@@ -20,7 +20,7 @@ public class ArrayInfo extends TypeInfo {
 
 
 	@Override
-	public SerializerMetadata createMeta(ScanHandler factory) {
+	public SerializerMetadata createMetadata(ScanHandler factory) {
 		return new ArraySerializerMetadata(this, values);
 	}
 
