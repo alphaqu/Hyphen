@@ -18,21 +18,18 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class ScanHandler {
-	public static final TypeInfo UNKNOWN_INFO = ClassInfo.create(null, null);
 	public final Map<TypeInfo, SerializerMetadata> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations;
 	@Nullable
 	private final DebugHandler debugHandler;
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/ScanHandler.java
-=======
+
 	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, null){
 		@Override
 		public String toString() {
 			return "UNKNOWN";
 		}
 	};
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/ScanHandler.java
 
 	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
 		this.implementations = implementations;
