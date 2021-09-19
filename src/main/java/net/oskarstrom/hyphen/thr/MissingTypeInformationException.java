@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class MissingTypeInformationException extends RuntimeException {
+public class MissingTypeInformationException extends HypenException {
 
 	public MissingTypeInformationException() {
 	}

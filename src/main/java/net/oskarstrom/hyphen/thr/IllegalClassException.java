@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class IllegalClassException extends RuntimeException {
+public class IllegalClassException extends HypenException {
 	public IllegalClassException() {
 	}
 

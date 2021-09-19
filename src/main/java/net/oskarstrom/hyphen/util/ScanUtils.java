@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static net.oskarstrom.hyphen.ScanHandler.UNKNOWN_INFO;
-import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
 
 public class ScanUtils {
 
@@ -78,18 +77,25 @@ public class ScanUtils {
 	}
 
 	public static Map<String, TypeInfo> mapSubclassTypes(Map<String, TypeInfo> typeInfos, ParameterizedType superType) {
-		var out = new HashMap<String, TypeInfo>();
-		var superclass = getClazz(superType);
-		var actualTypeArguments = superType.getActualTypeArguments();
-		var typeParameters = superclass.getTypeParameters();
+		try {
+			var out = new HashMap<String, TypeInfo>();
+			var superclass = getClazz(superType);
+			var actualTypeArguments = superType.getActualTypeArguments();
+			var typeParameters = superclass.getTypeParameters();
 
-		assert actualTypeArguments.length == typeParameters.length;
+			assert actualTypeArguments.length == typeParameters.length;
 
-		for (int i = 0; i < actualTypeArguments.length; i++) {
-			unifyType(out, typeInfos.getOrDefault(typeParameters[i].getName(), UNKNOWN_INFO), actualTypeArguments[i]);
+			for (int i = 0; i < actualTypeArguments.length; i++) {
+				unifyType(out, typeInfos.getOrDefault(typeParameters[i].getName(), UNKNOWN_INFO), actualTypeArguments[i]);
+			}
+
+			return out;
+		} catch (HypenException ex) {
+			throw ex.addEntries(
+					ThrowHandler.ThrowEntry.of("Current super type declaration", superType),
+					ThrowHandler.ThrowEntry.of("Super type", getClazz(superType).toGenericString()),
+					ThrowHandler.ThrowEntry.of("Super type values", typeInfos));
 		}
-
-		return out;
 	}
 
 	@SuppressWarnings("StatementWithEmptyBody")
@@ -101,7 +107,7 @@ public class ScanUtils {
 				// resolve type that was unknown
 				// I don't think we have to do something here? Although I do think there might be invalid case that we
 				// need to consider
-			}else {
+			} else {
 				// TODO: error not good enough, should handles cases like IncompatibleTypeFail
 				throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype",
 						ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
@@ -170,7 +176,7 @@ public class ScanUtils {
 							ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
 					);
 				}
-			} else if(typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
+			} else if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
 				throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification",
 						//ThrowHandler.ThrowEntry.of("Lookup", lookup),
 						ThrowHandler.ThrowEntry.of("Resolved", resolved),
@@ -195,48 +201,50 @@ public class ScanUtils {
 		}
 	}
 
-	@SuppressWarnings("ConstantConditions")
 	public static LinkedHashMap<String, TypeInfo> findTypes(TypeInfo source, Class<?> superClass, Class<?> subClass, ParameterizedType supperType, AnnotatedParameterizedType annotatedSuperType) {
-		if (subClass == null) return null;
-		else if (subClass == superClass) {
-			return mapTypes(source, supperType, annotatedSuperType);
-		} else {
-			Type[] types = pathTo(subClass, superClass, 0);
+		try {
+			if (subClass == null) return null;
+			else if (subClass == superClass) {
+				return mapTypes(source, supperType, annotatedSuperType);
+			} else {
+				Type[] types = pathTo(subClass, superClass, 0);
 
-			if (types == null) {
-				throw ThrowHandler.fatal(IllegalInheritanceException::new, "Subclass does not implement super.",
-						of("Source", source.clazz.getName()),
-						of("Superclass", superClass.getName()),
-						of("Subclass", subClass.getName()));
-			}
-
-			Map<String, TypeInfo> typeMap = ScanUtils.mapTypes(source, supperType, annotatedSuperType);
-
-			for (int i = types.length - 1; i >= 0; i--) {
-				Type currentType = types[i];
-				typeMap = mapSubclassTypes(typeMap, (ParameterizedType) currentType);
-			}
-
-			LinkedHashMap<String, TypeInfo> out = new LinkedHashMap<>();
-			for (var typeParameter : subClass.getTypeParameters()) {
-				String typeName = typeParameter.getTypeName();
-				TypeInfo value = typeMap.getOrDefault(typeName, UNKNOWN_INFO);
-
-				if (value == UNKNOWN_INFO) {
+				if (types == null) {
 					throw ThrowHandler.fatal(
-							MissingTypeInformationException::new, "Missing information for type argument",
-							ThrowHandler.ThrowEntry.of("Source", source),
-							ThrowHandler.ThrowEntry.of("FieldClass", superClass.getSimpleName()),
-							ThrowHandler.ThrowEntry.of("FieldType", supperType),
-							ThrowHandler.ThrowEntry.of("AnnotatedFieldType", annotatedSuperType),
-							ThrowHandler.ThrowEntry.of("SubClass", subClass.getSimpleName()),
-							ThrowHandler.ThrowEntry.of("TypeParameterName", typeName)
-					);
+							IllegalInheritanceException::new, "Subclass does not implement super.");
 				}
 
-				out.put(typeName, value);
+				Map<String, TypeInfo> typeMap = ScanUtils.mapTypes(source, supperType, annotatedSuperType);
+
+				for (int i = types.length - 1; i >= 0; i--) {
+					Type currentType = types[i];
+					typeMap = mapSubclassTypes(typeMap, (ParameterizedType) currentType);
+				}
+
+				LinkedHashMap<String, TypeInfo> out = new LinkedHashMap<>();
+				for (var typeParameter : subClass.getTypeParameters()) {
+					String typeName = typeParameter.getTypeName();
+					TypeInfo value = typeMap.getOrDefault(typeName, UNKNOWN_INFO);
+
+					if (value == UNKNOWN_INFO) {
+						throw ThrowHandler.fatal(
+								MissingTypeInformationException::new, "Missing information for type argument",
+								ThrowHandler.ThrowEntry.of("TypeParameterName", typeName)
+						);
+					}
+
+					out.put(typeName, value);
+				}
+				return out;
 			}
-			return out;
+		} catch (HypenException ex) {
+			throw ex.addEntries(
+					ThrowHandler.ThrowEntry.of("Source", source),
+					ThrowHandler.ThrowEntry.of("FieldClass", superClass.getSimpleName()),
+					ThrowHandler.ThrowEntry.of("FieldType", supperType),
+					ThrowHandler.ThrowEntry.of("AnnotatedFieldType", annotatedSuperType),
+					ThrowHandler.ThrowEntry.of("SubClass", subClass.getSimpleName())
+			);
 		}
 	}
 

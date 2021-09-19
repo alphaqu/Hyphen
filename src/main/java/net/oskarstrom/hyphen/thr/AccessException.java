@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class AccessException extends RuntimeException {
+public class AccessException extends HypenException {
 
 	public AccessException() {
 	}

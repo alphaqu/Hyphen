@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class NotYetImplementedException extends RuntimeException {
+public class NotYetImplementedException extends HypenException {
 
 	public NotYetImplementedException() {
 	}

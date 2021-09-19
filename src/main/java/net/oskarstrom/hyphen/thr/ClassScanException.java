@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class ClassScanException extends RuntimeException {
+public class ClassScanException extends HypenException {
 	public ClassScanException() {
 	}
 

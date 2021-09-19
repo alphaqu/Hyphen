@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class IncompatibleTypeException extends RuntimeException {
+public class IncompatibleTypeException extends HypenException {
 
 	public IncompatibleTypeException() {
 	}

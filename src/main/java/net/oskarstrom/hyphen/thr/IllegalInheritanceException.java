@@ -1,6 +1,6 @@
 package net.oskarstrom.hyphen.thr;
 
-public class IllegalInheritanceException extends RuntimeException {
+public class IllegalInheritanceException extends HypenException {
 
 	public IllegalInheritanceException() {
 	}

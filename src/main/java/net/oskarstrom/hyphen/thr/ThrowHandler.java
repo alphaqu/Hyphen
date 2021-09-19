@@ -1,8 +1,9 @@
 package net.oskarstrom.hyphen.thr;
 
-import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.FieldEntry;
+import net.oskarstrom.hyphen.data.info.ClassInfo;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
+import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -16,7 +17,7 @@ import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
 
 public class ThrowHandler {
 
-	public static void checkAccess(int modifier, Supplier<RuntimeException> runnable) {
+	public static void checkAccess(int modifier, Supplier<? extends RuntimeException> runnable) {
 		if (Modifier.isProtected(modifier) || Modifier.isPrivate(modifier) || !Modifier.isPublic(modifier)) {
 			throw runnable.get();
 		}
@@ -80,37 +81,24 @@ public class ThrowHandler {
 	}
 
 
-	//dollar for the styles.
 	//returns just for javac to stfu in some spots
-	public static RuntimeException fatal(Function<String, RuntimeException> ex, String reason, Throwable... throwable) {
-		StringBuilder builder = new StringBuilder();
-		builder.append('\n');
-		builder.append('\n');
-		builder.append("Reason: ");
-		builder.append("\n\t");
-		builder.append(reason);
-		builder.append('\n');
-		builder.append('\n');
-		builder.append("Detail: ");
-		for (Throwable throwable$ : throwable) {
-			builder.append('\n');
-			for (ThrowEntry entry : throwable$.getEntries()) {
-				builder.append(entry);
-			}
-		}
-		builder.append('\n');
-		builder.append('\n');
-		builder.append("Stacktrace: ");
-		throw ex.apply(builder.toString());
+	@Contract("_, _, _ -> fail")
+	public static HypenException fatal(Function<? super String, ? extends RuntimeException> ex, String reason, Throwable... throwable) {
+		RuntimeException runtimeException = ex.apply(reason);
+		if(runtimeException instanceof HypenException hypenException)
+			throw hypenException.addEntries(throwable);
+		else
+			throw new HypenException(runtimeException).addEntries(throwable);
 	}
+
 
 	public interface Throwable {
 		ThrowEntry[] getEntries();
 	}
 
 	public static class ThrowEntry implements Throwable {
-		public final String key;
-		public final String value;
+		private final String key;
+		private final String value;
 
 		public ThrowEntry(String key, String value) {
 			this.key = key;
@@ -125,6 +113,16 @@ public class ThrowHandler {
 			return new ThrowEntry(key, value);
 		}
 
+		public static ThrowEntry newLine() {
+			return new ThrowEntry(null, null) {
+				@Override
+				public String toString() {
+					return "";
+				}
+			};
+		}
+
+
 		@Override
 		public ThrowEntry[] getEntries() {
 			return new ThrowEntry[]{this};
@@ -132,7 +130,7 @@ public class ThrowHandler {
 
 		@Override
 		public String toString() {
-			return "\t" + key + ": " + value;
+			return "\t" + this.key + ": " + this.value;
 		}
 	}
 
