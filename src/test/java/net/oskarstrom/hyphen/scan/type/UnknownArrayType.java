@@ -2,10 +2,10 @@ package net.oskarstrom.hyphen.scan.type;
 
 import net.oskarstrom.hyphen.FailTest;
 import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.thr.ClassScanException;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
+import net.oskarstrom.hyphen.thr.NotYetImplementedException;
 
-@FailTest(ClassScanException.class)
+@FailTest(NotYetImplementedException.class)
 public class UnknownArrayType {
 
 	@Serialize
