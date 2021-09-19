@@ -19,7 +19,7 @@ public abstract class TypeInfo {
 	public final Class<?> clazz;
 	public final Map<Class<Annotation>, Annotation>  annotations;
 
-	public TypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation>  annotations) {
+	public TypeInfo(Class<?> clazz, Map<Class<Annotation> , Annotation>  annotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
 	}

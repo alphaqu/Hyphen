@@ -5,6 +5,7 @@ import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.data.FieldEntry;
 import net.oskarstrom.hyphen.data.metadata.ClassSerializerMetadata;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
+import net.oskarstrom.hyphen.thr.ThrowHandler;
 import net.oskarstrom.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;

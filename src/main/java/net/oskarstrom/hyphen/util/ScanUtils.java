@@ -1,12 +1,16 @@
 package net.oskarstrom.hyphen.util;
 
 import net.oskarstrom.hyphen.data.info.TypeInfo;
+import net.oskarstrom.hyphen.thr.IllegalInheritanceException;
+import net.oskarstrom.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
 
 public class ScanUtils {
 
@@ -90,8 +94,10 @@ public class ScanUtils {
 			Type[] types = pathTo(subClass, superType, 0);
 
 			if (types == null) {
-				//TODO error
-				throw new RuntimeException();
+				throw ThrowHandler.fatal(IllegalInheritanceException::new, "Subclass does not implement super.",
+						of("Source", source.clazz.getName()),
+						of("Superclass", superType.getName()),
+						of("Subclass", subClass.getName()));
 			}
 
 			source = TypeInfo.create(source, superType, type, null);
