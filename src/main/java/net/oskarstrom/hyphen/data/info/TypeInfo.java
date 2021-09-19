@@ -18,8 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public abstract class
-TypeInfo {
+public abstract class TypeInfo {
 	public final Class<?> clazz;
 	public final Map<Class<Annotation>, Annotation> annotations;
 
@@ -74,7 +73,7 @@ TypeInfo {
 				if (classInfo != null) {
 					// safety first!
 					// kropp: why are we copying?
-					return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
+					return TypeClassInfo.create(source, classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
 				}
 			}
 
@@ -88,10 +87,7 @@ TypeInfo {
 			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
 				var componentType = genericArrayType.getGenericComponentType();
 				var classInfo = create(source, fieldType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
-				if (classInfo == null) {
-					throw ThrowHandler.typeFail("Array component could not be identified", source, fieldType, componentType);
-				}
-				return ArrayInfo.create(source,fieldType, options, classInfo);
+				return ArrayInfo.create(source, fieldType, options, classInfo);
 			}
 			throw new RuntimeException();
 		}
