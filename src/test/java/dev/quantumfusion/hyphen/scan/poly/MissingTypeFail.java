@@ -5,9 +5,9 @@ import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C3;
-import dev.quantumfusion.hyphen.thr.MissingTypeInformationException;
+import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
-@FailTest(MissingTypeInformationException.class)
+@FailTest(UnknownTypeException.class)
 public class MissingTypeFail {
 	@Serialize
 	@SerSubclasses({C1.class, C3.class})

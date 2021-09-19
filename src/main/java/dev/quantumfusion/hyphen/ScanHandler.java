@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
 import dev.quantumfusion.hyphen.options.OptionParser;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.util.Color;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -28,6 +29,11 @@ public class ScanHandler {
 		@Override
 		public String toString() {
 			return "UNKNOWN";
+		}
+
+		@Override
+		public String toFancyString() {
+			return Color.BLUE + "?";
 		}
 	};
 

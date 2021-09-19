@@ -205,13 +205,6 @@ public class ScanUtils {
 					String typeName = typeParameter.getTypeName();
 					TypeInfo value = typeMap.getOrDefault(typeName, UNKNOWN_INFO);
 
-					if (value == UNKNOWN_INFO) {
-						throw ThrowHandler.fatal(
-								MissingTypeInformationException::new, "Missing information for type argument",
-								ThrowEntry.of("TypeParameterName", typeName)
-						);
-					}
-
 					out.put(typeName, value);
 				}
 				return out;
