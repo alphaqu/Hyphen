@@ -185,7 +185,6 @@ public class ScanUtils {
 				);
 			} else {
 				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-						//ThrowHandler.ThrowEntry.of("Lookup", lookup),
 						ThrowHandler.ThrowEntry.of("Resolved", resolved),
 						ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
 						ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
@@ -193,7 +192,6 @@ public class ScanUtils {
 			}
 		} else {
 			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-					//ThrowHandler.ThrowEntry.of("Lookup", lookup),
 					ThrowHandler.ThrowEntry.of("Resolved", resolved),
 					ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
 					ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)

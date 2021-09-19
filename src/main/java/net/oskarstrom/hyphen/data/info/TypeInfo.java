@@ -7,6 +7,7 @@ import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.options.AnnotationParser;
 import net.oskarstrom.hyphen.thr.ClassScanException;
+import net.oskarstrom.hyphen.thr.NotYetImplementedException;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import net.oskarstrom.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +18,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static net.oskarstrom.hyphen.ScanHandler.UNKNOWN_INFO;
 
 public abstract class TypeInfo {
 	public final Class<?> clazz;
@@ -78,7 +81,7 @@ public abstract class TypeInfo {
 			}
 
 			/*throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);*/
-			return ScanHandler.UNKNOWN_INFO;
+			return UNKNOWN_INFO;
 		}
 
 		//T[] arrrrrrrr
@@ -92,7 +95,15 @@ public abstract class TypeInfo {
 			throw new RuntimeException();
 		}
 
-		return null;
+		if (genericType instanceof WildcardType wildcardType){
+			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
+					ThrowHandler.ThrowEntry.of("GenericType", genericType)
+					);
+		}
+
+		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unknown generic type",
+				ThrowHandler.ThrowEntry.of("GenericType", genericType)
+		);
 	}
 
 	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldClass, Class<?> subType, Type fieldType, AnnotatedType annotatedFieldType) {
