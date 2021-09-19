@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
+import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
 
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;

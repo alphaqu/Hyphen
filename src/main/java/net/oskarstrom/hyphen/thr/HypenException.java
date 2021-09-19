@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class HypenException extends RuntimeException {
-	List<ThrowHandler.ThrowEntry> entries = new ArrayList<>();
+	List<ThrowEntry> entries = new ArrayList<>();
 
 	public HypenException() {
 	}
@@ -39,7 +39,7 @@ public class HypenException extends RuntimeException {
 		builder.append("Detail: ");
 		for (ThrowHandler.Throwable throwable$ : this.entries) {
 			builder.append('\n');
-			for (ThrowHandler.ThrowEntry entry : throwable$.getEntries()) {
+			for (ThrowEntry entry : throwable$.getEntries()) {
 				builder.append(entry);
 			}
 		}
@@ -50,7 +50,7 @@ public class HypenException extends RuntimeException {
 	}
 
 	public HypenException addEntry(ThrowHandler.Throwable throwable){
-		if(throwable instanceof ThrowHandler.ThrowEntry entry) {
+		if(throwable instanceof ThrowEntry entry) {
 			this.entries.add(0,entry);
 		} else {
 			this.entries.addAll(0, Arrays.asList(throwable.getEntries()));
@@ -59,16 +59,16 @@ public class HypenException extends RuntimeException {
 	}
 
 	public HypenException addEntries(ThrowHandler.Throwable ... throwables) {
-		List<ThrowHandler.ThrowEntry> newEntries = new ArrayList<>();
+		List<ThrowEntry> newEntries = new ArrayList<>();
 		for (ThrowHandler.Throwable throwable : throwables) {
-			if(throwable instanceof ThrowHandler.ThrowEntry entry) {
+			if(throwable instanceof ThrowEntry entry) {
 				newEntries.add(entry);
 			} else {
 				newEntries.addAll( Arrays.asList(throwable.getEntries()));
 			}
 		}
 		if(!this.entries.isEmpty()) {
-			newEntries.add(ThrowHandler.ThrowEntry.newLine());
+			newEntries.add(ThrowEntry.newLine());
 			newEntries.addAll(this.entries);
 		}
 		this.entries = newEntries;

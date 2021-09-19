@@ -8,7 +8,7 @@ import net.oskarstrom.hyphen.thr.ThrowHandler;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
-import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
+import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
 
 public class TypeClassInfo extends TypeInfo {
 	public final String typeName;

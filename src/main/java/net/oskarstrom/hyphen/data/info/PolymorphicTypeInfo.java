@@ -6,6 +6,7 @@ import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.data.metadata.JunctionSerializerMetadata;
 import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
+import net.oskarstrom.hyphen.thr.ThrowEntry;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import net.oskarstrom.hyphen.util.Color;
 
@@ -26,9 +27,9 @@ public class PolymorphicTypeInfo extends TypeInfo {
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
 					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
-					ThrowHandler.ThrowEntry.of("Source", source),
-					ThrowHandler.ThrowEntry.of("ClassType", fieldType),
-					ThrowHandler.ThrowEntry.of("Annotations", options));
+					ThrowEntry.of("Source", source),
+					ThrowEntry.of("ClassType", fieldType),
+					ThrowEntry.of("Annotations", options));
 		}
 
 		SerSubclasses subclasses = (SerSubclasses) options.get(SerSubclasses.class);

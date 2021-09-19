@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static net.oskarstrom.hyphen.thr.ThrowHandler.ThrowEntry.of;
+import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
 
 public class ThrowHandler {
 
@@ -71,11 +71,11 @@ public class ThrowHandler {
 
 	public static RuntimeException constructorNotFoundFail(List<FieldEntry> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
-		throwable[0] = ThrowHandler.ThrowEntry.of("Source Class", info.clazz.getSimpleName());
-		throwable[1] = ThrowHandler.ThrowEntry.of("Expected Constructor Parameters", "");
+		throwable[0] = ThrowEntry.of("Source Class", info.clazz.getSimpleName());
+		throwable[1] = ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
 			FieldEntry fieldInfo = fields.get(i);
-			throwable[i + 2] = ThrowHandler.ThrowEntry.of('\t' + fieldInfo.name, fieldInfo.clazz.getRawClass().getSimpleName());
+			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name, fieldInfo.clazz.getRawClass().getSimpleName());
 		}
 		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);
 	}
@@ -94,44 +94,6 @@ public class ThrowHandler {
 
 	public interface Throwable {
 		ThrowEntry[] getEntries();
-	}
-
-	public static class ThrowEntry implements Throwable {
-		private final String key;
-		private final String value;
-
-		public ThrowEntry(String key, String value) {
-			this.key = key;
-			this.value = value;
-		}
-
-		public static ThrowEntry of(String key, Object value) {
-			return of(key, value == null ? null : value.getClass().getSimpleName() + ": " + value);
-		}
-
-		public static ThrowEntry of(String key, String value) {
-			return new ThrowEntry(key, value);
-		}
-
-		public static ThrowEntry newLine() {
-			return new ThrowEntry(null, null) {
-				@Override
-				public String toString() {
-					return "";
-				}
-			};
-		}
-
-
-		@Override
-		public ThrowEntry[] getEntries() {
-			return new ThrowEntry[]{this};
-		}
-
-		@Override
-		public String toString() {
-			return "\t" + this.key + ": " + this.value;
-		}
 	}
 
 }

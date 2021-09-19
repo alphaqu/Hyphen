@@ -92,9 +92,9 @@ public class ScanUtils {
 			return out;
 		} catch (HypenException ex) {
 			throw ex.addEntries(
-					ThrowHandler.ThrowEntry.of("Current super type declaration", superType),
-					ThrowHandler.ThrowEntry.of("Super type", getClazz(superType).toGenericString()),
-					ThrowHandler.ThrowEntry.of("Super type values", typeInfos));
+					ThrowEntry.of("Current super type declaration", superType),
+					ThrowEntry.of("Super type", getClazz(superType).toGenericString()),
+					ThrowEntry.of("Super type values", typeInfos));
 		}
 	}
 
@@ -110,8 +110,8 @@ public class ScanUtils {
 			} else {
 				// TODO: error not good enough, should handles cases like IncompatibleTypeFail
 				throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype",
-						ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+						ThrowEntry.of("TypeInfo", typeInfo),
+						ThrowEntry.of("TypeParameter", typeParameter)
 				);
 			}
 		} else if (typeParameter instanceof TypeVariable<?> typeVariable) {
@@ -120,13 +120,11 @@ public class ScanUtils {
 				if (resolved.getOrDefault(typeVariable.getName(), UNKNOWN_INFO).equals(typeInfo)) {
 					// all is fine
 				} else {
-					// TODO: error not good enough, should handles cases like IncompatibleTypeFail
 					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Invalid type unification",
-							// ThrowHandler.ThrowEntry.of("Lookup", lookup),
-							ThrowHandler.ThrowEntry.of("Resolved", resolved),
-							ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowHandler.ThrowEntry.of("Parameter", typeVariable.getName()),
-							ThrowHandler.ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
+							ThrowEntry.of("Resolved", resolved),
+							ThrowEntry.of("TypeInfo", typeInfo),
+							ThrowEntry.of("Parameter", typeVariable.getName()),
+							ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
 					);
 				}
 			} else {
@@ -162,39 +160,37 @@ public class ScanUtils {
 						unifyType(resolved, selfType, superType);
 					}
 				} else if (clazz.isAssignableFrom(typeInfo.clazz)) {
-					throw ThrowHandler.fatal(NotYetImplementedException::new, "parameterized type unification through supertypes",
-							// ThrowHandler.ThrowEntry.of("Lookup", lookup),
-							ThrowHandler.ThrowEntry.of("Resolved", resolved),
-							ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+					throw ThrowHandler.fatal(
+							NotYetImplementedException::new, "parameterized type unification through supertypes",
+							ThrowEntry.of("Resolved", resolved),
+							ThrowEntry.of("TypeInfo", typeInfo),
+							ThrowEntry.of("TypeParameter", typeParameter)
 					);
 				} else {
 					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types",
-							// ThrowHandler.ThrowEntry.of("Lookup", lookup),
-							ThrowHandler.ThrowEntry.of("Resolved", resolved),
-							ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+							ThrowEntry.of("Resolved", resolved),
+							ThrowEntry.of("TypeInfo", typeInfo),
+							ThrowEntry.of("TypeParameter", typeParameter)
 					);
 				}
 			} else if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
 				throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification",
-						//ThrowHandler.ThrowEntry.of("Lookup", lookup),
-						ThrowHandler.ThrowEntry.of("Resolved", resolved),
-						ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+						ThrowEntry.of("Resolved", resolved),
+						ThrowEntry.of("TypeInfo", typeInfo),
+						ThrowEntry.of("TypeParameter", typeParameter)
 				);
 			} else {
 				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-						ThrowHandler.ThrowEntry.of("Resolved", resolved),
-						ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+						ThrowEntry.of("Resolved", resolved),
+						ThrowEntry.of("TypeInfo", typeInfo),
+						ThrowEntry.of("TypeParameter", typeParameter)
 				);
 			}
 		} else {
 			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-					ThrowHandler.ThrowEntry.of("Resolved", resolved),
-					ThrowHandler.ThrowEntry.of("TypeInfo", typeInfo),
-					ThrowHandler.ThrowEntry.of("TypeParameter", typeParameter)
+					ThrowEntry.of("Resolved", resolved),
+					ThrowEntry.of("TypeInfo", typeInfo),
+					ThrowEntry.of("TypeParameter", typeParameter)
 			);
 		}
 	}
@@ -227,7 +223,7 @@ public class ScanUtils {
 					if (value == UNKNOWN_INFO) {
 						throw ThrowHandler.fatal(
 								MissingTypeInformationException::new, "Missing information for type argument",
-								ThrowHandler.ThrowEntry.of("TypeParameterName", typeName)
+								ThrowEntry.of("TypeParameterName", typeName)
 						);
 					}
 
@@ -237,11 +233,11 @@ public class ScanUtils {
 			}
 		} catch (HypenException ex) {
 			throw ex.addEntries(
-					ThrowHandler.ThrowEntry.of("Source", source),
-					ThrowHandler.ThrowEntry.of("FieldClass", superClass.getSimpleName()),
-					ThrowHandler.ThrowEntry.of("FieldType", supperType),
-					ThrowHandler.ThrowEntry.of("AnnotatedFieldType", annotatedSuperType),
-					ThrowHandler.ThrowEntry.of("SubClass", subClass.getSimpleName())
+					ThrowEntry.of("Source", source),
+					ThrowEntry.of("FieldClass", superClass.getSimpleName()),
+					ThrowEntry.of("FieldType", supperType),
+					ThrowEntry.of("AnnotatedFieldType", annotatedSuperType),
+					ThrowEntry.of("SubClass", subClass.getSimpleName())
 			);
 		}
 	}

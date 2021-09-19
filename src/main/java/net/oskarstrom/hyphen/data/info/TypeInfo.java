@@ -8,6 +8,7 @@ import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
 import net.oskarstrom.hyphen.options.AnnotationParser;
 import net.oskarstrom.hyphen.thr.ClassScanException;
 import net.oskarstrom.hyphen.thr.NotYetImplementedException;
+import net.oskarstrom.hyphen.thr.ThrowEntry;
 import net.oskarstrom.hyphen.thr.ThrowHandler;
 import net.oskarstrom.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -33,9 +34,9 @@ public abstract class TypeInfo {
 	public static TypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, @Nullable AnnotatedType annotatedType) {
 		if (source == null) {
 			throw ThrowHandler.fatal(NullPointerException::new, "source is null",
-					ThrowHandler.ThrowEntry.of("ClassType", fieldType),
-					ThrowHandler.ThrowEntry.of("Type", genericType),
-					ThrowHandler.ThrowEntry.of("AnnotatedType", annotatedType)
+					ThrowEntry.of("ClassType", fieldType),
+					ThrowEntry.of("Type", genericType),
+					ThrowEntry.of("AnnotatedType", annotatedType)
 			);
 		}
 
@@ -97,12 +98,12 @@ public abstract class TypeInfo {
 
 		if (genericType instanceof WildcardType wildcardType){
 			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
-					ThrowHandler.ThrowEntry.of("GenericType", genericType)
+					ThrowEntry.of("GenericType", genericType)
 					);
 		}
 
 		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unknown generic type",
-				ThrowHandler.ThrowEntry.of("GenericType", genericType)
+				ThrowEntry.of("GenericType", genericType)
 		);
 	}
 
@@ -117,10 +118,10 @@ public abstract class TypeInfo {
 				if (types == null) {
 					throw ThrowHandler.fatal(
 							ClassScanException::new, "Failed to find the type",
-							ThrowHandler.ThrowEntry.of("SourceClass", source),
-							ThrowHandler.ThrowEntry.of("SubType", subType),
-							ThrowHandler.ThrowEntry.of("FieldClass", fieldClass),
-							ThrowHandler.ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
+							ThrowEntry.of("SourceClass", source),
+							ThrowEntry.of("SubType", subType),
+							ThrowEntry.of("FieldClass", fieldClass),
+							ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
 					);
 				}
 
@@ -128,9 +129,9 @@ public abstract class TypeInfo {
 				return new ParameterizedClassInfo(subType, Map.of(), types);
 			} else {
 				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
-						ThrowHandler.ThrowEntry.of("SourceClass", source),
-						ThrowHandler.ThrowEntry.of("SubType", subType),
-						ThrowHandler.ThrowEntry.of("Poly", fieldClass));
+						ThrowEntry.of("SourceClass", source),
+						ThrowEntry.of("SubType", subType),
+						ThrowEntry.of("Poly", fieldClass));
 			}
 		}
 
