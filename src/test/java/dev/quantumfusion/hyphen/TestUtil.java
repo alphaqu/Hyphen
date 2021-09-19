@@ -49,9 +49,9 @@ public class TestUtil {
 					SerializerFactory.createDebug(clazz).build();
 				} catch (Throwable throwable) {
 					if (throwable.getClass().equals(value)) {
-						Assumptions.assumeTrue(value != NotYetImplementedException.class, "Ignoring NYI feature");
 						System.err.println("Got expected error: ");
 						throwable.printStackTrace();
+						Assumptions.assumeTrue(value != NotYetImplementedException.class, "Ignoring NYI feature");
 						return;
 					}
 					fail("Expected a different exception: " + value.getSimpleName(), throwable);

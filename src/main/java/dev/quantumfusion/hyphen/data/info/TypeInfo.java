@@ -15,10 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
@@ -97,8 +94,16 @@ public abstract class TypeInfo {
 		}
 
 		if (genericType instanceof WildcardType wildcardType){
+			if(wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class){
+				// just a <?>
+				return UNKNOWN_INFO;
+			}
+
+
 			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
-					ThrowEntry.of("GenericType", genericType)
+					ThrowEntry.of("GenericType", wildcardType),
+					ThrowEntry.of("UpperBounds", Arrays.toString(wildcardType.getUpperBounds())),
+					ThrowEntry.of("LowerBounds", Arrays.toString(wildcardType.getLowerBounds()))
 					);
 		}
 

@@ -2,10 +2,10 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.thr.ClassScanException;
 import dev.quantumfusion.hyphen.thr.IllegalClassException;
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
 
-@FailTest(NotYetImplementedException.class)
+@FailTest(ClassScanException.class)
 public class UnknownArrayType {
 
 	@Serialize
