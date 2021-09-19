@@ -13,13 +13,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
-public abstract class TypeInfo {
+public abstract class
+TypeInfo {
 	public final Class<?> clazz;
-	public final Map<Class<Annotation>, Annotation>  annotations;
+	public final Map<Class<Annotation>, Annotation> annotations;
 
-	public TypeInfo(Class<?> clazz, Map<Class<Annotation> , Annotation>  annotations) {
+	public TypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
 	}
@@ -45,7 +49,7 @@ public abstract class TypeInfo {
 		if (genericType instanceof Class clazz) {
 			if (clazz.isArray()) {
 				Class componentType = clazz.getComponentType();
-				return new ArrayInfo(clazz, options, create(source, componentType, componentType, null));
+				return ArrayInfo.create(source, clazz, options, create(source, componentType, componentType, null));
 			} else {
 				return ClassInfo.create(clazz, options);
 			}
@@ -87,7 +91,7 @@ public abstract class TypeInfo {
 				if (classInfo == null) {
 					throw ThrowHandler.typeFail("Array component could not be identified", source, fieldType, componentType);
 				}
-				return new ArrayInfo(fieldType, options, classInfo);
+				return ArrayInfo.create(source,fieldType, options, classInfo);
 			}
 			throw new RuntimeException();
 		}

@@ -26,28 +26,7 @@ public class TestUtil {
 		try {
 			List<DynamicNode> tests = new ArrayList<>();
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
-				if (line.endsWith(".class")) {
-					Class<?> aClass = getClass(line, packageName);
-					assert aClass != null;
-					FailTest failTest = aClass.getDeclaredAnnotation(FailTest.class);
-					Executable executable;
-					if (failTest != null) {
-						executable = () -> {
-							Class<? extends Throwable> value = failTest.value();
-							try {
-								SerializerFactory.createDebug(aClass).build();
-								fail();
-							} catch (Throwable throwable) {
-								if (throwable.getClass().equals(value)) assertTrue(true, throwable.getMessage());
-								else fail(throwable);
-							}
-						};
-					} else {
-						executable = () -> SerializerFactory.createDebug(aClass).build();
-					}
-
-					tests.add(DynamicTest.dynamicTest(aClass.getSimpleName(), URI.create("class:" + aClass.getName()), executable));
-				}
+				if (line.endsWith(".class")) tests.add(test(getClass(line, packageName)));
 			}
 
 			br.close();
@@ -57,6 +36,28 @@ public class TestUtil {
 		}
 		throw new RuntimeException();
 	}
+	public static DynamicNode test(Class<?> clazz) {
+		assert clazz != null;
+		FailTest failTest = clazz.getDeclaredAnnotation(FailTest.class);
+		Executable executable;
+		if (failTest != null) {
+			executable = () -> {
+				Class<? extends Throwable> value = failTest.value();
+				try {
+					SerializerFactory.createDebug(clazz).build();
+					fail();
+				} catch (Throwable throwable) {
+					if (throwable.getClass().equals(value)) assertTrue(true, throwable.getMessage());
+					else fail(throwable);
+				}
+			};
+		} else {
+			executable = () -> SerializerFactory.createDebug(clazz).build();
+		}
+
+		return DynamicTest.dynamicTest(clazz.getSimpleName(), URI.create("class:" + clazz.getName()), executable);
+	}
+
 
 	private static Class<?> getClass(String className, String packageName) {
 		try {

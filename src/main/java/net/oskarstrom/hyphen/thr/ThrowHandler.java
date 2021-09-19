@@ -5,6 +5,7 @@ import net.oskarstrom.hyphen.data.FieldEntry;
 import net.oskarstrom.hyphen.data.info.TypeInfo;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
@@ -22,12 +23,21 @@ public class ThrowHandler {
 	}
 
 	// some methods to shorten code
-	public static RuntimeException typeFail(String reason, TypeInfo info, Class<?> clazz, Type type) {
+	public static RuntimeException typeFail(String reason, TypeInfo source, Class<?> clazz, Type type) {
 		return fatal(ClassScanException::new, reason, new ThrowEntry[]{
-				of("Source Class", info.clazz.getName()),
+				of("Source Class", source.clazz.getName()),
 				of("Error Class", clazz.getName()),
 				of("Type Name", type.getTypeName()),
 				of("Type Class", type.getClass().getSimpleName())
+		});
+	}
+
+	public static RuntimeException typeFail(String reason, TypeInfo source, Field field) {
+		return fatal(ClassScanException::new, reason, new ThrowEntry[]{
+				of("Source Class", source.clazz.getName()),
+				of("Field Class", field.getType()),
+				of("Field Name", field.getName()),
+				of("Type", field.getGenericType())
 		});
 	}
 

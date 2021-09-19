@@ -60,6 +60,9 @@ public class ClassInfo extends TypeInfo implements Type {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
 				TypeInfo classInfo = TypeInfo.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				if (classInfo == ScanHandler.UNKNOWN_INFO)
+					throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
+
 				info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
 			}
 		}

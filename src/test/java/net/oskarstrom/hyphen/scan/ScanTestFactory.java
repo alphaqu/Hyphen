@@ -1,15 +1,22 @@
 package net.oskarstrom.hyphen.scan;
 
 import net.oskarstrom.hyphen.TestUtil;
+import net.oskarstrom.hyphen.scan.type.UnknownType;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
 public class ScanTestFactory {
 
+	@TestFactory
+	Iterator<DynamicNode> bareTest() {
+		return Collections.singletonList(TestUtil.test(UnknownType.class)).iterator();
+	}
 
 	@Nested
 	public class SimpleSparkPlug {
