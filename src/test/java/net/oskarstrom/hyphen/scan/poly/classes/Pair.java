@@ -5,7 +5,7 @@ import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 
 @FailTest(IllegalClassException.class)
-public class Pair<A, B> {
+public class Pair<A, B> implements IPair<A,B>, IReversedPair<B,A> {
 	@Serialize
 	public A a;
 	@Serialize

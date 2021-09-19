@@ -5,7 +5,7 @@ import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 
 @FailTest(IllegalClassException.class)
-public class C1<A> {
+public class C1<A> extends C0 {
 	@Serialize
 	public A a;
 

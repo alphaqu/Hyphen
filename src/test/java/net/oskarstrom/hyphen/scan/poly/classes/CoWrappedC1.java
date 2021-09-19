@@ -13,4 +13,9 @@ public class CoWrappedC1<A, CA extends C1<A>> extends C1<CA>{
 		super(ca);
 		this.selfA = selfA;
 	}
+
+	// FIXME: Tracking issue #10
+	public CoWrappedC1(Object ca, A selfA){
+		this((CA) ca, selfA);
+	}
 }

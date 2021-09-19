@@ -95,21 +95,21 @@ public abstract class TypeInfo {
 		return null;
 	}
 
-	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldType, Class<?> subType, Type genericType, AnnotatedType annotatedGenericType) {
+	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldClass, Class<?> subType, Type fieldType, AnnotatedType annotatedFieldType) {
 		TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
 
 		if (typeParameters.length != 0) {
 			// let's try to figure out the types
-			if (genericType instanceof ParameterizedType parameterizedType) {
-				LinkedHashMap<String, TypeInfo> types = ScanUtils.findTypes(source, fieldType, subType, parameterizedType, (AnnotatedParameterizedType) annotatedGenericType);
+			if (fieldType instanceof ParameterizedType parameterizedFieldType) {
+				LinkedHashMap<String, TypeInfo> types = ScanUtils.findTypes(source, fieldClass, subType, parameterizedFieldType, (AnnotatedParameterizedType) annotatedFieldType);
 
 				if (types == null) {
 					throw ThrowHandler.fatal(
 							ClassScanException::new, "Failed to find the type",
 							ThrowHandler.ThrowEntry.of("SourceClass", source),
 							ThrowHandler.ThrowEntry.of("SubType", subType),
-							ThrowHandler.ThrowEntry.of("Poly", fieldType),
-							ThrowHandler.ThrowEntry.of("Type", parameterizedType)
+							ThrowHandler.ThrowEntry.of("FieldClass", fieldClass),
+							ThrowHandler.ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
 					);
 				}
 
@@ -119,7 +119,7 @@ public abstract class TypeInfo {
 				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
 						ThrowHandler.ThrowEntry.of("SourceClass", source),
 						ThrowHandler.ThrowEntry.of("SubType", subType),
-						ThrowHandler.ThrowEntry.of("Poly", fieldType));
+						ThrowHandler.ThrowEntry.of("Poly", fieldClass));
 			}
 		}
 
@@ -130,7 +130,7 @@ public abstract class TypeInfo {
 
 
 		//Thing<T,T>
-		if (genericType instanceof ParameterizedType type) {
+		if (fieldType instanceof ParameterizedType type) {
 			// TODO: think
 			/*
 			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
@@ -141,7 +141,7 @@ public abstract class TypeInfo {
 		}
 
 		//T thing
-		if (genericType instanceof TypeVariable typeVariable) {
+		if (fieldType instanceof TypeVariable typeVariable) {
 			LinkedHashMap<String, TypeInfo> typeMap;
 			if (source instanceof ParameterizedClassInfo info) {
 				typeMap = info.types;
@@ -149,14 +149,14 @@ public abstract class TypeInfo {
 			var classInfo = typeMap.get(typeVariable.getName());
 
 			if (classInfo == null) {
-				throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);
+				throw ThrowHandler.typeFail("Type could not be identified", source, fieldClass, typeVariable);
 			}
 			//safety first!
 			return classInfo.copy();
 		}
 
 		//T[] arrrrrrrr
-		if (genericType instanceof GenericArrayType genericArrayType) {
+		if (fieldType instanceof GenericArrayType genericArrayType) {
 			//get component class
 			// TODO: think
 			/*

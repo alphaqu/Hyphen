@@ -23,7 +23,12 @@ public class ScanHandler {
 	public final Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations;
 	@Nullable
 	private final DebugHandler debugHandler;
-	public static final TypeInfo UNKNOWN_INFO = ClassInfo.create(null, null);
+	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, null){
+		@Override
+		public String toString() {
+			return "UNKNOWN";
+		}
+	};
 
 	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Class<? extends Annotation>, OptionParser<?>> hyphenAnnotations, boolean debug) {
 		this.implementations = implementations;

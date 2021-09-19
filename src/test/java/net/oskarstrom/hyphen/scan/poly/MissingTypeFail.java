@@ -5,10 +5,9 @@ import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.scan.poly.classes.C1;
 import net.oskarstrom.hyphen.scan.poly.classes.C3;
-import net.oskarstrom.hyphen.scan.poly.classes.C3Def;
-import net.oskarstrom.hyphen.thr.ClassScanException;
+import net.oskarstrom.hyphen.thr.MissingTypeInformationException;
 
-@FailTest(ClassScanException.class)
+@FailTest(MissingTypeInformationException.class)
 public class MissingTypeFail {
 	@Serialize
 	@SerSubclasses({C1.class, C3.class})
