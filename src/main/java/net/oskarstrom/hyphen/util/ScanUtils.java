@@ -100,94 +100,79 @@ public class ScanUtils {
 
 	@SuppressWarnings("StatementWithEmptyBody")
 	private static void unifyType(Map<? super String, ? super TypeInfo> resolved, TypeInfo typeInfo, Type typeParameter) {
-		if (typeParameter instanceof Class<?> clazz) {
-			if (typeInfo.clazz == clazz) {
-				// All is fine
-			} else if (typeInfo == UNKNOWN_INFO) {
-				// resolve type that was unknown
-				// I don't think we have to do something here? Although I do think there might be invalid case that we
-				// need to consider
-			} else {
-				// TODO: error not good enough, should handles cases like IncompatibleTypeFail
-				throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype",
-						ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowEntry.of("TypeParameter", typeParameter)
-				);
-			}
-		} else if (typeParameter instanceof TypeVariable<?> typeVariable) {
-			if (resolved.containsKey(typeVariable.getName())) {
-				// check if it's the same
-				if (resolved.getOrDefault(typeVariable.getName(), UNKNOWN_INFO).equals(typeInfo)) {
-					// all is fine
+		try {
+			if (typeParameter instanceof Class<?> clazz) {
+				if (typeInfo.clazz == clazz) {
+					// All is fine
+				} else if (typeInfo == UNKNOWN_INFO) {
+					// resolve type that was unknown
+					// I don't think we have to do something here? Although I do think there might be invalid case that we
+					// need to consider
 				} else {
-					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Invalid type unification",
-							ThrowEntry.of("Resolved", resolved),
-							ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowEntry.of("Parameter", typeVariable.getName()),
-							ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
-					);
+					// TODO: error not good enough, should handles cases like IncompatibleTypeFail
+					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype");
 				}
-			} else {
-				// TODO: check bounds
-				resolved.put(typeVariable.getName(), typeInfo);
-
-				Type[] bounds = typeVariable.getBounds();
-
-				for (Type bound : bounds) {
-					if (bound == Object.class) {
-						// TODO: i think this shouldn't be a special case here and instead be handled by class/class unifying?
-						continue;
+			} else if (typeParameter instanceof TypeVariable<?> typeVariable) {
+				if (resolved.containsKey(typeVariable.getName())) {
+					// check if it's the same
+					if (resolved.getOrDefault(typeVariable.getName(), UNKNOWN_INFO).equals(typeInfo)) {
+						// all is fine
+					} else {
+						throw ThrowHandler.fatal(IncompatibleTypeException::new, "Invalid type unification",
+								ThrowEntry.of("Parameter", typeVariable.getName()),
+								ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
+						);
 					}
-
-					// eg Foo<A, B extends List<A>> extends Bar<B> with Bar<List<Int>>
-					// TODO: we should mark this as a <? extends Bound>
-					unifyType(resolved, typeInfo, bound);
-				}
-			}
-		} else if (typeParameter instanceof ParameterizedType superParameterizedType) {
-			if (typeInfo instanceof ParameterizedClassInfo selfParameterizedType) {
-				Class<?> clazz = getClazz(superParameterizedType);
-				if (clazz == typeInfo.clazz) {
-					var superTypeArguments = superParameterizedType.getActualTypeArguments();
-					var selfTypeArguments = selfParameterizedType.types;
-
-					assert superTypeArguments.length == selfTypeArguments.size();
-
-					int i = 0;
-					for (var selfType : selfTypeArguments.values()) {
-						Type superType = superTypeArguments[i++];
-
-						unifyType(resolved, selfType, superType);
-					}
-				} else if (clazz.isAssignableFrom(typeInfo.clazz)) {
-					throw ThrowHandler.fatal(
-							NotYetImplementedException::new, "parameterized type unification through supertypes",
-							ThrowEntry.of("Resolved", resolved),
-							ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowEntry.of("TypeParameter", typeParameter)
-					);
 				} else {
-					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types",
-							ThrowEntry.of("Resolved", resolved),
-							ThrowEntry.of("TypeInfo", typeInfo),
-							ThrowEntry.of("TypeParameter", typeParameter)
-					);
+					// TODO: check bounds
+					resolved.put(typeVariable.getName(), typeInfo);
+
+					Type[] bounds = typeVariable.getBounds();
+
+					for (Type bound : bounds) {
+						if (bound == Object.class) {
+							// TODO: i think this shouldn't be a special case here and instead be handled by class/class unifying?
+							continue;
+						}
+
+						// eg Foo<A, B extends List<A>> extends Bar<B> with Bar<List<Int>>
+						// TODO: we should mark this as a <? extends Bound>
+						unifyType(resolved, typeInfo, bound);
+					}
 				}
-			} else if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
-				throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification",
-						ThrowEntry.of("Resolved", resolved),
-						ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowEntry.of("TypeParameter", typeParameter)
-				);
+			} else if (typeParameter instanceof ParameterizedType superParameterizedType) {
+				if (typeInfo instanceof ParameterizedClassInfo selfParameterizedType) {
+					Class<?> clazz = getClazz(superParameterizedType);
+					if (clazz == typeInfo.clazz) {
+						var superTypeArguments = superParameterizedType.getActualTypeArguments();
+						var selfTypeArguments = selfParameterizedType.types;
+
+						assert superTypeArguments.length == selfTypeArguments.size();
+
+						int i = 0;
+						for (var selfType : selfTypeArguments.values()) {
+							Type superType = superTypeArguments[i++];
+
+							unifyType(resolved, selfType, superType);
+						}
+					} else if (clazz.isAssignableFrom(typeInfo.clazz)) {
+						throw ThrowHandler.fatal(
+								NotYetImplementedException::new, "parameterized type unification through supertypes",
+								ThrowEntry.of("TypeParameter", typeParameter)
+						);
+					} else {
+						throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types");
+					}
+				} else if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
+					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification");
+				} else {
+					throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
+				}
 			} else {
-				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
-						ThrowEntry.of("Resolved", resolved),
-						ThrowEntry.of("TypeInfo", typeInfo),
-						ThrowEntry.of("TypeParameter", typeParameter)
-				);
+				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
 			}
-		} else {
-			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request",
+		} catch (HypenException ex) {
+			throw ex.addEntries(
 					ThrowEntry.of("Resolved", resolved),
 					ThrowEntry.of("TypeInfo", typeInfo),
 					ThrowEntry.of("TypeParameter", typeParameter)
