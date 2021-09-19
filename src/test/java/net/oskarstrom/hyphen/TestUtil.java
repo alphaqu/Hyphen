@@ -45,10 +45,19 @@ public class TestUtil {
 				Class<? extends Throwable> value = failTest.value();
 				try {
 					SerializerFactory.createDebug(clazz).build();
-					fail();
 				} catch (Throwable throwable) {
-					if (throwable.getClass().equals(value)) assertTrue(true, throwable.getMessage());
-					else fail(throwable);
+					if (throwable.getClass().equals(value)) {
+						System.err.println("Got expected error: ");
+						throwable.printStackTrace();
+						return;
+					}
+					fail("Expected a different exception: " + value.getSimpleName(), throwable);
+				}
+
+				if(value == Throwable.class){
+					fail("Forcefully failed test");
+				} else {
+					fail("Expected test to fail");
 				}
 			};
 		} else {

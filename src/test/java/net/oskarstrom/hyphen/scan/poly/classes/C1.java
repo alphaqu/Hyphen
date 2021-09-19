@@ -1,16 +1,15 @@
-package net.oskarstrom.hyphen.scan.poly;
+package net.oskarstrom.hyphen.scan.poly.classes;
 
 import net.oskarstrom.hyphen.FailTest;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.thr.IllegalClassException;
 
 @FailTest(IllegalClassException.class)
-public class C2<B> extends C1<B> {
+public class C1<A> {
 	@Serialize
-	public B b;
+	public A a;
 
-	public C2(B b, B b1) {
-		super(b);
-		this.b = b1;
+	public C1(A a) {
+		this.a = a;
 	}
 }

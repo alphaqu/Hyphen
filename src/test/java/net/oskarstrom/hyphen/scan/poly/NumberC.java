@@ -1,22 +1,19 @@
 package net.oskarstrom.hyphen.scan.poly;
 
-
 import net.oskarstrom.hyphen.FailTest;
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.annotation.Serialize;
 import net.oskarstrom.hyphen.scan.poly.classes.C1;
 import net.oskarstrom.hyphen.scan.poly.classes.C2;
-import net.oskarstrom.hyphen.thr.IllegalInheritanceException;
 
-import java.util.List;
-
-@FailTest(IllegalInheritanceException.class)
-public class DoesNotInheritFail {
+// produces the wrong type info
+@FailTest
+public class NumberC {
 	@Serialize
 	@SerSubclasses({C1.class, C2.class})
-	public List<Integer> test;
+	public C1< @SerSubclasses({Integer.class, Float.class}) Number> data;
 
-	public DoesNotInheritFail(List<Integer> test) {
-		this.test = test;
+	public NumberC(C1<Number> data) {
+		this.data = data;
 	}
 }

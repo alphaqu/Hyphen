@@ -2,8 +2,8 @@ package net.oskarstrom.hyphen.scan.spedtesting;
 
 import net.oskarstrom.hyphen.annotation.SerSubclasses;
 import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.scan.poly.C1;
-import net.oskarstrom.hyphen.scan.poly.C2;
+import net.oskarstrom.hyphen.scan.poly.classes.C1;
+import net.oskarstrom.hyphen.scan.poly.classes.C2;
 
 public class LifeStackedTest {
 	@Serialize

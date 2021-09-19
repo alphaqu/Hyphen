@@ -8,5 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface FailTest {
-	Class<? extends Throwable> value();
+	// Throwable can never be thrown itself, so this will force a test to always fail
+	Class<? extends Throwable> value() default Throwable.class;
 }

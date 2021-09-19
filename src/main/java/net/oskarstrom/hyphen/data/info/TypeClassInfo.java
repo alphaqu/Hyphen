@@ -27,7 +27,7 @@ public class TypeClassInfo extends TypeInfo {
 		if (actual == ScanHandler.UNKNOWN_INFO)
 			throw ThrowHandler.fatal(ClassScanException::new, "Type could not be identified",
 					of("Source Class", source.clazz.getName()),
-					of("Error Class", clazz.getName()));
+					of("Error Class", clazz));
 		return new TypeClassInfo(clazz, annotations, typeName, type, actual);
 	}
 
