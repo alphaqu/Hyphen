@@ -1,7 +1,5 @@
-package dev.quantumfusion.hyphen.scan.poly;
+package dev.quantumfusion.hyphen.scan.poly.classes;
 
-
-import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 
 public class IntC1 extends C1<Integer> {
 	public IntC1(Integer integer) {

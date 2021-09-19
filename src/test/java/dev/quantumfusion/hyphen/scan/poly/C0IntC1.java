@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.scan.poly;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.C0;
+import dev.quantumfusion.hyphen.scan.poly.classes.IntC1;
 
 public class C0IntC1 {
 	@Serialize
