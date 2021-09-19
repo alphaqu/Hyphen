@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.scan.poly;
+package dev.quantumfusion.hyphen.scan.poly.extract;
 
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
