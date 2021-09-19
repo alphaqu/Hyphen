@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.function.Executable;
@@ -47,6 +49,7 @@ public class TestUtil {
 					SerializerFactory.createDebug(clazz).build();
 				} catch (Throwable throwable) {
 					if (throwable.getClass().equals(value)) {
+						Assumptions.assumeTrue(value != NotYetImplementedException.class, "Ignoring NYI feature");
 						System.err.println("Got expected error: ");
 						throwable.printStackTrace();
 						return;
