@@ -21,7 +21,6 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes(source, type, annotatedType);
 		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, out);
-
 	}
 
 	@Override
