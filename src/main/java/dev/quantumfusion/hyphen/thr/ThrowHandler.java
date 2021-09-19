@@ -1,15 +1,9 @@
 package dev.quantumfusion.hyphen.thr;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/thr/ThrowHandler.java
 import dev.quantumfusion.hyphen.data.FieldEntry;
 import dev.quantumfusion.hyphen.data.info.ClassInfo;
 import dev.quantumfusion.hyphen.data.info.TypeInfo;
-=======
-import net.oskarstrom.hyphen.data.FieldEntry;
-import net.oskarstrom.hyphen.data.info.ClassInfo;
-import net.oskarstrom.hyphen.data.info.TypeInfo;
 import org.jetbrains.annotations.Contract;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/thr/ThrowHandler.java
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -19,11 +13,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/thr/ThrowHandler.java
-import static dev.quantumfusion.hyphen.thr.ThrowHandler.ThrowEntry.of;
-=======
-import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/thr/ThrowHandler.java
+import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class ThrowHandler {
 
@@ -95,7 +85,7 @@ public class ThrowHandler {
 	@Contract("_, _, _ -> fail")
 	public static HypenException fatal(Function<? super String, ? extends RuntimeException> ex, String reason, Throwable... throwable) {
 		RuntimeException runtimeException = ex.apply(reason);
-		if(runtimeException instanceof HypenException hypenException)
+		if (runtimeException instanceof HypenException hypenException)
 			throw hypenException.addEntries(throwable);
 		else
 			throw new HypenException(runtimeException).addEntries(throwable);

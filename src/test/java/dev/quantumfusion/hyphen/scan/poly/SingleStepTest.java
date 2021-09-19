@@ -1,14 +1,9 @@
 package dev.quantumfusion.hyphen.scan.poly;
 
-<<<<<<< HEAD:src/test/java/dev/quantumfusion/hyphen/scan/poly/SingleStepTest.java
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-=======
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.scan.poly.classes.C1;
-import net.oskarstrom.hyphen.scan.poly.classes.C2;
->>>>>>> origin/union-types:src/test/java/net/oskarstrom/hyphen/scan/poly/SingleStepTest.java
+import dev.quantumfusion.hyphen.scan.poly.classes.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 
 public class SingleStepTest {
 	@Serialize

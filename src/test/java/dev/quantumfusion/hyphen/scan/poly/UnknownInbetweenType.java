@@ -1,10 +1,10 @@
-package net.oskarstrom.hyphen.scan.poly;
+package dev.quantumfusion.hyphen.scan.poly;
 
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.scan.poly.classes.C1;
-import net.oskarstrom.hyphen.scan.poly.classes.C2;
-import net.oskarstrom.hyphen.scan.poly.classes.C3Def;
+import dev.quantumfusion.hyphen.annotation.SerSubclasses;
+import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.scan.poly.classes.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.C2;
+import dev.quantumfusion.hyphen.scan.poly.classes.C3Def;
 
 public class UnknownInbetweenType {
 	@Serialize

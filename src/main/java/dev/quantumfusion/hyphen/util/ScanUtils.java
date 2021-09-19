@@ -1,35 +1,19 @@
 package dev.quantumfusion.hyphen.util;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/util/ScanUtils.java
+import dev.quantumfusion.hyphen.data.info.ParameterizedClassInfo;
+import dev.quantumfusion.hyphen.data.info.PolymorphicTypeInfo;
 import dev.quantumfusion.hyphen.data.info.TypeInfo;
-import dev.quantumfusion.hyphen.thr.IllegalInheritanceException;
-import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-=======
-import net.oskarstrom.hyphen.data.info.ParameterizedClassInfo;
-import net.oskarstrom.hyphen.data.info.PolymorphicTypeInfo;
-import net.oskarstrom.hyphen.data.info.TypeInfo;
-import net.oskarstrom.hyphen.thr.*;
+import dev.quantumfusion.hyphen.thr.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/util/ScanUtils.java
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/util/ScanUtils.java
-import static dev.quantumfusion.hyphen.thr.ThrowHandler.ThrowEntry.of;
-=======
-import static net.oskarstrom.hyphen.ScanHandler.UNKNOWN_INFO;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/util/ScanUtils.java
+import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
 public class ScanUtils {
 

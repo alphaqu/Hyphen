@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.thr;
 
-public class ClassScanException extends HypenException {
+public class ClassScanException extends dev.quantumfusion.hyphen.thr.HypenException {
 	public ClassScanException() {
 	}
 

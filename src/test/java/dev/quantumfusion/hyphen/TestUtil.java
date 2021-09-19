@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class TestUtil {
 
 	public static Iterator<DynamicNode> testPackage(String path) {
-		String packageName = "net.oskarstrom.hyphen." + path;
+		String packageName = "dev.quantumfusion.hyphen." + path;
 		InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(packageName.replaceAll("[.]", "/"));
 		BufferedReader br = new BufferedReader(new InputStreamReader(stream));
 

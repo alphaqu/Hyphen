@@ -1,10 +1,10 @@
-package net.oskarstrom.hyphen.scan.poly;
+package dev.quantumfusion.hyphen.scan.poly;
 
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.scan.poly.classes.IPair;
-import net.oskarstrom.hyphen.scan.poly.classes.Pair;
-import net.oskarstrom.hyphen.scan.poly.classes.ReversePair;
+import dev.quantumfusion.hyphen.annotation.SerSubclasses;
+import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.scan.poly.classes.IPair;
+import dev.quantumfusion.hyphen.scan.poly.classes.Pair;
+import dev.quantumfusion.hyphen.scan.poly.classes.ReversePair;
 
 public class IPairAndReverseTest {
 	@Serialize

@@ -1,5 +1,4 @@
-package net.oskarstrom.hyphen.thr;
-
+package dev.quantumfusion.hyphen.thr;
 public class ThrowEntry implements ThrowHandler.Throwable {
 	private final String key;
 	private final String value;

@@ -1,5 +1,4 @@
-package net.oskarstrom.hyphen.thr;
-
+package dev.quantumfusion.hyphen.thr;
 public class IncompatibleTypeException extends HypenException {
 
 	public IncompatibleTypeException() {

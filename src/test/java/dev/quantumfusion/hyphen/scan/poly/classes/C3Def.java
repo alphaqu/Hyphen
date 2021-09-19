@@ -1,8 +1,8 @@
-package net.oskarstrom.hyphen.scan.poly.classes;
+package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import net.oskarstrom.hyphen.FailTest;
-import net.oskarstrom.hyphen.annotation.Serialize;
-import net.oskarstrom.hyphen.thr.IllegalClassException;
+import dev.quantumfusion.hyphen.FailTest;
+import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.thr.IllegalClassException;
 
 @FailTest(IllegalClassException.class)
 public class C3Def<E> extends C3<E,String> {

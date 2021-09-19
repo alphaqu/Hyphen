@@ -1,7 +1,7 @@
-package net.oskarstrom.hyphen.scan.poly.classes;
+package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import net.oskarstrom.hyphen.FailTest;
-import net.oskarstrom.hyphen.thr.IllegalClassException;
+import dev.quantumfusion.hyphen.FailTest;
+import dev.quantumfusion.hyphen.thr.IllegalClassException;
 
 @FailTest(IllegalClassException.class)
 public class WrappedC1<A> extends C1<C1<A>>{

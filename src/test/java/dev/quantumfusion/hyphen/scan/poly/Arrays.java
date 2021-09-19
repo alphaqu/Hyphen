@@ -1,7 +1,7 @@
-package net.oskarstrom.hyphen.scan.poly;
+package dev.quantumfusion.hyphen.scan.poly;
 
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotation.SerSubclasses;
+import dev.quantumfusion.hyphen.annotation.Serialize;
 
 public class Arrays {
 	@Serialize

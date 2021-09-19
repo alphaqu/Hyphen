@@ -1,4 +1,3 @@
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/data/info/TypeInfo.java
 package dev.quantumfusion.hyphen.data.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
@@ -8,23 +7,10 @@ import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.options.AnnotationParser;
 import dev.quantumfusion.hyphen.thr.ClassScanException;
+import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.ScanUtils;
-=======
-package net.oskarstrom.hyphen.data.info;
-
-import net.oskarstrom.hyphen.ScanHandler;
-import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
-import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
-import net.oskarstrom.hyphen.options.AnnotationParser;
-import net.oskarstrom.hyphen.thr.ClassScanException;
-import net.oskarstrom.hyphen.thr.NotYetImplementedException;
-import net.oskarstrom.hyphen.thr.ThrowEntry;
-import net.oskarstrom.hyphen.thr.ThrowHandler;
-import net.oskarstrom.hyphen.util.ScanUtils;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/data/info/TypeInfo.java
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -34,7 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static net.oskarstrom.hyphen.ScanHandler.UNKNOWN_INFO;
+import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
 public abstract class TypeInfo {
 	public final Class<?> clazz;

@@ -1,25 +1,14 @@
 package dev.quantumfusion.hyphen.data.info;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/data/info/PolymorphicTypeInfo.java
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.data.metadata.JunctionSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
-=======
-import net.oskarstrom.hyphen.ScanHandler;
-import net.oskarstrom.hyphen.annotation.SerComplexSubClass;
-import net.oskarstrom.hyphen.annotation.SerComplexSubClasses;
-import net.oskarstrom.hyphen.annotation.SerSubclasses;
-import net.oskarstrom.hyphen.data.metadata.JunctionSerializerMetadata;
-import net.oskarstrom.hyphen.data.metadata.SerializerMetadata;
-import net.oskarstrom.hyphen.thr.ThrowEntry;
-import net.oskarstrom.hyphen.thr.ThrowHandler;
-import net.oskarstrom.hyphen.util.Color;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/data/info/PolymorphicTypeInfo.java
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;

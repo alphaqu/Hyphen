@@ -8,11 +8,7 @@ import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/data/info/TypeClassInfo.java
-import static dev.quantumfusion.hyphen.thr.ThrowHandler.ThrowEntry.of;
-=======
-import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/data/info/TypeClassInfo.java
+import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class TypeClassInfo extends TypeInfo {
 	public final String typeName;

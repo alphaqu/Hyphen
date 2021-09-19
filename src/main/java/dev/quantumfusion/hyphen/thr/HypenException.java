@@ -1,4 +1,4 @@
-package net.oskarstrom.hyphen.thr;
+package dev.quantumfusion.hyphen.thr;
 
 import java.util.ArrayList;
 import java.util.Arrays;

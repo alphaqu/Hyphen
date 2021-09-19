@@ -12,11 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-<<<<<<< HEAD:src/main/java/dev/quantumfusion/hyphen/data/info/ArrayInfo.java
-import static dev.quantumfusion.hyphen.thr.ThrowHandler.ThrowEntry.of;
-=======
-import static net.oskarstrom.hyphen.thr.ThrowEntry.of;
->>>>>>> origin/union-types:src/main/java/net/oskarstrom/hyphen/data/info/ArrayInfo.java
+import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;

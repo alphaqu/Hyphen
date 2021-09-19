@@ -1,4 +1,4 @@
-package net.oskarstrom.hyphen.thr;
+package dev.quantumfusion.hyphen.thr;
 
 public class MissingTypeInformationException extends HypenException {
 
