@@ -2,6 +2,8 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.data.info.TypeInfo;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.IOMode;
+import dev.quantumfusion.hyphen.gen.SerializerClassFactory;
 import dev.quantumfusion.hyphen.gen.impl.AbstractDef;
 import dev.quantumfusion.hyphen.gen.impl.IntDef;
 import dev.quantumfusion.hyphen.thr.IllegalClassException;
@@ -69,5 +71,9 @@ public class SerializerFactory {
 		}
 		ScanHandler scanner = new ScanHandler(methods, implementations, debug);
 		scanner.scan(clazz);
+
+
+		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.UNSAFE);
+		methods.forEach(serializerClassFactory::createMethod);
 	}
 }
