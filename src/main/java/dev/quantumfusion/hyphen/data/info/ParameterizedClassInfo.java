@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.data.info;
 
+import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -85,6 +87,12 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 		return Objects.hash(super.hashCode(), types);
 	}
 
+	public ClassInfo copyWithoutTypeKnowledge() {
+		LinkedHashMap<String, TypeInfo> typesCloned = new LinkedHashMap<>();
+		ClassInfo value = new ClassInfo(Object.class, null);
+		types.forEach((s, info) -> typesCloned.put(s, value));
+		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
+	}
 
 	@Override
 	public ClassInfo copy() {

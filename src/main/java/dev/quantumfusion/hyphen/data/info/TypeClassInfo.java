@@ -52,6 +52,12 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
+	public Class<?> getClazz() {
+		Class<?> clazz = actual.getClazz();
+		return clazz;
+	}
+
+	@Override
 	public Class<?> getRawClass() {
 		return type;
 	}
