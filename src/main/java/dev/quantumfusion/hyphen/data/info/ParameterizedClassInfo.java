@@ -26,12 +26,6 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	}
 
 	@Override
-	public SerializerMetadata createMetadata(ScanHandler factory) {
-		types.values().forEach(typeInfo -> typeInfo.createMetadata(factory));
-		return super.createMetadata(factory);
-	}
-
-	@Override
 	public String toString() {
 		StringJoiner parameterJoiner = new StringJoiner(", ", "<", ">");
 		parameterJoiner.setEmptyValue("");
