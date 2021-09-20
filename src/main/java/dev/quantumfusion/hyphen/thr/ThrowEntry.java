@@ -33,6 +33,6 @@ public class ThrowEntry implements ThrowHandler.Throwable {
 
 	@Override
 	public String toString() {
-		return "\t" + this.key + ": " + this.value;
+		return "\t- " + this.key + ":  " + this.value;
 	}
 }

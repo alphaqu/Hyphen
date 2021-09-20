@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.TestUtil;
+import dev.quantumfusion.hyphen.scan.poly.extract.ExtractBothAnnotatedC;
 import dev.quantumfusion.hyphen.scan.type.UnknownType;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
@@ -13,7 +14,7 @@ public class ScanTestFactory {
 
 	@TestFactory
 	Iterator<DynamicNode> bareTest() {
-		return Collections.singletonList(TestUtil.test(UnknownType.class)).iterator();
+		return Collections.singletonList(TestUtil.test(ExtractBothAnnotatedC.class)).iterator();
 	}
 
 	@Nested

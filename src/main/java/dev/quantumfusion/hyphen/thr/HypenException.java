@@ -27,7 +27,7 @@ public class HypenException extends RuntimeException {
 		builder.append('\n');
 		builder.append("Detail: ");
 		for (ThrowHandler.Throwable throwable$ : this.entries) {
-			builder.append('\n');
+			builder.append("\n");
 			for (ThrowEntry entry : throwable$.getEntries()) {
 				builder.append(entry);
 			}
@@ -50,7 +50,8 @@ public class HypenException extends RuntimeException {
 	public HypenException addEntries(ThrowHandler.Throwable... throwables) {
 		if (!this.entries.isEmpty()) entries.add(0,ThrowEntry.newLine());
 
-		for (ThrowHandler.Throwable throwable : throwables) {
+		for (int i = throwables.length - 1; i >= 0; i--) {
+			var throwable = throwables[i];
 			if (throwable instanceof ThrowEntry entry) entries.add(0, entry);
 			else for (ThrowEntry entry : throwable.getEntries()) entries.add(0, entry);
 		}
