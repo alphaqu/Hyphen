@@ -22,6 +22,14 @@ public final class DirectTesting {
 		unsafeIO.putString(data.long1);
 	}
 
+	public static void encode_DataArray(final DataArray data, final IOInterface unsafeIO) {
+		final Data[] array = data.array;
+		unsafeIO.putInt(array.length);
+		for (Data data1 : array) {
+			encode_Data(data1, unsafeIO);
+		}
+	}
+
 	public static void measure_DataArray(final DataArray data, final MeasureIO unsafeIO) {
 		final Data[] array = data.array;
 		unsafeIO.putInt(array.length);
@@ -30,14 +38,6 @@ public final class DirectTesting {
 		}
 	}
 
-
-	public static void encode_DataArray(final DataArray data, final IOInterface unsafeIO) {
-		final Data[] array = data.array;
-		unsafeIO.putInt(array.length);
-		for (Data data1 : array) {
-			encode_Data(data1, unsafeIO);
-		}
-	}
 
 	public static Data decode_Data(final IOInterface unsafeIO) {
 		return new Data(unsafeIO.getString(), unsafeIO.getString());
