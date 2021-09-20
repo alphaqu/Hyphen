@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.thr;
 
-import dev.quantumfusion.hyphen.data.FieldEntry;
 import dev.quantumfusion.hyphen.data.info.ClassInfo;
 import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import org.jetbrains.annotations.Contract;
 
 import java.lang.reflect.Constructor;
@@ -16,12 +16,6 @@ import java.util.function.Supplier;
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class ThrowHandler {
-
-	public static void checkAccess(int modifier, Supplier<? extends RuntimeException> runnable) {
-		if (Modifier.isProtected(modifier) || Modifier.isPrivate(modifier) || !Modifier.isPublic(modifier)) {
-			throw runnable.get();
-		}
-	}
 
 	// some methods to shorten code
 	public static RuntimeException typeFail(String reason, TypeInfo source, Class<?> clazz, Type type) {
@@ -42,10 +36,10 @@ public class ThrowHandler {
 		});
 	}
 
-	public static RuntimeException fieldAccessFail(FieldEntry field, TypeInfo source) {
-		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier), new ThrowEntry[]{
-				of("Field Name", field.name),
-				of("Field Class", field.clazz.clazz.getSimpleName()),
+	public static RuntimeException fieldAccessFail(ClassSerializerMetadata.FieldEntry field, TypeInfo source) {
+		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier()), new ThrowEntry[]{
+				of("Field Name", field.name()),
+				of("Field Class", field.clazz().clazz.getSimpleName()),
 				of("Source Class", source.clazz.getName())
 		});
 	}
@@ -69,13 +63,13 @@ public class ThrowHandler {
 	}
 
 
-	public static RuntimeException constructorNotFoundFail(List<FieldEntry> fields, ClassInfo info) {
+	public static RuntimeException constructorNotFoundFail(List<ClassSerializerMetadata.FieldEntry> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
 		throwable[0] = ThrowEntry.of("Source Class", info.clazz.getSimpleName());
 		throwable[1] = ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
-			FieldEntry fieldInfo = fields.get(i);
-			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name, fieldInfo.clazz.getRawClass().getSimpleName());
+			ClassSerializerMetadata.FieldEntry fieldInfo = fields.get(i);
+			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name(), fieldInfo.clazz().getRawClass().getSimpleName());
 		}
 		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);
 	}

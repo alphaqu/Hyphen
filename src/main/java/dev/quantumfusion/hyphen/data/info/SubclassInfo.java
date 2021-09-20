@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.data.metadata.JunctionSerializerMetadata;
+import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
@@ -15,15 +15,15 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-public class PolymorphicTypeInfo extends TypeInfo {
+public class SubclassInfo extends TypeInfo {
 	public final List<? extends TypeInfo> classInfos;
 
-	public PolymorphicTypeInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, List<? extends TypeInfo> classInfos) {
+	public SubclassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, List<? extends TypeInfo> classInfos) {
 		super(clazz, annotations);
 		this.classInfos = classInfos;
 	}
 
-	public static PolymorphicTypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, Map<Class<Annotation>, Annotation> options, AnnotatedType annotatedType) {
+	public static SubclassInfo create(TypeInfo source, Class<?> fieldType, Type genericType, Map<Class<Annotation>, Annotation> options, AnnotatedType annotatedType) {
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
 					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
@@ -37,17 +37,17 @@ public class PolymorphicTypeInfo extends TypeInfo {
 		List<TypeInfo> subInfos = new ArrayList<>(value.length);
 
 		for (Class<?> subclass : value) {
-			var subClassInfo = TypeInfo.createFromPolymorphicType(source, fieldType, subclass, genericType, annotatedType);
+			var subClassInfo = ScanHandler.createFromPolymorphicType(source, fieldType, subclass, genericType, annotatedType);
 			subInfos.add(subClassInfo);
 		}
 
-		return new PolymorphicTypeInfo(fieldType, options, subInfos);
+		return new SubclassInfo(fieldType, options, subInfos);
 	}
 
 
 	public SerializerMetadata createMetadata(ScanHandler factory) {
-		var methodMetadata = new JunctionSerializerMetadata(this);
-		var subTypeMap = methodMetadata.subtypes;
+		var subTypeMap = new LinkedHashMap<Class<?>, TypeInfo>();
+		var methodMetadata = new SubclassSerializerMetadata(this, subTypeMap);
 
 		for (TypeInfo subTypeInfo : this.classInfos) {
 			if (subTypeMap.containsKey(subTypeInfo.clazz)) {
@@ -55,7 +55,8 @@ public class PolymorphicTypeInfo extends TypeInfo {
 				//		 or should this be done earlier
 			}
 
-			subTypeMap.put(subTypeInfo.clazz, factory.createSerializeMetadata(subTypeInfo));
+			factory.createSerializeMetadata(subTypeInfo);
+			subTypeMap.put(subTypeInfo.clazz, subTypeInfo);
 		}
 		return methodMetadata;
 	}
@@ -87,7 +88,7 @@ public class PolymorphicTypeInfo extends TypeInfo {
 	}
 
 	@Override
-	public PolymorphicTypeInfo copy() {
-		return new PolymorphicTypeInfo(this.clazz, new HashMap<>(this.annotations), new ArrayList<>(this.classInfos));
+	public SubclassInfo copy() {
+		return new SubclassInfo(this.clazz, new HashMap<>(this.annotations), new ArrayList<>(this.classInfos));
 	}
 }

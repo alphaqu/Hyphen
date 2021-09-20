@@ -2,11 +2,11 @@ package dev.quantumfusion.hyphen.data.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.data.FieldEntry;
 import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -22,7 +22,7 @@ public class ClassInfo extends TypeInfo implements Type {
 	private SerializerMetadata metadata;
 
 
-	protected ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
+	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		super(clazz, annotations);
 	}
 
@@ -42,7 +42,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		if (superclass == null)
 			return new ClassInfo[depth];
 
-		TypeInfo typeInfo = TypeInfo.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+		TypeInfo typeInfo = ScanHandler.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
 
 		if (!(typeInfo instanceof ClassInfo info)) {
 			// this should always return a class info, unless you put a `SubClasses` annotations on an extends clause
@@ -54,23 +54,23 @@ public class ClassInfo extends TypeInfo implements Type {
 		return out;
 	}
 
-	private List<FieldEntry> getFields(Predicate<? super Field> filter) {
-		List<FieldEntry> info = new ArrayList<>();
+	private List<ClassSerializerMetadata.FieldEntry> getFields(Predicate<? super Field> filter) {
+		List<ClassSerializerMetadata.FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
-				TypeInfo classInfo = TypeInfo.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				TypeInfo classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
 				if (classInfo == ScanHandler.UNKNOWN_INFO)
 					throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
 
-				info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName(), genericType));
+				info.add(new ClassSerializerMetadata.FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
 			}
 		}
 		return info;
 	}
 
-	private List<FieldEntry> getAllFields(Predicate<Field> filter) {
-		List<FieldEntry> out = new ArrayList<>();
+	private List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<Field> filter) {
+		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
 		for (ClassInfo superClass : getSuperClasses(this, 0)) {
 			out.addAll(superClass.getFields(filter));
 		}
@@ -95,8 +95,8 @@ public class ClassInfo extends TypeInfo implements Type {
 			//get the fields
 			var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
 			//check if it exists / if its accessible
-			factory.checkConstructor(allFields, this);
-			for (FieldEntry fieldInfo : allFields) {
+			ScanUtils.checkConstructor(allFields, this);
+			for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
 				var def = factory.getDefinition(fieldInfo, this);
 				methodMetadata.fields.put(fieldInfo, def);
 			}

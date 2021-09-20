@@ -1,17 +1,22 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.data.info.ClassInfo;
 import dev.quantumfusion.hyphen.data.info.ParameterizedClassInfo;
-import dev.quantumfusion.hyphen.data.info.PolymorphicTypeInfo;
+import dev.quantumfusion.hyphen.data.info.SubclassInfo;
 import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.thr.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
@@ -71,7 +76,7 @@ public class ScanUtils {
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
 			AnnotatedType annotatedParameter = annotatedParameters == null ? null : annotatedParameters[i];
-			out.put(innerTypes[i].getName(), TypeInfo.create(source, clazz, parameters[i], annotatedParameter));
+			out.put(innerTypes[i].getName(), ScanHandler.create(source, clazz, parameters[i], annotatedParameter));
 		}
 		return out;
 	}
@@ -102,22 +107,18 @@ public class ScanUtils {
 	private static void unifyType(Map<? super String, ? super TypeInfo> resolved, TypeInfo typeInfo, Type typeParameter) {
 		try {
 			if (typeParameter instanceof Class<?> clazz) {
-				if (typeInfo.clazz == clazz) {
-					// All is fine
-				} else if (typeInfo == UNKNOWN_INFO) {
+				if (typeInfo == UNKNOWN_INFO) {
 					// resolve type that was unknown
 					// I don't think we have to do something here? Although I do think there might be invalid case that we
 					// need to consider
-				} else {
+				} else if (typeInfo.clazz != clazz) {
 					// TODO: error not good enough, should handles cases like IncompatibleTypeFail
 					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype");
 				}
 			} else if (typeParameter instanceof TypeVariable<?> typeVariable) {
 				if (resolved.containsKey(typeVariable.getName())) {
 					// check if it's the same
-					if (resolved.getOrDefault(typeVariable.getName(), UNKNOWN_INFO).equals(typeInfo)) {
-						// all is fine
-					} else {
+					if (!resolved.getOrDefault(typeVariable.getName(), UNKNOWN_INFO).equals(typeInfo)) {
 						throw ThrowHandler.fatal(IncompatibleTypeException::new, "Invalid type unification",
 								ThrowEntry.of("Parameter", typeVariable.getName()),
 								ThrowEntry.of("Previously discovered type", resolved.get(typeVariable.getName()))
@@ -160,17 +161,11 @@ public class ScanUtils {
 								NotYetImplementedException::new, "parameterized type unification through supertypes",
 								ThrowEntry.of("TypeParameter", typeParameter)
 						);
-					} else {
-						throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types");
-					}
-				} else if (typeInfo instanceof PolymorphicTypeInfo polymorphicTypeInfo) {
+					} else throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types");
+				} else if (typeInfo instanceof SubclassInfo)
 					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification");
-				} else {
-					throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
-				}
-			} else {
-				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
-			}
+				else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
+			} else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
 		} catch (HypenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Resolved", resolved),
@@ -221,12 +216,24 @@ public class ScanUtils {
 	}
 
 	public static Class<?> getClazz(Type type) {
-		if (type instanceof Class<?> c) {
-			return c;
-		} else if (type instanceof ParameterizedType parameterizedType) {
-			return getClazz(parameterizedType.getRawType());
-		} else {
+		if (type instanceof Class<?> c) return c;
+		else if (type instanceof ParameterizedType parameterizedType) return getClazz(parameterizedType.getRawType());
+		else
 			throw new IllegalStateException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
+	}
+
+	public static void checkConstructor(List<ClassSerializerMetadata.FieldEntry> fields, ClassInfo source) {
+		try {
+			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.clazz().getRawClass()).toArray(Class[]::new));
+			checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));
+		} catch (NoSuchMethodException e) {
+			throw ThrowHandler.constructorNotFoundFail(fields, source);
+		}
+	}
+
+	public static void checkAccess(int modifier, Supplier<? extends RuntimeException> runnable) {
+		if (Modifier.isProtected(modifier) || Modifier.isPrivate(modifier) || !Modifier.isPublic(modifier)) {
+			throw runnable.get();
 		}
 	}
 }
