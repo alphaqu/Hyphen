@@ -4,8 +4,8 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
@@ -16,10 +16,12 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class SubclassInfo extends TypeInfo {
+	public final TypeInfo field;
 	public final List<? extends TypeInfo> classInfos;
 
-	public SubclassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, List<? extends TypeInfo> classInfos) {
+	public SubclassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
 		super(clazz, annotations);
+		this.field = field;
 		this.classInfos = classInfos;
 	}
 
@@ -41,7 +43,7 @@ public class SubclassInfo extends TypeInfo {
 			subInfos.add(subClassInfo);
 		}
 
-		return new SubclassInfo(fieldType, options, subInfos);
+		return new SubclassInfo(fieldType, options, ScanHandler.create(source, fieldType, genericType, null), subInfos);
 	}
 
 
@@ -85,6 +87,11 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	@Override
+	public Class<?> getClazz() {
+		return field.getClazz();
+	}
+
+	@Override
 	public String toString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				", ",
@@ -99,6 +106,6 @@ public class SubclassInfo extends TypeInfo {
 
 	@Override
 	public SubclassInfo copy() {
-		return new SubclassInfo(this.clazz, new HashMap<>(this.annotations), new ArrayList<>(this.classInfos));
+		return new SubclassInfo(this.clazz, new HashMap<>(this.annotations), field, new ArrayList<>(this.classInfos));
 	}
 }

@@ -68,7 +68,7 @@ public class ThrowHandler {
 		throwable[1] = ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
 			ClassSerializerMetadata.FieldEntry fieldInfo = fields.get(i);
-			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name(), fieldInfo.clazz().getRawClass().getSimpleName());
+			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name(), fieldInfo.clazz().getClazz());
 		}
 		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);
 	}

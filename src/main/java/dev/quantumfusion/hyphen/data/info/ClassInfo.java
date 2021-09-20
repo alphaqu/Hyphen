@@ -79,10 +79,14 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	private List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<Field> filter) {
+	public List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
-		for (ClassInfo superClass : getSuperClasses(this, 0)) {
-			out.addAll(superClass.getFields(filter));
+		Class<?> superclass = this.clazz.getSuperclass();
+		if (superclass != null) {
+			TypeInfo typeInfo = ScanHandler.create(this, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+			if (typeInfo instanceof ClassInfo classInfo) {
+				out.addAll(classInfo.getAllFields(filter));
+			}
 		}
 		out.addAll(getFields(filter));
 		return out;
@@ -105,7 +109,7 @@ public class ClassInfo extends TypeInfo implements Type {
 			//get the fields
 			var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
 			//check if it exists / if its accessible
-			ScanUtils.checkConstructor(allFields, this);
+			ScanUtils.checkConstructor(this);
 			for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
 				ObjectSerializationDef def;
 				try {
@@ -119,7 +123,6 @@ public class ClassInfo extends TypeInfo implements Type {
 		}
 		return metadata;
 	}
-
 
 
 	@Override

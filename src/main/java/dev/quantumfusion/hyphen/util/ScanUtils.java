@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.data.info.ClassInfo;
 import dev.quantumfusion.hyphen.data.info.ParameterizedClassInfo;
 import dev.quantumfusion.hyphen.data.info.SubclassInfo;
@@ -10,10 +11,7 @@ import dev.quantumfusion.hyphen.thr.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -222,12 +220,21 @@ public class ScanUtils {
 			throw new IllegalStateException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
 	}
 
-	public static void checkConstructor(List<ClassSerializerMetadata.FieldEntry> fields, ClassInfo source) {
+	public static void checkConstructor(ClassInfo source) {
+		ClassInfo parent = source;
+		if (source instanceof ParameterizedClassInfo classInfo) {
+			parent = classInfo.copyWithoutTypeKnowledge();
+		}
+		List<ClassSerializerMetadata.FieldEntry> allFields = parent.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		Class<?>[] classes = new Class[allFields.size()];
+		for (int i = 0; i < allFields.size(); i++) {
+			classes[i] = allFields.get(i).clazz().getClazz();
+		}
 		try {
-			Constructor<?> constructor = source.clazz.getDeclaredConstructor(fields.stream().map(fieldInfo -> fieldInfo.clazz().getRawClass()).toArray(Class[]::new));
+			Constructor<?> constructor = source.clazz.getDeclaredConstructor(classes);
 			checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));
 		} catch (NoSuchMethodException e) {
-			throw ThrowHandler.constructorNotFoundFail(fields, source);
+			throw ThrowHandler.constructorNotFoundFail(allFields, source);
 		}
 	}
 

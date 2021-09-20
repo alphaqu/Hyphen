@@ -37,6 +37,9 @@ public abstract class TypeInfo {
 
 	public abstract TypeInfo copy();
 
+	public Class<?> getClazz() {
+		return this.clazz;
+	}
 	public Class<?> getRawClass() {
 		return this.clazz;
 	}
