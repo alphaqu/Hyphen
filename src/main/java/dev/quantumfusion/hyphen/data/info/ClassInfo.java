@@ -120,9 +120,16 @@ public class ClassInfo extends TypeInfo implements Type {
 		return metadata;
 	}
 
+
+
 	@Override
 	public String toFancyString() {
 		return Color.YELLOW + this.clazz.getSimpleName();
+	}
+
+	@Override
+	public String getMethodName() {
+		return clazz.getSimpleName();
 	}
 
 	@Override

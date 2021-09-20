@@ -75,6 +75,16 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	@Override
+	public String getMethodName() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Junction");
+		for (TypeInfo classInfo : classInfos) {
+			builder.append(classInfo.getMethodName());
+		}
+		return builder.toString();
+	}
+
+	@Override
 	public String toString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				", ",

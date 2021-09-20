@@ -37,6 +37,11 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
+	public String getMethodName() {
+		return typeName +  "?" + actual.getMethodName();
+	}
+
+	@Override
 	public SerializerMetadata createMetadata(ScanHandler factory) {
 		return actual.createMetadata(factory);
 	}

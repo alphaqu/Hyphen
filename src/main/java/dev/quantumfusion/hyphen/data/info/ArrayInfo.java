@@ -42,6 +42,11 @@ public class ArrayInfo extends TypeInfo {
 	}
 
 	@Override
+	public String getMethodName() {
+		return values.getMethodName() + "[]";
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ArrayInfo arrayInfo)) return false;

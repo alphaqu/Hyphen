@@ -62,6 +62,17 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	}
 
 	@Override
+	public String getMethodName() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("<");
+		for (TypeInfo value : types.values()) {
+			builder.append(value.getMethodName());
+		}
+		builder.append(">");
+		return builder.toString();
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ParameterizedClassInfo that)) return false;
