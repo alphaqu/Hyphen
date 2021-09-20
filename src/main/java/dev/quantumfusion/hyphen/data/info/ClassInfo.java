@@ -1,9 +1,11 @@
 package dev.quantumfusion.hyphen.data.info;
 
+import dev.quantumfusion.hyphen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
@@ -42,6 +44,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		if (superclass == null)
 			return new ClassInfo[depth];
 
+
 		TypeInfo typeInfo = ScanHandler.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
 
 		if (!(typeInfo instanceof ClassInfo info)) {
@@ -59,7 +62,14 @@ public class ClassInfo extends TypeInfo implements Type {
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				Type genericType = declaredField.getGenericType();
-				TypeInfo classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				TypeInfo classInfo;
+
+				try {
+					classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+				} catch (HyphenException hyphenException) {
+					throw hyphenException.setName(declaredField.getName());
+				}
+
 				if (classInfo == ScanHandler.UNKNOWN_INFO)
 					throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
 
@@ -97,7 +107,12 @@ public class ClassInfo extends TypeInfo implements Type {
 			//check if it exists / if its accessible
 			ScanUtils.checkConstructor(allFields, this);
 			for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
-				var def = factory.getDefinition(fieldInfo, this);
+				ObjectSerializationDef def;
+				try {
+					def = factory.getDefinition(fieldInfo, this);
+				} catch (HyphenException hyphenException) {
+					throw hyphenException.addParent(this, fieldInfo.name());
+				}
 				methodMetadata.fields.put(fieldInfo, def);
 			}
 			metadata = methodMetadata;

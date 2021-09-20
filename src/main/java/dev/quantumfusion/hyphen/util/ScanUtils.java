@@ -95,7 +95,7 @@ public class ScanUtils {
 			}
 
 			return out;
-		} catch (HypenException ex) {
+		} catch (HyphenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Current super type declaration", superType),
 					ThrowEntry.of("Super type", getClazz(superType).toGenericString()),
@@ -166,7 +166,7 @@ public class ScanUtils {
 					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification");
 				else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
 			} else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
-		} catch (HypenException ex) {
+		} catch (HyphenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Resolved", resolved),
 					ThrowEntry.of("TypeInfo", typeInfo),
@@ -204,7 +204,7 @@ public class ScanUtils {
 				}
 				return out;
 			}
-		} catch (HypenException ex) {
+		} catch (HyphenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Source", source),
 					ThrowEntry.of("FieldClass", superClass.getSimpleName()),

@@ -11,7 +11,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
@@ -77,12 +76,12 @@ public class ThrowHandler {
 
 	//returns just for javac to stfu in some spots
 	@Contract("_, _, _ -> fail")
-	public static HypenException fatal(Function<? super String, ? extends RuntimeException> ex, String reason, Throwable... throwable) {
+	public static HyphenException fatal(Function<? super String, ? extends RuntimeException> ex, String reason, Throwable... throwable) {
 		RuntimeException runtimeException = ex.apply(reason);
-		if (runtimeException instanceof HypenException hypenException)
-			throw hypenException.addEntries(throwable);
+		if (runtimeException instanceof HyphenException hyphenException)
+			throw hyphenException.addEntries(throwable);
 		else
-			throw new HypenException(runtimeException).addEntries(throwable);
+			throw new HyphenException(runtimeException).addEntries(throwable);
 	}
 
 
