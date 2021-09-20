@@ -7,23 +7,8 @@ import java.util.List;
 public class HypenException extends RuntimeException {
 	List<ThrowEntry> entries = new ArrayList<>();
 
-	public HypenException() {
-	}
-
 	public HypenException(String message) {
 		super(message);
-	}
-
-	public HypenException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public HypenException(Throwable cause) {
-		super(cause);
-	}
-
-	public HypenException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 	@Override
