@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.io.ArrayIO;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.io.UnsafeIO;
@@ -273,6 +274,18 @@ public class IOTest {
 		@BeforeAll
 		public void init() {
 			ioInterface = ByteBufferIO.createDirect(2000);
+			ioInterface.putLong(6980000);
+		}
+
+	}
+
+	@Nested
+	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+	public class ArrayIOTest extends IOTestClass {
+
+		@BeforeAll
+		public void init() {
+			ioInterface = ArrayIO.create(2000);
 			ioInterface.putLong(6980000);
 		}
 
