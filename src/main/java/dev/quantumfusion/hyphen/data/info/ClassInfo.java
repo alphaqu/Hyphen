@@ -128,8 +128,8 @@ public class ClassInfo extends TypeInfo implements Type {
 	}
 
 	@Override
-	public String getMethodName() {
-		return clazz.getSimpleName();
+	public String getMethodName(boolean absolute) {
+		return absolute ? clazz.getName() : clazz.getSimpleName();
 	}
 
 	@Override

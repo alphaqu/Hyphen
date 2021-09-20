@@ -75,11 +75,11 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	@Override
-	public String getMethodName() {
+	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Junction");
+		builder.append("Subclass");
 		for (TypeInfo classInfo : classInfos) {
-			builder.append(classInfo.getMethodName());
+			builder.append(classInfo.getMethodName(absolute));
 		}
 		return builder.toString();
 	}

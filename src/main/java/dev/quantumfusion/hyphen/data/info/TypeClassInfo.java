@@ -37,8 +37,8 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
-	public String getMethodName() {
-		return typeName +  "?" + actual.getMethodName();
+	public String getMethodName(boolean absolute) {
+		return typeName +  "?" + actual.getMethodName(absolute);
 	}
 
 	@Override

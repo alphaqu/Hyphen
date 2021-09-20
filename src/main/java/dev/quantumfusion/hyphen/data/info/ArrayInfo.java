@@ -42,8 +42,8 @@ public class ArrayInfo extends TypeInfo {
 	}
 
 	@Override
-	public String getMethodName() {
-		return values.getMethodName() + "[]";
+	public String getMethodName(boolean absolute) {
+		return values.getMethodName(absolute) + "[]";
 	}
 
 	@Override

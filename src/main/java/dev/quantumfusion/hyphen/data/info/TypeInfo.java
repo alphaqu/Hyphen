@@ -20,7 +20,7 @@ public abstract class TypeInfo {
 
 	public abstract String toFancyString();
 
-	public abstract String getMethodName();
+	public abstract String getMethodName(boolean absolute);
 
 	@Override
 	public boolean equals(Object o) {
