@@ -90,36 +90,34 @@ public class ClassInfo extends TypeInfo implements Type {
 
 	@Override
 	public SerializerMetadata createMetadata(ScanHandler factory) {
-		if (metadata == null) {
-			var methods = factory.methods;
-			var implementations = factory.implementations;
+		if (this.metadata != null) return this.metadata;
 
-			var methodMetadata = new ClassSerializerMetadata(this);
-			methods.put(this, methodMetadata);
+		var methods = factory.methods;
+		var implementations = factory.implementations;
 
-			if (implementations.containsKey(this.clazz)) {
-				methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
-				return methodMetadata;
-			}
+		var methodMetadata = new ClassSerializerMetadata(this);
+		methods.put(this, methodMetadata);
 
-			//get the fields
-			var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
-			//check if it exists / if its accessible
-			ScanUtils.checkConstructor(allFields, this);
-			for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
-				ObjectSerializationDef def;
-				try {
-					def = factory.getDefinition(fieldInfo, this);
-				} catch (HyphenException hyphenException) {
-					throw hyphenException.addParent(this, fieldInfo.name());
-				}
-				methodMetadata.fields.put(fieldInfo, def);
-			}
-			metadata = methodMetadata;
+		if (implementations.containsKey(this.clazz)) {
+			methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
+			return methodMetadata;
 		}
-		return metadata;
-	}
 
+		//get the fields
+		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		//check if it exists / if its accessible
+		ScanUtils.checkConstructor(allFields, this);
+		for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
+			try {
+				ObjectSerializationDef def = factory.getDefinition(fieldInfo, this);
+				methodMetadata.fields.put(fieldInfo, def);
+			} catch (HyphenException hyphenException) {
+				throw hyphenException.addParent(this, fieldInfo.name());
+			}
+		}
+
+		return this.metadata = methodMetadata;
+	}
 
 
 	@Override

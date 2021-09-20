@@ -70,9 +70,9 @@ public class ScanHandler {
 			}
 
 			//Object / int / Object[] / int[]
-			if (genericType instanceof Class clazz) {
+			if (genericType instanceof Class<?> clazz) {
 				if (clazz.isArray()) {
-					Class componentType = clazz.getComponentType();
+					Class<?> componentType = clazz.getComponentType();
 					return ArrayInfo.create(source, clazz, options, create(source, componentType, componentType, null));
 				} else {
 					return ClassInfo.create(clazz, options);
@@ -169,7 +169,7 @@ public class ScanHandler {
 	}
 
 	public void scan(Class<?> clazz) {
-		createSerializeMetadata(ClassInfo.create(clazz, Map.of()));
+		this.createSerializeMetadata(ClassInfo.create(clazz, Map.of()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
@@ -185,7 +185,7 @@ public class ScanHandler {
 			return this.methods.get(typeInfo);
 		}
 
-		SerializerMetadata serializerMetadata = createSerializeMetadataInternal(typeInfo);
+		SerializerMetadata serializerMetadata = this.createSerializeMetadataInternal(typeInfo);
 		this.methods.put(typeInfo, serializerMetadata);
 		return serializerMetadata;
 	}

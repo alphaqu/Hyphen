@@ -10,13 +10,14 @@ import dev.quantumfusion.hyphen.thr.IllegalClassException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 public class SerializerFactory {
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations = new HashMap<>();
-	public final Map<TypeInfo, SerializerMetadata> methods = new HashMap<>();
+	public final Map<TypeInfo, SerializerMetadata> methods = new LinkedHashMap<>();
 	private final boolean debug;
 	private final Class<?> clazz;
 

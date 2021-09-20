@@ -33,7 +33,7 @@ public class ArrayInfo extends TypeInfo {
 
 	@Override
 	public SerializerMetadata createMetadata(ScanHandler factory) {
-		return new ArraySerializerMetadata(this, values.createMetadata(factory));
+		return new ArraySerializerMetadata(this, factory.createSerializeMetadata(this.values));
 	}
 
 	@Override

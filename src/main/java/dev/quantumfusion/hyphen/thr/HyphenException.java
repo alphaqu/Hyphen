@@ -29,30 +29,36 @@ public class HyphenException extends RuntimeException {
 		builder.append('\n');
 		builder.append('\n');
 
-		builder.append("Path: ");
-		for (PathEntry typeInfo : path) {
+		if(!this.path.isEmpty()) {
+			builder.append("Path: ");
+			for (PathEntry typeInfo : this.path) {
+				builder.append('\n');
+				builder.append("\t- field \"");
+				if (typeInfo == null) builder.append("null");
+				else {
+					builder.append(typeInfo.name);
+					builder.append("\" in class \"");
+					builder.append(typeInfo.parent.clazz.getSimpleName());
+					builder.append('\"');
+				}
+			}
 			builder.append('\n');
-			builder.append("\t- field \"");
-			if (typeInfo == null) builder.append("null");
-			else {
-				builder.append(typeInfo.name);
-				builder.append("\" at \"");
-				builder.append(typeInfo.parent.clazz.getSimpleName());
-				builder.append('\"');
-			}
+			builder.append('\n');
 		}
-		builder.append('\n');
-		builder.append('\n');
 
-		builder.append("Detail: ");
-		for (ThrowHandler.Throwable throwable$ : this.entries) {
-			builder.append("\n");
-			for (ThrowEntry entry : throwable$.getEntries()) {
-				builder.append(entry);
+		if(!this.entries.isEmpty()) {
+			builder.append("Detail: ");
+
+			for (ThrowHandler.Throwable throwable$ : this.entries) {
+				builder.append("\n");
+				for (ThrowEntry entry : throwable$.getEntries()) {
+					builder.append(entry);
+				}
 			}
+
+			builder.append('\n');
+			builder.append('\n');
 		}
-		builder.append('\n');
-		builder.append('\n');
 
 		builder.append("Stacktrace: ");
 		return builder.toString();
