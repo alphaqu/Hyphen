@@ -8,7 +8,10 @@ import dev.quantumfusion.hyphen.data.info.*;
 import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
-import dev.quantumfusion.hyphen.thr.*;
+import dev.quantumfusion.hyphen.thr.ClassScanException;
+import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -45,98 +48,94 @@ public class ScanHandler {
 	}
 
 	public static TypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, @Nullable AnnotatedType annotatedType) {
-		try {
-			if (source == null) {
-				throw ThrowHandler.fatal(NullPointerException::new, "source is null",
-						ThrowEntry.of("ClassType", fieldType),
-						ThrowEntry.of("Type", genericType),
-						ThrowEntry.of("AnnotatedType", annotatedType)
-				);
-			}
+		if (source == null) {
+			throw ThrowHandler.fatal(NullPointerException::new, "source is null",
+					ThrowEntry.of("ClassType", fieldType),
+					ThrowEntry.of("Type", genericType),
+					ThrowEntry.of("AnnotatedType", annotatedType)
+			);
+		}
 
-			Map<Class<Annotation>, Annotation> options = new HashMap<>();
-			if (annotatedType != null) {
-				for (Annotation declaredAnnotation : annotatedType.getDeclaredAnnotations()) {
-					if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
-						//noinspection unchecked
-						options.put((Class<Annotation>) declaredAnnotation.annotationType(), declaredAnnotation);
-					}
+		Map<Class<Annotation>, Annotation> options = new HashMap<>();
+		if (annotatedType != null) {
+			for (Annotation declaredAnnotation : annotatedType.getDeclaredAnnotations()) {
+				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
+					//noinspection unchecked
+					options.put((Class<Annotation>) declaredAnnotation.annotationType(), declaredAnnotation);
+				}
+			}
+		}
+
+		// check if field is polymorphic
+		if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
+			return SubclassInfo.create(source, fieldType, genericType, options, annotatedType);
+		}
+
+		//Object / int / Object[] / int[]
+		if (genericType instanceof Class<?> clazz) {
+			if (clazz.isArray()) {
+				Class<?> componentType = clazz.getComponentType();
+				return ArrayInfo.create(source, clazz, options, create(source, componentType, componentType, null));
+			} else {
+				return ClassInfo.create(clazz, options);
+			}
+		}
+
+
+		//Thing<T,T>
+		if (genericType instanceof ParameterizedType type) {
+			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
+				return ParameterizedClassInfo.create(options, source, type, parameterizedType);
+			} else if (annotatedType == null) {
+				return ParameterizedClassInfo.create(options, source, type, null);
+			}
+			throw new RuntimeException();
+		}
+
+		//T thing
+		if (genericType instanceof TypeVariable typeVariable) {
+			if (source instanceof ParameterizedClassInfo info) {
+				String typeName = typeVariable.getName();
+				TypeInfo classInfo = info.types.get(typeName);
+				if (classInfo != null) {
+					// safety first!
+					// kropp: why are we copying?
+					return TypeClassInfo.create(source, classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
 				}
 			}
 
-			// check if field is polymorphic
-			if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
-				return SubclassInfo.create(source, fieldType, genericType, options, annotatedType);
+			/*throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);*/
+			return UNKNOWN_INFO;
+		}
+
+		//T[] arrrrrrrr
+		if (genericType instanceof GenericArrayType genericArrayType) {
+			//get component class
+			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
+				var componentType = genericArrayType.getGenericComponentType();
+				var classInfo = create(source, fieldType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
+				return ArrayInfo.create(source, fieldType, options, classInfo);
 			}
+			throw new RuntimeException();
+		}
 
-			//Object / int / Object[] / int[]
-			if (genericType instanceof Class<?> clazz) {
-				if (clazz.isArray()) {
-					Class<?> componentType = clazz.getComponentType();
-					return ArrayInfo.create(source, clazz, options, create(source, componentType, componentType, null));
-				} else {
-					return ClassInfo.create(clazz, options);
-				}
-			}
-
-
-			//Thing<T,T>
-			if (genericType instanceof ParameterizedType type) {
-				if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
-					return ParameterizedClassInfo.create(options, source, type, parameterizedType);
-				} else if (annotatedType == null) {
-					return ParameterizedClassInfo.create(options, source, type, null);
-				}
-				throw new RuntimeException();
-			}
-
-			//T thing
-			if (genericType instanceof TypeVariable typeVariable) {
-				if (source instanceof ParameterizedClassInfo info) {
-					String typeName = typeVariable.getName();
-					TypeInfo classInfo = info.types.get(typeName);
-					if (classInfo != null) {
-						// safety first!
-						// kropp: why are we copying?
-						return TypeClassInfo.create(source, classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
-					}
-				}
-
-				/*throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);*/
+		if (genericType instanceof WildcardType wildcardType) {
+			if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class) {
+				// just a <?>
 				return UNKNOWN_INFO;
 			}
 
-			//T[] arrrrrrrr
-			if (genericType instanceof GenericArrayType genericArrayType) {
-				//get component class
-				if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
-					var componentType = genericArrayType.getGenericComponentType();
-					var classInfo = create(source, fieldType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
-					return ArrayInfo.create(source, fieldType, options, classInfo);
-				}
-				throw new RuntimeException();
-			}
 
-			if (genericType instanceof WildcardType wildcardType) {
-				if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class) {
-					// just a <?>
-					return UNKNOWN_INFO;
-				}
-
-
-				throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
-						ThrowEntry.of("GenericType", wildcardType),
-						ThrowEntry.of("UpperBounds", Arrays.toString(wildcardType.getUpperBounds())),
-						ThrowEntry.of("LowerBounds", Arrays.toString(wildcardType.getLowerBounds()))
-				);
-			}
-
-			throw ThrowHandler.fatal(IllegalArgumentException::new, "Unknown generic type",
-					ThrowEntry.of("GenericType", genericType)
+			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
+					ThrowEntry.of("GenericType", wildcardType),
+					ThrowEntry.of("UpperBounds", Arrays.toString(wildcardType.getUpperBounds())),
+					ThrowEntry.of("LowerBounds", Arrays.toString(wildcardType.getLowerBounds()))
 			);
-		} catch (HyphenException hyphenException) {
-			throw hyphenException.addParent(source);
 		}
+
+		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unknown generic type",
+				ThrowEntry.of("GenericType", genericType)
+		);
 	}
 
 	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldClass, Class<?> subType, Type fieldType, AnnotatedType annotatedFieldType) {

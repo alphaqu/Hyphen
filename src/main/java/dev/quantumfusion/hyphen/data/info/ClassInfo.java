@@ -62,36 +62,40 @@ public class ClassInfo extends TypeInfo implements Type {
 
 	private List<ClassSerializerMetadata.FieldEntry> getFields(Predicate<? super Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> info = new ArrayList<>();
-		for (Field declaredField : clazz.getDeclaredFields()) {
+		for (Field declaredField : this.clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
-				Type genericType = declaredField.getGenericType();
-				TypeInfo classInfo;
-
 				try {
-					classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+					Type genericType = declaredField.getGenericType();
+
+					TypeInfo classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+
+					if (classInfo == ScanHandler.UNKNOWN_INFO)
+						throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
+
+					info.add(new ClassSerializerMetadata.FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
 				} catch (HyphenException hyphenException) {
-					throw hyphenException.setName(declaredField.getName());
+					throw hyphenException.addParent(this, declaredField.getName());
 				}
-
-				if (classInfo == ScanHandler.UNKNOWN_INFO)
-					throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
-
-				info.add(new ClassSerializerMetadata.FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
 			}
 		}
+
 		return info;
 	}
 
-	public List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<Field> filter) {
+	public List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<? super Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
 		Class<?> superclass = this.clazz.getSuperclass();
 		if (superclass != null) {
-			TypeInfo typeInfo = ScanHandler.create(this, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
-			if (typeInfo instanceof ClassInfo classInfo) {
-				out.addAll(classInfo.getAllFields(filter));
+			try {
+				TypeInfo typeInfo = ScanHandler.create(this, superclass, this.clazz.getGenericSuperclass(), this.clazz.getAnnotatedSuperclass());
+				if (typeInfo instanceof ClassInfo classInfo) {
+					out.addAll(classInfo.getAllFields(filter));
+				}
+			} catch (HyphenException hyphenException){
+				throw hyphenException.addParent(this, "superclass");
 			}
 		}
-		out.addAll(getFields(filter));
+		out.addAll(this.getFields(filter));
 		return out;
 	}
 

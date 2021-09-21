@@ -29,7 +29,7 @@ public class HyphenException extends RuntimeException {
 		builder.append('\n');
 		builder.append('\n');
 
-		if(!this.path.isEmpty()) {
+		if (!this.path.isEmpty()) {
 			builder.append("Path: ");
 			for (PathEntry typeInfo : this.path) {
 				builder.append('\n');
@@ -46,7 +46,7 @@ public class HyphenException extends RuntimeException {
 			builder.append('\n');
 		}
 
-		if(!this.entries.isEmpty()) {
+		if (!this.entries.isEmpty()) {
 			builder.append("Detail: ");
 
 			for (ThrowHandler.Throwable throwable$ : this.entries) {
@@ -73,18 +73,8 @@ public class HyphenException extends RuntimeException {
 		return this;
 	}
 
-	public HyphenException addParent(TypeInfo parent) {
-		path.add(0, new PathEntry(parent));
-		return this;
-	}
-
 	public HyphenException addParent(TypeInfo parent, String name) {
-		path.add(0, new PathEntry(parent, name));
-		return this;
-	}
-
-	public HyphenException setName(String name) {
-		path.get(0).name = name;
+		this.path.add(0, new PathEntry(parent, name));
 		return this;
 	}
 
@@ -99,18 +89,7 @@ public class HyphenException extends RuntimeException {
 		return this;
 	}
 
-	private static class PathEntry {
-		public final TypeInfo parent;
-		public String name = null;
-
-		public PathEntry(TypeInfo parent) {
-			this.parent = parent;
-		}
-
-		public PathEntry(TypeInfo parent, String name) {
-			this.parent = parent;
-			this.name = name;
-		}
+	private record PathEntry(TypeInfo parent, String name) {
 	}
 }
 
