@@ -18,7 +18,7 @@ public class ParameterizedClassInfo extends ClassInfo {
 		this.types = types;
 	}
 
-	public static ParameterizedClassInfo create(ScanHandler factory, Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+	public static ParameterizedClassInfo create(ScanHandler factory, TypeInfo source, Map<Class<Annotation>, Annotation> annotations, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, TypeUtil.mapTypes(factory, source, type, annotatedType));
 	}
 

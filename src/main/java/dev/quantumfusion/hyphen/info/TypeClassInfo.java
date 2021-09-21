@@ -4,8 +4,10 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.UnknownTypeException;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.TypeVariable;
 import java.util.Map;
 
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
@@ -22,12 +24,18 @@ public class TypeClassInfo extends TypeInfo {
 		this.actual = actual;
 	}
 
-	public static TypeClassInfo create(TypeInfo source, Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, String typeName, Class<?> type, TypeInfo actual) {
-		if (actual == ScanHandler.UNKNOWN_INFO)
-			throw ThrowHandler.fatal(UnknownTypeException::new, "Type could not be identified",
-					of("Source Class", source.clazz.getName()),
-					of("Error Class", clazz));
-		return new TypeClassInfo(clazz, annotations, typeName, type, actual);
+	public static TypeInfo create(TypeInfo source, Class<?> clazz, TypeVariable<?> typeVariable) {
+		if (source instanceof ParameterizedClassInfo info) {
+			var typeName = typeVariable.getName();
+			var classInfo = info.types.get(typeName);
+			if (classInfo == ScanHandler.UNKNOWN_INFO)
+				throw ThrowHandler.fatal(UnknownTypeException::new, "Type could not be identified",
+						of("Source Class", source.clazz.getName()),
+						of("Error Class", clazz));
+			if (classInfo != null)
+				return new TypeClassInfo(classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
+		}
+		return ScanHandler.UNKNOWN_INFO;
 	}
 
 	@Override

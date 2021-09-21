@@ -128,7 +128,14 @@ public class TypeUtil {
 		}
 	}
 
-	public static LinkedHashMap<String, TypeInfo> findTypes(ScanHandler factory, TypeInfo source, Class<?> superClass, Class<?> subClass, ParameterizedType supperType, AnnotatedParameterizedType annotatedSuperType) {
+	public static LinkedHashMap<String, TypeInfo> findTypes(
+			ScanHandler factory,
+			TypeInfo source,
+			Class<?> superClass,
+			ParameterizedType supperType,
+			AnnotatedParameterizedType annotatedSuperType,
+			Class<?> subClass
+	) {
 		try {
 			if (subClass == null) return null;
 			else if (subClass == superClass) {

@@ -29,7 +29,11 @@ public class SubclassInfo extends TypeInfo {
 		this.classInfos = classInfos;
 	}
 
-	public static SubclassInfo create(ScanHandler factory, TypeInfo source, Class<?> superClass, Type genericType, Map<Class<Annotation>, Annotation> options, AnnotatedType annotatedType) {
+	public static boolean check(Map<Class<Annotation>, Annotation> annotations) {
+		return annotations.containsKey(SerSubclasses.class) || annotations.containsKey(SerComplexSubClass.class) || annotations.containsKey(SerComplexSubClasses.class);
+	}
+
+	public static SubclassInfo create(ScanHandler factory, TypeInfo source, Class<?> superClass, Type genericType, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> options) {
 		var globalSubclasses = factory.subclasses;
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
@@ -63,7 +67,7 @@ public class SubclassInfo extends TypeInfo {
 
 			if (typeParameters.length != 0) {
 				if (genericType instanceof ParameterizedType parameterizedFieldType) {
-					var types = TypeUtil.findTypes(factory, source, superClass, aClass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType);
+					var types = TypeUtil.findTypes(factory, source, superClass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType, aClass);
 
 					if (types == null) {
 						throw ThrowHandler.fatal(

@@ -1,8 +1,5 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
-import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
-import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
@@ -17,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -47,56 +43,43 @@ public class ScanHandler {
 		this.methods = methods;
 	}
 
-	public TypeInfo create(TypeInfo source, Class<?> fieldType, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
-		if (genericType == null) genericType = fieldType;
+	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
+		if (genericType == null) genericType = clazz;
 		try {
 			if (source == null) {
 				throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
-						ThrowEntry.of("ClassType", fieldType),
+						ThrowEntry.of("ClassType", clazz),
 						ThrowEntry.of("Type", genericType),
 						ThrowEntry.of("AnnotatedType", annotatedType)
 				);
 			}
 
-			var options = ScanUtils.parseAnnotations(annotatedType);
+			var annotations = ScanUtils.parseAnnotations(annotatedType);
 
 			// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
-			if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class))
-				return SubclassInfo.create(this, source, fieldType, genericType, options, annotatedType);
+			if (SubclassInfo.check(annotations))
+				return SubclassInfo.create(this, source, clazz, genericType, annotatedType, annotations);
 
 			// Object / int / Object[] / int[]
-			if (genericType instanceof Class<?> clazz) {
-				if (clazz.isArray())
-					return ArrayInfo.create(source, clazz, options, create(source, clazz.getComponentType(), null, null));
+			if (genericType instanceof Class<?> type) {
+				if (type.isArray())
+					return ArrayInfo.create(source, type, annotations, create(source, type.getComponentType(), null, null));
 				else
-					return ClassInfo.create(clazz, options);
+					return ClassInfo.create(type, annotations);
 			}
 
 			//Thing<T,T>
 			if (genericType instanceof ParameterizedType type)
-				return ParameterizedClassInfo.create(this, options, source, type, (AnnotatedParameterizedType) annotatedType);
+				return ParameterizedClassInfo.create(this, source, annotations, type, (AnnotatedParameterizedType) annotatedType);
 
 			//T thing
-			if (genericType instanceof TypeVariable typeVariable) {
-				if (source instanceof ParameterizedClassInfo info) {
-					var typeName = typeVariable.getName();
-					var classInfo = info.types.get(typeName);
-					if (classInfo != null)
-						return TypeClassInfo.create(source, classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
-				}
+			if (genericType instanceof TypeVariable type)
+				return TypeClassInfo.create(source, clazz, type);
 
-				return UNKNOWN_INFO;
-			}
 
 			//T[] arrrrrrrr
-			if (genericType instanceof GenericArrayType genericArrayType) {
-				AnnotatedType annotatedArrayType;
-				if (annotatedType instanceof AnnotatedArrayType type)
-					annotatedArrayType = type.getAnnotatedGenericComponentType();
-				else annotatedArrayType = null;
-
-				return ArrayInfo.create(source, fieldType, options, create(source, fieldType, genericArrayType.getGenericComponentType(), annotatedArrayType));
-			}
+			if (genericType instanceof GenericArrayType type)
+				return ArrayInfo.createGeneric(this, source, annotations, clazz, type, annotatedType);
 
 			//<?>
 			if (genericType instanceof WildcardType wildcardType) {
