@@ -31,8 +31,11 @@ public class ClassInfo extends TypeInfo implements Type {
 	public static ClassInfo create(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		// the @Serialize annotation counts
 		ClassInfo classInfo = new ClassInfo(clazz, annotations);
+		/*
+		the following code breaks tests
 		if (dedupMap.containsKey(classInfo)) return dedupMap.get(classInfo);
 		dedupMap.put(classInfo, classInfo);
+		 */
 		return classInfo;
 	}
 
