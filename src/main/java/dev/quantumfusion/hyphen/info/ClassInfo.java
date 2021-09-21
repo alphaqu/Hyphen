@@ -4,9 +4,8 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import dev.quantumfusion.hyphen.util.Color;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;

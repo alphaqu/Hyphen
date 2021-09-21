@@ -1,13 +1,13 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.IOMode;
 import dev.quantumfusion.hyphen.gen.SerializerClassFactory;
 import dev.quantumfusion.hyphen.gen.impl.AbstractDef;
 import dev.quantumfusion.hyphen.gen.impl.IntDef;
-import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

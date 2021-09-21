@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.thr;
 
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.thr.exception.AccessException;
 import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;

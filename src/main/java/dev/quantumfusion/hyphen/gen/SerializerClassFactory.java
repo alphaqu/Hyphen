@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.gen;
 
 import dev.quantumfusion.hyphen.ObjectSerializationDef;
-import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 
 import java.util.Map;
 import java.util.function.Function;

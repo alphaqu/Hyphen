@@ -6,9 +6,9 @@ import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SubclassSerializerMetadata;
-import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.TypeUtil;
 

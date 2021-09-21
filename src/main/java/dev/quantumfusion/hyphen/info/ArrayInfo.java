@@ -3,8 +3,8 @@ package dev.quantumfusion.hyphen.info;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.gen.metadata.ArraySerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.util.Color;
 
 import java.lang.annotation.Annotation;

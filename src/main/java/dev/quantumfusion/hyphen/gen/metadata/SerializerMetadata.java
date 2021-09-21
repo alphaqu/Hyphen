@@ -11,5 +11,6 @@ public abstract class SerializerMetadata {
 
 	public String toFancyString() {
 		return clazz.toFancyString();
-	};
+	}
+
 }
