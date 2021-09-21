@@ -20,7 +20,7 @@ public class ClassSerializerMetadata extends SerializerMetadata {
 		StringBuilder sb = new StringBuilder(super.toFancyString());
 		sb.append('\n');
 		fields.forEach((fieldEntry, objectSerializationDef) -> {
-			sb.append(Color.RESET).append('\t').append(fieldEntry.name);
+			sb.append(Color.RESET).append('\t').append(fieldEntry == null ? "null" : fieldEntry.name);
 			sb.append(Color.RED).append(" : ");
 			sb.append(Color.BLUE).append(objectSerializationDef.toFancyString());
 			sb.append('\n');

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @HyphenOptionAnnotation
 public @interface SerSubclasses {
 	Class<?>[] value();
-	String key();
+	String key() default "";
 	//overrides existing subclass mappings on only using the key
-	boolean override();
+	boolean override() default false;
 }
