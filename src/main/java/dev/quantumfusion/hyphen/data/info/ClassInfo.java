@@ -138,8 +138,4 @@ public class ClassInfo extends TypeInfo implements Type {
 		return this.clazz.getSimpleName();
 	}
 
-	@Override
-	public ClassInfo copy() {
-		return new ClassInfo(this.clazz, new HashMap<>(this.annotations));
-	}
 }

@@ -130,9 +130,4 @@ public class SubclassInfo extends TypeInfo {
 		}
 		return parameterJoiner.toString();
 	}
-
-	@Override
-	public SubclassInfo copy() {
-		return new SubclassInfo(this.clazz, new HashMap<>(this.annotations), field, new ArrayList<>(this.classInfos));
-	}
 }

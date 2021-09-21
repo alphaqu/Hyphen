@@ -91,10 +91,4 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
 	}
 
-	@Override
-	public ClassInfo copy() {
-		LinkedHashMap<String, TypeInfo> typesCloned = new LinkedHashMap<>();
-		types.forEach((s, info) -> typesCloned.put(s, info.copy()));
-		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
-	}
 }

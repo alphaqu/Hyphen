@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.scan.simple;
 
 import dev.quantumfusion.hyphen.annotation.Serialize;
 
+@
 public class PathTest {
 	@Serialize
 	public Thing1 superGaming;

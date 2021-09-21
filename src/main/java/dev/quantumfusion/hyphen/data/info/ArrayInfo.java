@@ -64,8 +64,4 @@ public class ArrayInfo extends TypeInfo {
 		return values.toString() + "[]";
 	}
 
-	@Override
-	public ArrayInfo copy() {
-		return ArrayInfo.create(this, clazz, new HashMap<>(annotations), values.copy());
-	}
 }

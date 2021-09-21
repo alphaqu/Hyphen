@@ -35,8 +35,6 @@ public abstract class TypeInfo {
 		return Objects.hash(this.clazz, this.annotations);
 	}
 
-	public abstract TypeInfo copy();
-
 	public Class<?> getClazz() {
 		return this.clazz;
 	}

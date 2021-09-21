@@ -47,11 +47,6 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
-	public TypeInfo copy() {
-		return new TypeClassInfo(this.clazz, this.annotations, this.typeName, this.type, this.actual);
-	}
-
-	@Override
 	public Class<?> getClazz() {
 		Class<?> clazz = actual.getClazz();
 		return clazz;
