@@ -22,6 +22,6 @@ public class MethodCallDef extends AbstractDef {
 
 	@Override
 	public String toFancyString() {
-		return Color.GREEN + "MethodCallDef{" + this.info.toFancyString() + Color.GREEN + '}';
+		return Color.BLUE + "MethodCallDef" + Color.WHITE + " ==> " + this.info.toFancyString();
 	}
 }

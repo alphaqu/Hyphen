@@ -35,11 +35,11 @@ public class ParameterizedClassInfo extends ClassInfo {
 	public String toFancyString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				Color.WHITE + ", ",
-				super.toFancyString() + Color.PURPLE + "<",
+				Color.YELLOW + super.toFancyString() + Color.PURPLE + "<",
 				Color.PURPLE + ">");
 		parameterJoiner.setEmptyValue("");
 		for (TypeInfo t : types.values()) {
-			parameterJoiner.add(t.toFancyString());
+			parameterJoiner.add(Color.CYAN + t.toFancyString());
 		}
 		return parameterJoiner.toString();
 	}

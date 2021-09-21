@@ -97,8 +97,8 @@ public class SubclassInfo extends TypeInfo {
 	public String toFancyString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				Color.WHITE + ", ",
-				Color.CYAN + "Poly" + Color.PURPLE + "[",
-				Color.PURPLE + "]");
+				Color.GREEN + "Subclass" + Color.GREEN + "[",
+				Color.GREEN + "]");
 		parameterJoiner.setEmptyValue("");
 		for (TypeInfo t : this.classInfos) {
 			parameterJoiner.add(t.toFancyString());
@@ -109,7 +109,7 @@ public class SubclassInfo extends TypeInfo {
 	@Override
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Subclass");
+		builder.append("Sub");
 		for (TypeInfo classInfo : classInfos) {
 			builder.append(classInfo.getMethodName(absolute));
 		}
@@ -125,7 +125,7 @@ public class SubclassInfo extends TypeInfo {
 	public String toString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				", ",
-				"Poly[",
+				"Subclass[",
 				"]");
 		parameterJoiner.setEmptyValue("");
 		for (TypeInfo t : this.classInfos) {

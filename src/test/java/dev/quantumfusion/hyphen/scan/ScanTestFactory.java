@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.TestUtil;
+import dev.quantumfusion.hyphen.scan.poly.IReversePairAndReverseTest;
 import dev.quantumfusion.hyphen.scan.poly.TestIssue10;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
@@ -13,7 +14,7 @@ public class ScanTestFactory {
 
 	@TestFactory
 	Iterator<DynamicNode> bareTest() {
-		return Collections.singletonList(TestUtil.test(TestIssue10.class)).iterator();
+		return Collections.singletonList(TestUtil.test(IReversePairAndReverseTest.class)).iterator();
 	}
 
 	@Nested

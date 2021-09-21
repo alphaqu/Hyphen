@@ -101,7 +101,7 @@ public class ClassInfo extends TypeInfo implements Type {
 
 	@Override
 	public String toFancyString() {
-		return Color.YELLOW + this.clazz.getSimpleName();
+		return this.clazz.getSimpleName();
 	}
 
 	@Override
