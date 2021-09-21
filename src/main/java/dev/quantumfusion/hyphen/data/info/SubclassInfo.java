@@ -13,7 +13,10 @@ import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class SubclassInfo extends TypeInfo {

@@ -29,7 +29,7 @@ public class HyphenException extends RuntimeException {
 		builder.append('\n');
 		builder.append('\n');
 
-		if(!this.path.isEmpty()) {
+		if (!this.path.isEmpty()) {
 			builder.append("Path: ");
 			for (PathEntry typeInfo : this.path) {
 				builder.append('\n');
@@ -46,7 +46,7 @@ public class HyphenException extends RuntimeException {
 			builder.append('\n');
 		}
 
-		if(!this.entries.isEmpty()) {
+		if (!this.entries.isEmpty()) {
 			builder.append("Detail: ");
 
 			for (ThrowHandler.Throwable throwable$ : this.entries) {

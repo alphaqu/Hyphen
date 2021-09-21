@@ -2,8 +2,8 @@ package dev.quantumfusion.hyphen.data.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class TypeClassInfo extends TypeInfo {
 
 	@Override
 	public String getMethodName(boolean absolute) {
-		return typeName +  "?" + actual.getMethodName(absolute);
+		return typeName + "?" + actual.getMethodName(absolute);
 	}
 
 	@Override

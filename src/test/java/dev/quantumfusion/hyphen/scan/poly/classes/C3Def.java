@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.scan.poly.classes;
 
 import dev.quantumfusion.hyphen.annotation.Serialize;
 
-public class C3Def<E> extends C3<E,String> {
+public class C3Def<E> extends C3<E, String> {
 	@Serialize
 	public E e;
 

@@ -87,7 +87,8 @@ public class ScanHandler {
 			//T[] arrrrrrrr
 			if (genericType instanceof GenericArrayType genericArrayType) {
 				AnnotatedType annotatedArrayType;
-				if (annotatedType instanceof AnnotatedArrayType type) annotatedArrayType = type.getAnnotatedGenericComponentType();
+				if (annotatedType instanceof AnnotatedArrayType type)
+					annotatedArrayType = type.getAnnotatedGenericComponentType();
 				else annotatedArrayType = null;
 
 				return ArrayInfo.create(source, fieldType, options, create(source, fieldType, genericArrayType.getGenericComponentType(), annotatedArrayType));

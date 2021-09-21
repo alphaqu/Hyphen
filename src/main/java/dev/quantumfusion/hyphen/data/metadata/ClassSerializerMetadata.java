@@ -15,5 +15,6 @@ public class ClassSerializerMetadata extends SerializerMetadata {
 		this.fields = new LinkedHashMap<>();
 	}
 
-	public record FieldEntry(TypeInfo clazz, int modifier, String name) {}
+	public record FieldEntry(TypeInfo clazz, int modifier, String name) {
+	}
 }

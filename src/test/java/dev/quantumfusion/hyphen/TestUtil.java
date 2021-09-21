@@ -116,7 +116,7 @@ public class TestUtil {
 			sj.add(packageName);
 
 			Path parent = className.getParent();
-			if(parent != null) {
+			if (parent != null) {
 				for (Path path : parent) {
 					sj.add(path.toString());
 				}

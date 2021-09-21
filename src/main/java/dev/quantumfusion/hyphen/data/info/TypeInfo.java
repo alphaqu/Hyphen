@@ -38,6 +38,7 @@ public abstract class TypeInfo {
 	public Class<?> getClazz() {
 		return this.clazz;
 	}
+
 	public Class<?> getRawClass() {
 		return this.clazz;
 	}
