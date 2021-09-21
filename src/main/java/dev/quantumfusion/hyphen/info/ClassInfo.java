@@ -33,7 +33,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		return classInfo;
 	}
 
-	private List<ClassSerializerMetadata.FieldEntry> getFields(Predicate<? super Field> filter) {
+	private List<ClassSerializerMetadata.FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
@@ -41,7 +41,7 @@ public class ClassInfo extends TypeInfo implements Type {
 				TypeInfo classInfo;
 
 				try {
-					classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+					classInfo = factory.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
 				} catch (HyphenException hyphenException) {
 					throw hyphenException.setName(declaredField.getName());
 				}
@@ -55,16 +55,16 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	public List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<Field> filter) {
+	public List<ClassSerializerMetadata.FieldEntry> getAllFields(ScanHandler factory, Predicate<Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
 		Class<?> superclass = this.clazz.getSuperclass();
 		if (superclass != null) {
-			TypeInfo typeInfo = ScanHandler.create(this, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
+			TypeInfo typeInfo = factory.create(this, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
 			if (typeInfo instanceof ClassInfo classInfo) {
-				out.addAll(classInfo.getAllFields(filter));
+				out.addAll(classInfo.getAllFields(factory, filter));
 			}
 		}
-		out.addAll(getFields(filter));
+		out.addAll(getFields(factory, filter));
 		return out;
 	}
 
@@ -84,9 +84,9 @@ public class ClassInfo extends TypeInfo implements Type {
 		}
 
 		//get the fields
-		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		var allFields = this.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
 		//check if it exists / if its accessible
-		ScanUtils.checkConstructor(this);
+		ScanUtils.checkConstructor(factory, this);
 		for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
 			try {
 				methodMetadata.fields.put(fieldInfo, factory.getDefinition(fieldInfo, this));

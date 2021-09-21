@@ -17,6 +17,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -34,16 +36,18 @@ public class ScanHandler {
 	};
 	public final Map<TypeInfo, SerializerMetadata> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
+	public final Map<Object, List<Class<?>>> subclasses;
 	@Nullable
 	private final DebugHandler debugHandler;
 
-	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, boolean debug) {
+	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
 		this.implementations = implementations;
+		this.subclasses = subclasses;
 		this.debugHandler = debug ? new DebugHandler(this) : null;
 		this.methods = methods;
 	}
 
-	public static TypeInfo create(TypeInfo source, Class<?> fieldType, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
+	public TypeInfo create(TypeInfo source, Class<?> fieldType, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
 		if (genericType == null) genericType = fieldType;
 		try {
 			if (source == null) {
@@ -58,7 +62,7 @@ public class ScanHandler {
 
 			// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
 			if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class))
-				return SubclassInfo.create(source, fieldType, genericType, options, annotatedType);
+				return SubclassInfo.create(this, source, fieldType, genericType, options, annotatedType);
 
 			// Object / int / Object[] / int[]
 			if (genericType instanceof Class<?> clazz) {
@@ -70,7 +74,7 @@ public class ScanHandler {
 
 			//Thing<T,T>
 			if (genericType instanceof ParameterizedType type)
-				return ParameterizedClassInfo.create(options, source, type, (AnnotatedParameterizedType) annotatedType);
+				return ParameterizedClassInfo.create(this, options, source, type, (AnnotatedParameterizedType) annotatedType);
 
 			//T thing
 			if (genericType instanceof TypeVariable typeVariable) {

@@ -9,15 +9,13 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public class SerializerFactory {
-	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations = new HashMap<>();
-	public final Map<TypeInfo, SerializerMetadata> methods = new LinkedHashMap<>();
+	private final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations = new HashMap<>();
+	private final Map<TypeInfo, SerializerMetadata> methods = new LinkedHashMap<>();
+	private final Map<Object, List<Class<?>>> subclasses = new HashMap<>();
 	private final boolean debug;
 	private final Class<?> clazz;
 
@@ -39,6 +37,14 @@ public class SerializerFactory {
 		scanHandler.addImpl(int.class, (field) -> new IntDef());
 		scanHandler.addTestImpl(Integer.class, Float.class, List.class);
 		return scanHandler;
+	}
+
+	public void addSubclasses(Class<?> clazz, Class<?>... subclass) {
+		subclasses.computeIfAbsent(clazz, c -> new ArrayList<>()).addAll(Arrays.asList(subclass));
+	}
+
+	public void addSubclassKeys(String key, Class<?>... subclass) {
+		subclasses.computeIfAbsent(key, c -> new ArrayList<>()).addAll(Arrays.asList(subclass));
 	}
 
 	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends ObjectSerializationDef> creator) {
@@ -70,7 +76,7 @@ public class SerializerFactory {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
-		ScanHandler scanner = new ScanHandler(methods, implementations, debug);
+		ScanHandler scanner = new ScanHandler(methods, implementations, subclasses, debug);
 		scanner.scan(clazz);
 
 

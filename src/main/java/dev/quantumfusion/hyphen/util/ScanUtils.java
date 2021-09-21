@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
@@ -69,12 +70,12 @@ public class ScanUtils {
 		return options;
 	}
 
-	public static void checkConstructor(ClassInfo source) {
+	public static void checkConstructor(ScanHandler factory, ClassInfo source) {
 		ClassInfo parent = source;
 		if (source instanceof ParameterizedClassInfo classInfo) {
 			parent = classInfo.copyWithoutTypeKnowledge();
 		}
-		List<ClassSerializerMetadata.FieldEntry> allFields = parent.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		List<ClassSerializerMetadata.FieldEntry> allFields = parent.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
 		Class<?>[] classes = new Class[allFields.size()];
 		for (int i = 0; i < allFields.size(); i++) {
 			classes[i] = allFields.get(i).clazz().getClazz();

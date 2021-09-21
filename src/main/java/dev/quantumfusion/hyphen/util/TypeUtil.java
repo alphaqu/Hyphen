@@ -21,7 +21,7 @@ import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
 public class TypeUtil {
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
-	public static LinkedHashMap<String, TypeInfo> mapTypes(TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+	public static LinkedHashMap<String, TypeInfo> mapTypes(ScanHandler factory, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		var annotatedParameters = annotatedType == null ? null : annotatedType.getAnnotatedActualTypeArguments();
 		var out = new LinkedHashMap<String, TypeInfo>();
 		var clazz = (Class<?>) type.getRawType();
@@ -29,7 +29,7 @@ public class TypeUtil {
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
 			AnnotatedType annotatedParameter = annotatedParameters == null ? null : annotatedParameters[i];
-			out.put(innerTypes[i].getName(), ScanHandler.create(source, clazz, parameters[i], annotatedParameter));
+			out.put(innerTypes[i].getName(), factory.create(source, clazz, parameters[i], annotatedParameter));
 		}
 		return out;
 	}
@@ -128,11 +128,11 @@ public class TypeUtil {
 		}
 	}
 
-	public static LinkedHashMap<String, TypeInfo> findTypes(TypeInfo source, Class<?> superClass, Class<?> subClass, ParameterizedType supperType, AnnotatedParameterizedType annotatedSuperType) {
+	public static LinkedHashMap<String, TypeInfo> findTypes(ScanHandler factory, TypeInfo source, Class<?> superClass, Class<?> subClass, ParameterizedType supperType, AnnotatedParameterizedType annotatedSuperType) {
 		try {
 			if (subClass == null) return null;
 			else if (subClass == superClass) {
-				return mapTypes(source, supperType, annotatedSuperType);
+				return mapTypes(factory, source, supperType, annotatedSuperType);
 			} else {
 				Type[] types = ScanUtils.pathTo(subClass, superClass, 0);
 
@@ -141,7 +141,7 @@ public class TypeUtil {
 							IllegalInheritanceException::new, "Subclass does not implement super.");
 				}
 
-				Map<String, TypeInfo> typeMap = mapTypes(source, supperType, annotatedSuperType);
+				Map<String, TypeInfo> typeMap = mapTypes(factory, source, supperType, annotatedSuperType);
 
 				for (int i = types.length - 1; i >= 0; i--) {
 					Type currentType = types[i];

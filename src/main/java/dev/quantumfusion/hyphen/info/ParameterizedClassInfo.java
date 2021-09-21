@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.info;
 
+import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.TypeUtil;
 import org.jetbrains.annotations.Nullable;
@@ -17,8 +18,8 @@ public class ParameterizedClassInfo extends ClassInfo {
 		this.types = types;
 	}
 
-	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
-		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, TypeUtil.mapTypes(source, type, annotatedType));
+	public static ParameterizedClassInfo create(ScanHandler factory, Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, TypeUtil.mapTypes(factory, source, type, annotatedType));
 	}
 
 	@Override
