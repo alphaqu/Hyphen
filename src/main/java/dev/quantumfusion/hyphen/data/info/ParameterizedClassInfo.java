@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.data.info;
 
-import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -21,8 +19,7 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	}
 
 	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
-		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes(source, type, annotatedType);
-		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, out);
+		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, ScanUtils.mapTypes(source, type, annotatedType));
 	}
 
 	@Override

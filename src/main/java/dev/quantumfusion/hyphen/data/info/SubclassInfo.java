@@ -6,13 +6,14 @@ import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
+import dev.quantumfusion.hyphen.thr.ClassScanException;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class SubclassInfo extends TypeInfo {
@@ -35,11 +36,37 @@ public class SubclassInfo extends TypeInfo {
 		}
 
 		SerSubclasses subclasses = (SerSubclasses) options.get(SerSubclasses.class);
-		Class<?>[] value = subclasses.value();
-		List<TypeInfo> subInfos = new ArrayList<>(value.length);
+		var value = subclasses.value();
+		var subInfos = new ArrayList<TypeInfo>(value.length);
 
 		for (Class<?> subclass : value) {
-			var subClassInfo = ScanHandler.createFromPolymorphicType(source, fieldType, subclass, genericType, annotatedType);
+			TypeInfo subClassInfo;
+			var typeParameters = subclass.getTypeParameters();
+
+			if (typeParameters.length != 0) {
+				if (genericType instanceof ParameterizedType parameterizedFieldType) {
+					var types = ScanUtils.findTypes(source, fieldType, subclass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType);
+
+					if (types == null) {
+						throw ThrowHandler.fatal(
+								ClassScanException::new, "Failed to find the type",
+								ThrowEntry.of("SourceClass", source),
+								ThrowEntry.of("SubType", subclass),
+								ThrowEntry.of("FieldClass", fieldType),
+								ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
+						);
+					}
+
+					subClassInfo = new ParameterizedClassInfo(subclass, Map.of(), types);
+				} else {
+					throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
+							ThrowEntry.of("SourceClass", source),
+							ThrowEntry.of("SubType", subclass),
+							ThrowEntry.of("Poly", fieldType));
+				}
+			} else subClassInfo = ClassInfo.create(subclass, Map.of());
+
+
 			subInfos.add(subClassInfo);
 		}
 

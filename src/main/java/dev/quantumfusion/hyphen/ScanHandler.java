@@ -139,34 +139,7 @@ public class ScanHandler {
 		}
 	}
 
-	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldClass, Class<?> subType, Type fieldType, AnnotatedType annotatedFieldType) {
-		TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
 
-		if (typeParameters.length != 0) {
-			if (fieldType instanceof ParameterizedType parameterizedFieldType) {
-				LinkedHashMap<String, TypeInfo> types = ScanUtils.findTypes(source, fieldClass, subType, parameterizedFieldType, (AnnotatedParameterizedType) annotatedFieldType);
-
-				if (types == null) {
-					throw ThrowHandler.fatal(
-							ClassScanException::new, "Failed to find the type",
-							ThrowEntry.of("SourceClass", source),
-							ThrowEntry.of("SubType", subType),
-							ThrowEntry.of("FieldClass", fieldClass),
-							ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
-					);
-				}
-
-				return new ParameterizedClassInfo(subType, Map.of(), types);
-			} else {
-				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
-						ThrowEntry.of("SourceClass", source),
-						ThrowEntry.of("SubType", subType),
-						ThrowEntry.of("Poly", fieldClass));
-			}
-		}
-
-		return ClassInfo.create(subType, Map.of());
-	}
 
 	public void scan(Class<?> clazz) {
 		this.createSerializeMetadata(ClassInfo.create(clazz, Map.of()));
