@@ -1,6 +1,8 @@
-package dev.quantumfusion.hyphen.thr;
+package dev.quantumfusion.hyphen.thr.exception;
 
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;

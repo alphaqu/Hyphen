@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
@@ -116,7 +116,7 @@ public class TestUtil {
 			sj.add(packageName);
 
 			Path parent = className.getParent();
-			if(parent != null) {
+			if (parent != null) {
 				for (Path path : parent) {
 					sj.add(path.toString());
 				}

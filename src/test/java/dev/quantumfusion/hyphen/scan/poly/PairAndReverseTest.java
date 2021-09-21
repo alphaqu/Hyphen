@@ -11,7 +11,7 @@ public class PairAndReverseTest {
 	public Pair<Integer, Float> data;
 
 
-	public PairAndReverseTest( Pair<Integer, Float> data) {
+	public PairAndReverseTest(Pair<Integer, Float> data) {
 		this.data = data;
 	}
 }

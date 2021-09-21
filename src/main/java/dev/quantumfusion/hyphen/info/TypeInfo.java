@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -35,11 +35,10 @@ public abstract class TypeInfo {
 		return Objects.hash(this.clazz, this.annotations);
 	}
 
-	public abstract TypeInfo copy();
-
 	public Class<?> getClazz() {
 		return this.clazz;
 	}
+
 	public Class<?> getRawClass() {
 		return this.clazz;
 	}

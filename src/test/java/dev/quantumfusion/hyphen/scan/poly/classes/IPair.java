@@ -1,4 +1,4 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-public interface IPair<A,B> {
+public interface IPair<A, B> {
 }

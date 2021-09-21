@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 
 @FailTest(NotYetImplementedException.class)
 public class Wildcard {

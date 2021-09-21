@@ -272,4 +272,8 @@ public class ArrayIO implements IOInterface {
 	public int pos() {
 		return pos;
 	}
+
+	public void close() {
+
+	}
 }

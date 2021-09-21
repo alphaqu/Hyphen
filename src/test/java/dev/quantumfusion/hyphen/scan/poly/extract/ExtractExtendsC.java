@@ -6,7 +6,7 @@ import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1;
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 
 // Tracking issue #6
 @FailTest(NotYetImplementedException.class)

@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.gen.impl;
 
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
 
 public class MethodCallDef extends AbstractDef {
@@ -22,6 +22,6 @@ public class MethodCallDef extends AbstractDef {
 
 	@Override
 	public String toFancyString() {
-		return Color.GREEN + "MethodCallDef{" + this.info.toFancyString() + Color.GREEN + '}';
+		return Color.BLUE + "MethodCallDef" + Color.WHITE + " ==> " + this.info.toFancyString();
 	}
 }

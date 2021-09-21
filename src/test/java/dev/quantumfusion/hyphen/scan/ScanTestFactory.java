@@ -1,11 +1,8 @@
 package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.TestUtil;
+import dev.quantumfusion.hyphen.scan.poly.IReversePairAndReverseTest;
 import dev.quantumfusion.hyphen.scan.poly.TestIssue10;
-import dev.quantumfusion.hyphen.scan.poly.UnknownInbetweenType;
-import dev.quantumfusion.hyphen.scan.poly.classes.C3Def;
-import dev.quantumfusion.hyphen.scan.poly.extract.ExtractBothAnnotatedC;
-import dev.quantumfusion.hyphen.scan.type.UnknownType;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
@@ -17,7 +14,7 @@ public class ScanTestFactory {
 
 	@TestFactory
 	Iterator<DynamicNode> bareTest() {
-		return Collections.singletonList(TestUtil.test(TestIssue10.class)).iterator();
+		return Collections.singletonList(TestUtil.test(IReversePairAndReverseTest.class)).iterator();
 	}
 
 	@Nested

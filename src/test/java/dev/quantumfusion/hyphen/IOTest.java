@@ -23,6 +23,7 @@ public class IOTest {
 		static long longValue = Long.MIN_VALUE;
 		static float floatValue = Float.MIN_VALUE;
 		static double doubleValue = Double.MIN_VALUE;
+		static String stringValue = "your mom";
 		static boolean[] booleanValueArray = new boolean[]{true, false, true, true, false};
 		static byte[] byteValueArray = "gello there my name is alpha".getBytes(StandardCharsets.UTF_8);
 		static char[] charValueArray = new char[]{Character.MAX_VALUE, 'a', 'l', 'p', 'h', 'a', Character.MIN_VALUE};
@@ -31,6 +32,8 @@ public class IOTest {
 		static long[] longValueArray = new long[]{45354254, 431212543, 5423367, 345657, 345754563, 8453656};
 		static float[] floatValueArray = new float[]{69.422430f, 69.44520f, 69.420234f};
 		static double[] doubleValueArray = new double[]{69.426430f, 69.426430f, 69.4220f};
+		static String[] stringValueArray = new String[]{"your mom", "super mom", "extreme mom"};
+
 
 		@Nested
 		@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -83,52 +86,65 @@ public class IOTest {
 				assertEquals(doubleValue, ioInterface.getDouble());
 			}
 
+
 			@RepeatedTest(2)
 			@Order(8)
+			void getString() {
+				assertEquals(stringValue, ioInterface.getString());
+			}
+
+			@RepeatedTest(2)
+			@Order(9)
 			void getBooleanArray() {
 				assertArrayEquals(booleanValueArray, ioInterface.getBooleanArray(booleanValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(9)
+			@Order(10)
 			void getByteArray() {
 				assertArrayEquals(byteValueArray, ioInterface.getByteArray(byteValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(10)
+			@Order(11)
 			void getCharArray() {
 				assertArrayEquals(charValueArray, ioInterface.getCharArray(charValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(11)
+			@Order(12)
 			void getShortArray() {
 				assertArrayEquals(shortValueArray, ioInterface.getShortArray(shortValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(12)
+			@Order(13)
 			void getIntArray() {
 				assertArrayEquals(intValueArray, ioInterface.getIntArray(intValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(13)
+			@Order(14)
 			void getLongArray() {
 				assertArrayEquals(longValueArray, ioInterface.getLongArray(longValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(14)
+			@Order(15)
 			void getFloatArray() {
 				assertArrayEquals(floatValueArray, ioInterface.getFloatArray(floatValueArray.length));
 			}
 
 			@RepeatedTest(2)
-			@Order(15)
+			@Order(16)
 			void getDoubleArray() {
 				assertArrayEquals(doubleValueArray, ioInterface.getDoubleArray(doubleValueArray.length));
+			}
+
+			@RepeatedTest(2)
+			@Order(17)
+			void getStringArray() {
+				assertArrayEquals(stringValueArray, ioInterface.getStringArray(stringValueArray.length));
 			}
 		}
 
@@ -195,50 +211,62 @@ public class IOTest {
 
 			@RepeatedTest(2)
 			@Order(8)
+			void putString() {
+				ioInterface.putString(stringValue);
+			}
+
+			@RepeatedTest(2)
+			@Order(9)
 			void putBooleanArray() {
 				ioInterface.putBooleanArray(booleanValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(9)
+			@Order(10)
 			void putByteArray() {
 				ioInterface.putByteArray(byteValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(10)
+			@Order(11)
 			void putCharArray() {
 				ioInterface.putCharArray(charValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(11)
+			@Order(12)
 			void putShortArray() {
 				ioInterface.putShortArray(shortValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(12)
+			@Order(13)
 			void putIntArray() {
 				ioInterface.putIntArray(intValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(13)
+			@Order(14)
 			void putLongArray() {
 				ioInterface.putLongArray(longValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(14)
+			@Order(15)
 			void putFloatArray() {
 				ioInterface.putFloatArray(floatValueArray);
 			}
 
 			@RepeatedTest(2)
-			@Order(15)
+			@Order(16)
 			void putDoubleArray() {
 				ioInterface.putDoubleArray(doubleValueArray);
+			}
+
+			@RepeatedTest(2)
+			@Order(17)
+			void putStringArrat() {
+				ioInterface.putStringArray(stringValueArray);
 			}
 		}
 
@@ -259,35 +287,50 @@ public class IOTest {
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	public class HeapIOTest extends IOTestClass {
 
+		@AfterAll
+		static void afterAll() {
+			System.out.println(ioInterface.pos());
+			ioInterface.close();
+		}
+
 		@BeforeAll
 		public void init() {
 			ioInterface = ByteBufferIO.create(2000);
 			ioInterface.putLong(6980000);
 		}
-
 	}
 
 	@Nested
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	public class DirectIOTest extends IOTestClass {
 
+		@AfterAll
+		static void afterAll() {
+			System.out.println(ioInterface.pos());
+			ioInterface.close();
+		}
+
 		@BeforeAll
 		public void init() {
 			ioInterface = ByteBufferIO.createDirect(2000);
 			ioInterface.putLong(6980000);
 		}
-
 	}
 
 	@Nested
 	@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 	public class ArrayIOTest extends IOTestClass {
 
+		@AfterAll
+		static void afterAll() {
+			System.out.println(ioInterface.pos());
+			ioInterface.close();
+		}
+
 		@BeforeAll
 		public void init() {
 			ioInterface = ArrayIO.create(2000);
 			ioInterface.putLong(6980000);
 		}
-
 	}
 }

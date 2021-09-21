@@ -1,18 +1,16 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.util.Color;
-import dev.quantumfusion.hyphen.util.ScanUtils;
+import dev.quantumfusion.hyphen.util.TypeUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.*;
 
-public class ParameterizedClassInfo extends ClassInfo implements ParameterizedType {
+public class ParameterizedClassInfo extends ClassInfo {
 	public final LinkedHashMap<String, TypeInfo> types;
 
 	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
@@ -20,9 +18,8 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 		this.types = types;
 	}
 
-	public static ParameterizedClassInfo create(Map<Class<Annotation>, Annotation> annotations, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
-		LinkedHashMap<String, TypeInfo> out = ScanUtils.mapTypes(source, type, annotatedType);
-		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, out);
+	public static ParameterizedClassInfo create(ScanHandler factory, TypeInfo source, Map<Class<Annotation>, Annotation> annotations, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
+		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, TypeUtil.mapTypes(factory, source, type, annotatedType));
 	}
 
 	@Override
@@ -36,29 +33,14 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 	}
 
 	@Override
-	public Type[] getActualTypeArguments() {
-		return types.values().toArray(new ClassInfo[0]);
-	}
-
-	@Override
-	public Type getRawType() {
-		return clazz;
-	}
-
-	@Override
-	public Type getOwnerType() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public String toFancyString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				Color.WHITE + ", ",
-				super.toFancyString() + Color.PURPLE + "<",
+				Color.YELLOW + super.toFancyString() + Color.PURPLE + "<",
 				Color.PURPLE + ">");
 		parameterJoiner.setEmptyValue("");
 		for (TypeInfo t : types.values()) {
-			parameterJoiner.add(t.toFancyString());
+			parameterJoiner.add(Color.CYAN + t.toFancyString());
 		}
 		return parameterJoiner.toString();
 	}
@@ -94,10 +76,4 @@ public class ParameterizedClassInfo extends ClassInfo implements ParameterizedTy
 		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
 	}
 
-	@Override
-	public ClassInfo copy() {
-		LinkedHashMap<String, TypeInfo> typesCloned = new LinkedHashMap<>();
-		types.forEach((s, info) -> typesCloned.put(s, info.copy()));
-		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
-	}
 }

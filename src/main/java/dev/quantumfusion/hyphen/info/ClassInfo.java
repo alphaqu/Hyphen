@@ -1,13 +1,11 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
-import dev.quantumfusion.hyphen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.HyphenException;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import dev.quantumfusion.hyphen.util.Color;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.lang.annotation.Annotation;
@@ -22,7 +20,6 @@ import java.util.function.Predicate;
 public class ClassInfo extends TypeInfo implements Type {
 	private static final Map<ClassInfo, ClassInfo> dedupMap = new HashMap<>();
 	private SerializerMetadata metadata;
-
 
 	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		super(clazz, annotations);
@@ -39,35 +36,14 @@ public class ClassInfo extends TypeInfo implements Type {
 		return classInfo;
 	}
 
-
-	private ClassInfo[] getSuperClasses(ClassInfo in, int depth) {
-		Class<?> clazz = in.clazz;
-		Class<?> superclass = clazz.getSuperclass();
-
-		if (superclass == null)
-			return new ClassInfo[depth];
-
-
-		TypeInfo typeInfo = ScanHandler.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
-
-		if (!(typeInfo instanceof ClassInfo info)) {
-			// this should always return a class info, unless you put a `SubClasses` annotations on an extends clause
-			throw new IllegalStateException("I think you put `@SubClasses` on a extends clause?");
-		}
-
-		ClassInfo[] out = getSuperClasses(info, depth + 1);
-		out[depth] = info;
-		return out;
-	}
-
-	private List<ClassSerializerMetadata.FieldEntry> getFields(Predicate<? super Field> filter) {
+	private List<ClassSerializerMetadata.FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : this.clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				try {
 					Type genericType = declaredField.getGenericType();
 
-					TypeInfo classInfo = ScanHandler.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+					TypeInfo classInfo = factory.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
 
 					if (classInfo == ScanHandler.UNKNOWN_INFO)
 						throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
@@ -82,20 +58,20 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	public List<ClassSerializerMetadata.FieldEntry> getAllFields(Predicate<? super Field> filter) {
+	public List<ClassSerializerMetadata.FieldEntry> getAllFields(ScanHandler factory, Predicate<? super Field> filter) {
 		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
 		Class<?> superclass = this.clazz.getSuperclass();
 		if (superclass != null) {
 			try {
-				TypeInfo typeInfo = ScanHandler.create(this, superclass, this.clazz.getGenericSuperclass(), this.clazz.getAnnotatedSuperclass());
+				TypeInfo typeInfo = factory.create(this, superclass, this.clazz.getGenericSuperclass(), this.clazz.getAnnotatedSuperclass());
 				if (typeInfo instanceof ClassInfo classInfo) {
-					out.addAll(classInfo.getAllFields(filter));
+					out.addAll(classInfo.getAllFields(factory, filter));
 				}
 			} catch (HyphenException hyphenException){
 				throw hyphenException.addParent(this, "superclass");
 			}
 		}
-		out.addAll(this.getFields(filter));
+		out.addAll(this.getFields(factory, filter));
 		return out;
 	}
 
@@ -115,13 +91,12 @@ public class ClassInfo extends TypeInfo implements Type {
 		}
 
 		//get the fields
-		var allFields = this.getAllFields(field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		var allFields = this.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
 		//check if it exists / if its accessible
-		ScanUtils.checkConstructor(this);
+		ScanUtils.checkConstructor(factory, this);
 		for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
 			try {
-				ObjectSerializationDef def = factory.getDefinition(fieldInfo, this);
-				methodMetadata.fields.put(fieldInfo, def);
+				methodMetadata.fields.put(fieldInfo, factory.getDefinition(fieldInfo, this));
 			} catch (HyphenException hyphenException) {
 				throw hyphenException.addParent(this, fieldInfo.name());
 			}
@@ -132,7 +107,7 @@ public class ClassInfo extends TypeInfo implements Type {
 
 	@Override
 	public String toFancyString() {
-		return Color.YELLOW + this.clazz.getSimpleName();
+		return this.clazz.getSimpleName();
 	}
 
 	@Override
@@ -145,8 +120,4 @@ public class ClassInfo extends TypeInfo implements Type {
 		return this.clazz.getSimpleName();
 	}
 
-	@Override
-	public ClassInfo copy() {
-		return new ClassInfo(this.clazz, new HashMap<>(this.annotations));
-	}
 }

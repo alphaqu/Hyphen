@@ -2,8 +2,8 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.thr.IllegalClassException;
-import dev.quantumfusion.hyphen.thr.UnknownTypeException;
+import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
+import dev.quantumfusion.hyphen.thr.exception.UnknownTypeException;
 
 @FailTest(UnknownTypeException.class)
 public class UnknownArrayType {

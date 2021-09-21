@@ -1,13 +1,13 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
-import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
-import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
-import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.data.info.*;
-import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.info.*;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
+import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import dev.quantumfusion.hyphen.thr.ClassScanException;
 import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
@@ -16,11 +16,9 @@ import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -38,92 +36,59 @@ public class ScanHandler {
 	};
 	public final Map<TypeInfo, SerializerMetadata> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
+	public final Map<Object, List<Class<?>>> subclasses;
 	@Nullable
 	private final DebugHandler debugHandler;
 
-	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, boolean debug) {
+	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
 		this.implementations = implementations;
+		this.subclasses = subclasses;
 		this.debugHandler = debug ? new DebugHandler(this) : null;
 		this.methods = methods;
 	}
 
-	public static TypeInfo create(TypeInfo source, Class<?> fieldType, Type genericType, @Nullable AnnotatedType annotatedType) {
-		if (source == null) {
-			throw ThrowHandler.fatal(NullPointerException::new, "source is null",
-					ThrowEntry.of("ClassType", fieldType),
-					ThrowEntry.of("Type", genericType),
-					ThrowEntry.of("AnnotatedType", annotatedType)
-			);
-		}
+	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
+		if (genericType == null) genericType = clazz;
 
-		Map<Class<Annotation>, Annotation> options = new HashMap<>();
-		if (annotatedType != null) {
-			for (Annotation declaredAnnotation : annotatedType.getDeclaredAnnotations()) {
-				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
-					//noinspection unchecked
-					options.put((Class<Annotation>) declaredAnnotation.annotationType(), declaredAnnotation);
-				}
+			if (source == null) {
+				throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
+						ThrowEntry.of("ClassType", clazz),
+						ThrowEntry.of("Type", genericType),
+						ThrowEntry.of("AnnotatedType", annotatedType)
+				);
 			}
-		}
 
-		// check if field is polymorphic
-		if (options.containsKey(SerSubclasses.class) || options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
-			return SubclassInfo.create(source, fieldType, genericType, options, annotatedType);
-		}
+			var annotations = ScanUtils.parseAnnotations(annotatedType);
+
+		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
+			if (SubclassInfo.check(annotations))
+			return SubclassInfo.create(this, source, clazz, genericType, annotatedType, annotations);
 
 		//Object / int / Object[] / int[]
-		if (genericType instanceof Class<?> clazz) {
-			if (clazz.isArray()) {
-				Class<?> componentType = clazz.getComponentType();
-				return ArrayInfo.create(source, clazz, options, create(source, componentType, componentType, null));
-			} else {
-				return ClassInfo.create(clazz, options);
+		if (genericType instanceof Class<?> type) {
+			if (type.isArray())
+				return ArrayInfo.create(source, type, annotations, create(source, type.getComponentType(), null, null));
+			else
+				return ClassInfo.create(type, annotations);
 			}
-		}
-
 
 		//Thing<T,T>
-		if (genericType instanceof ParameterizedType type) {
-			if (annotatedType instanceof AnnotatedParameterizedType parameterizedType) {
-				return ParameterizedClassInfo.create(options, source, type, parameterizedType);
-			} else if (annotatedType == null) {
-				return ParameterizedClassInfo.create(options, source, type, null);
-			}
-			throw new RuntimeException();
-		}
+		if (genericType instanceof ParameterizedType type)
+
+				return ParameterizedClassInfo.create(this, source, annotations, type, (AnnotatedParameterizedType) annotatedType);
 
 		//T thing
-		if (genericType instanceof TypeVariable typeVariable) {
-			if (source instanceof ParameterizedClassInfo info) {
-				String typeName = typeVariable.getName();
-				TypeInfo classInfo = info.types.get(typeName);
-				if (classInfo != null) {
-					// safety first!
-					// kropp: why are we copying?
-					return TypeClassInfo.create(source, classInfo.clazz, classInfo.annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
-				}
-			}
+		if (genericType instanceof TypeVariable type)
+					return TypeClassInfo.create(source, clazz, type);
 
-			/*throw ThrowHandler.typeFail("Type could not be identified", source, fieldType, typeVariable);*/
-			return UNKNOWN_INFO;
-		}
 
 		//T[] arrrrrrrr
-		if (genericType instanceof GenericArrayType genericArrayType) {
-			//get component class
-			if (annotatedType instanceof AnnotatedArrayType annotatedArrayType) {
-				var componentType = genericArrayType.getGenericComponentType();
-				var classInfo = create(source, fieldType, componentType, annotatedArrayType.getAnnotatedGenericComponentType());
-				return ArrayInfo.create(source, fieldType, options, classInfo);
-			}
-			throw new RuntimeException();
-		}
+		if (genericType instanceof GenericArrayType type)
+				return ArrayInfo.createGeneric(this, source, annotations, clazz, type, annotatedType);
 
-		if (genericType instanceof WildcardType wildcardType) {
-			if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class) {
-				// just a <?>
+		//<?>if (genericType instanceof WildcardType wildcardType) {
+			if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class)
 				return UNKNOWN_INFO;
-			}
 
 
 			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
@@ -133,39 +98,11 @@ public class ScanHandler {
 			);
 		}
 
-		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unknown generic type",
+		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unsupported generic type",
 				ThrowEntry.of("GenericType", genericType)
 		);
 	}
 
-	public static TypeInfo createFromPolymorphicType(TypeInfo source, Class<?> fieldClass, Class<?> subType, Type fieldType, AnnotatedType annotatedFieldType) {
-		TypeVariable<? extends Class<?>>[] typeParameters = subType.getTypeParameters();
-
-		if (typeParameters.length != 0) {
-			if (fieldType instanceof ParameterizedType parameterizedFieldType) {
-				LinkedHashMap<String, TypeInfo> types = ScanUtils.findTypes(source, fieldClass, subType, parameterizedFieldType, (AnnotatedParameterizedType) annotatedFieldType);
-
-				if (types == null) {
-					throw ThrowHandler.fatal(
-							ClassScanException::new, "Failed to find the type",
-							ThrowEntry.of("SourceClass", source),
-							ThrowEntry.of("SubType", subType),
-							ThrowEntry.of("FieldClass", fieldClass),
-							ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
-					);
-				}
-
-				return new ParameterizedClassInfo(subType, Map.of(), types);
-			} else {
-				throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
-						ThrowEntry.of("SourceClass", source),
-						ThrowEntry.of("SubType", subType),
-						ThrowEntry.of("Poly", fieldClass));
-			}
-		}
-
-		return ClassInfo.create(subType, Map.of());
-	}
 
 	public void scan(Class<?> clazz) {
 		this.createSerializeMetadata(ClassInfo.create(clazz, Map.of()));
