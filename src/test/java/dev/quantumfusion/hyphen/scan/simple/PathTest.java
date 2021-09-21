@@ -1,9 +1,10 @@
 package dev.quantumfusion.hyphen.scan.simple;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.thr.AccessException;
 
-@
-
+@FailTest(AccessException.class)
 public class PathTest {
 	@Serialize
 	public Thing1 superGaming;
@@ -12,6 +13,7 @@ public class PathTest {
 		this.superGaming = superGaming;
 	}
 
+	@FailTest(AccessException.class)
 
 	public static class Thing1 {
 
@@ -22,6 +24,8 @@ public class PathTest {
 			this.rice = rice;
 		}
 
+		@FailTest(AccessException.class)
+
 		public static class Thing2 {
 
 			@Serialize
@@ -31,6 +35,7 @@ public class PathTest {
 				this.model = model;
 			}
 
+			@FailTest(AccessException.class)
 			public static class Thing3 {
 
 				@Serialize
@@ -40,6 +45,7 @@ public class PathTest {
 					this.block = block;
 				}
 
+				@FailTest(AccessException.class)
 				public static class Thing4 {
 
 					@Serialize

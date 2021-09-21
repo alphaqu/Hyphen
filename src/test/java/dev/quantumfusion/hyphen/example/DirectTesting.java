@@ -1,8 +1,8 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.example;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.io.IOInterface;
-import dev.quantumfusion.hyphen.io.MeasureIO;
+import dev.quantumfusion.hyphen.util.MeasureHandler;
 import dev.quantumfusion.hyphen.io.UnsafeIO;
 
 import java.time.Duration;
@@ -12,9 +12,17 @@ import java.util.Objects;
 
 public final class DirectTesting {
 
-	public static void measure_Data(final Data data, final MeasureIO unsafeIO) {
-		unsafeIO.putString(data.integer);
-		unsafeIO.putString(data.long1);
+	public static void measure_Data(final Data data, final MeasureHandler unsafeIO) {
+		unsafeIO.measureString(data.integer);
+		unsafeIO.measureString(data.long1);
+	}
+
+	public static void measure_DataArray(final DataArray data, final MeasureHandler unsafeIO) {
+		final Data[] array = data.array;
+		unsafeIO.measureInt();
+		for (Data data1 : array) {
+			measure_Data(data1, unsafeIO);
+		}
 	}
 
 	public static void encode_Data(final Data data, final IOInterface unsafeIO) {
@@ -27,14 +35,6 @@ public final class DirectTesting {
 		unsafeIO.putInt(array.length);
 		for (Data data1 : array) {
 			encode_Data(data1, unsafeIO);
-		}
-	}
-
-	public static void measure_DataArray(final DataArray data, final MeasureIO unsafeIO) {
-		final Data[] array = data.array;
-		unsafeIO.putInt(array.length);
-		for (Data data1 : array) {
-			measure_Data(data1, unsafeIO);
 		}
 	}
 
@@ -61,7 +61,7 @@ public final class DirectTesting {
 
 		//MEASURE
 		Instant measureTime = Instant.now();
-		MeasureIO measure = new MeasureIO();
+		MeasureHandler measure = new MeasureHandler();
 		measure_DataArray(dataArray, measure);
 		System.out.println("Measure [" + Duration.between(measureTime, Instant.now()).toMillis() + "ms]");
 

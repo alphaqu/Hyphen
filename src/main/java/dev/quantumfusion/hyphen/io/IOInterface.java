@@ -77,4 +77,6 @@ public interface IOInterface {
 	void rewind();
 
 	int pos();
+
+	void close();
 }

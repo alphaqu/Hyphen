@@ -257,7 +257,7 @@ public final class ByteBufferIO implements IOInterface {
 		return byteBuffer.position();
 	}
 
-	public final void close() {
+	public void close() {
 		byteBuffer.clear();
 	}
 }
