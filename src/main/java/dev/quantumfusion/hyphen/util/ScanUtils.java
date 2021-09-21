@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.data.info.ClassInfo;
 import dev.quantumfusion.hyphen.data.info.ParameterizedClassInfo;
@@ -10,6 +11,7 @@ import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.thr.*;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
@@ -218,6 +220,19 @@ public class ScanUtils {
 		else if (type instanceof ParameterizedType parameterizedType) return getClazz(parameterizedType.getRawType());
 		else
 			throw new IllegalStateException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
+	}
+
+	public static Map<Class<Annotation>, Annotation> parseAnnotations(@Nullable AnnotatedType type) {
+		var options = new HashMap<Class<Annotation>, Annotation>();
+		if (type != null) {
+			for (Annotation declaredAnnotation : type.getDeclaredAnnotations()) {
+				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
+					//noinspection unchecked
+					options.put((Class<Annotation>) declaredAnnotation.annotationType(), declaredAnnotation);
+				}
+			}
+		}
+		return options;
 	}
 
 	public static void checkConstructor(ClassInfo source) {
