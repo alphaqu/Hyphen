@@ -1,9 +1,9 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import dev.quantumfusion.hyphen.thr.UnknownTypeException;
+import dev.quantumfusion.hyphen.thr.exception.UnknownTypeException;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -11,9 +11,9 @@ import java.util.Map;
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class TypeClassInfo extends TypeInfo {
-	public final String typeName;
-	public final Class<?> type;
-	public final TypeInfo actual;
+	private final String typeName;
+	private final Class<?> type;
+	private final TypeInfo actual;
 
 	public TypeClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, String typeName, Class<?> type, TypeInfo actual) {
 		super(clazz, annotations);
@@ -21,7 +21,6 @@ public class TypeClassInfo extends TypeInfo {
 		this.type = type;
 		this.actual = actual;
 	}
-
 
 	public static TypeClassInfo create(TypeInfo source, Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, String typeName, Class<?> type, TypeInfo actual) {
 		if (actual == ScanHandler.UNKNOWN_INFO)
@@ -48,8 +47,7 @@ public class TypeClassInfo extends TypeInfo {
 
 	@Override
 	public Class<?> getClazz() {
-		Class<?> clazz = actual.getClazz();
-		return clazz;
+		return actual.getClazz();
 	}
 
 	@Override

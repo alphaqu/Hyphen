@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
+import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;

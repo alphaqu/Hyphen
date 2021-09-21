@@ -1,9 +1,9 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.ArraySerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.ClassScanException;
+import dev.quantumfusion.hyphen.gen.metadata.ArraySerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
 
@@ -14,7 +14,7 @@ import java.util.Objects;
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class ArrayInfo extends TypeInfo {
-	public final TypeInfo values;
+	private final TypeInfo values;
 
 	public ArrayInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, TypeInfo values) {
 		super(clazz, annotations);

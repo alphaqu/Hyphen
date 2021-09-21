@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen.data.metadata;
+package dev.quantumfusion.hyphen.gen.metadata;
 
-import dev.quantumfusion.hyphen.data.info.SubclassInfo;
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.SubclassInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 
 import java.util.Map;
 

@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;

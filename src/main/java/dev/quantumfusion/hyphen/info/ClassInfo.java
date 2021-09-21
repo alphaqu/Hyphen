@@ -1,11 +1,10 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
-import dev.quantumfusion.hyphen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.thr.HyphenException;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
@@ -23,7 +22,6 @@ public class ClassInfo extends TypeInfo implements Type {
 	private static final Map<ClassInfo, ClassInfo> dedupMap = new HashMap<>();
 	private SerializerMetadata metadata;
 
-
 	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
 		super(clazz, annotations);
 	}
@@ -34,27 +32,6 @@ public class ClassInfo extends TypeInfo implements Type {
 		if (dedupMap.containsKey(classInfo)) return dedupMap.get(classInfo);
 		dedupMap.put(classInfo, classInfo);
 		return classInfo;
-	}
-
-
-	private ClassInfo[] getSuperClasses(ClassInfo in, int depth) {
-		Class<?> clazz = in.clazz;
-		Class<?> superclass = clazz.getSuperclass();
-
-		if (superclass == null)
-			return new ClassInfo[depth];
-
-
-		TypeInfo typeInfo = ScanHandler.create(in, superclass, clazz.getGenericSuperclass(), clazz.getAnnotatedSuperclass());
-
-		if (!(typeInfo instanceof ClassInfo info)) {
-			// this should always return a class info, unless you put a `SubClasses` annotations on an extends clause
-			throw new IllegalStateException("I think you put `@SubClasses` on a extends clause?");
-		}
-
-		ClassInfo[] out = getSuperClasses(info, depth + 1);
-		out[depth] = info;
-		return out;
 	}
 
 	private List<ClassSerializerMetadata.FieldEntry> getFields(Predicate<? super Field> filter) {
@@ -113,8 +90,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		ScanUtils.checkConstructor(this);
 		for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
 			try {
-				ObjectSerializationDef def = factory.getDefinition(fieldInfo, this);
-				methodMetadata.fields.put(fieldInfo, def);
+				methodMetadata.fields.put(fieldInfo, factory.getDefinition(fieldInfo, this));
 			} catch (HyphenException hyphenException) {
 				throw hyphenException.addParent(this, fieldInfo.name());
 			}

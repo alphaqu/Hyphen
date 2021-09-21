@@ -1,8 +1,8 @@
-package dev.quantumfusion.hyphen.data.metadata;
+package dev.quantumfusion.hyphen.gen.metadata;
 
 import dev.quantumfusion.hyphen.ObjectSerializationDef;
-import dev.quantumfusion.hyphen.data.info.ClassInfo;
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.ClassInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

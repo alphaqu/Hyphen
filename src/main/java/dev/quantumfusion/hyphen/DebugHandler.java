@@ -1,10 +1,10 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.annotation.DebugOnly;
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
-import dev.quantumfusion.hyphen.data.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
+import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SubclassSerializerMetadata;
 import dev.quantumfusion.hyphen.util.Color;
 
 import java.util.Map;

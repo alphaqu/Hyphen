@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.Pair;
 import dev.quantumfusion.hyphen.scan.poly.classes.SelfPair;
-import dev.quantumfusion.hyphen.thr.IncompatibleTypeException;
+import dev.quantumfusion.hyphen.thr.exception.IncompatibleTypeException;
 
 @FailTest(IncompatibleTypeException.class)
 public class IncompatibleTypeFailPairEdition {

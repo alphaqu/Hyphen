@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.gen.impl;
 
-import dev.quantumfusion.hyphen.data.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
 
 public class MethodCallDef extends AbstractDef {

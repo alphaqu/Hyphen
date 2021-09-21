@@ -1,16 +1,16 @@
-package dev.quantumfusion.hyphen.data.info;
+package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.data.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.data.metadata.SubclassSerializerMetadata;
-import dev.quantumfusion.hyphen.thr.ClassScanException;
+import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.gen.metadata.SubclassSerializerMetadata;
+import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
-import dev.quantumfusion.hyphen.util.ScanUtils;
+import dev.quantumfusion.hyphen.util.TypeUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -20,8 +20,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class SubclassInfo extends TypeInfo {
-	public final TypeInfo field;
-	public final List<? extends TypeInfo> classInfos;
+	private final TypeInfo field;
+	private final List<? extends TypeInfo> classInfos;
 
 	public SubclassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
 		super(clazz, annotations);
@@ -48,7 +48,7 @@ public class SubclassInfo extends TypeInfo {
 
 			if (typeParameters.length != 0) {
 				if (genericType instanceof ParameterizedType parameterizedFieldType) {
-					var types = ScanUtils.findTypes(source, fieldType, subclass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType);
+					var types = TypeUtil.findTypes(source, fieldType, subclass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType);
 
 					if (types == null) {
 						throw ThrowHandler.fatal(
