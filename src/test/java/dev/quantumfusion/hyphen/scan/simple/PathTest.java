@@ -1,7 +1,10 @@
 package dev.quantumfusion.hyphen.scan.simple;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.thr.AccessException;
 
+@FailTest(AccessException.class)
 public class PathTest {
 	@Serialize
 	public Thing1 superGaming;
@@ -11,6 +14,8 @@ public class PathTest {
 	}
 
 
+	// FIXME: the tester shouldn't run inner classes
+	@FailTest(AccessException.class)
 	public static class Thing1 {
 
 		@Serialize
@@ -20,6 +25,8 @@ public class PathTest {
 			this.rice = rice;
 		}
 
+		// FIXME: the tester shouldn't run inner classes
+		@FailTest(AccessException.class)
 		public static class Thing2 {
 
 			@Serialize
@@ -29,6 +36,8 @@ public class PathTest {
 				this.model = model;
 			}
 
+			// FIXME: the tester shouldn't run inner classes
+			@FailTest(AccessException.class)
 			public static class Thing3 {
 
 				@Serialize
@@ -38,6 +47,8 @@ public class PathTest {
 					this.block = block;
 				}
 
+				// FIXME: the tester shouldn't run inner classes
+				@FailTest(AccessException.class)
 				public static class Thing4 {
 
 					@Serialize
