@@ -6,12 +6,7 @@ import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
-import dev.quantumfusion.hyphen.thr.ClassScanException;
-import dev.quantumfusion.hyphen.thr.NotYetImplementedException;
-import dev.quantumfusion.hyphen.thr.ThrowEntry;
-import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
@@ -50,18 +45,18 @@ public class ScanHandler {
 	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
 		if (genericType == null) genericType = clazz;
 
-			if (source == null) {
-				throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
-						ThrowEntry.of("ClassType", clazz),
-						ThrowEntry.of("Type", genericType),
-						ThrowEntry.of("AnnotatedType", annotatedType)
-				);
-			}
+		if (source == null) {
+			throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
+					ThrowEntry.of("ClassType", clazz),
+					ThrowEntry.of("Type", genericType),
+					ThrowEntry.of("AnnotatedType", annotatedType)
+			);
+		}
 
-			var annotations = ScanUtils.parseAnnotations(annotatedType);
+		var annotations = ScanUtils.parseAnnotations(annotatedType);
 
 		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
-			if (SubclassInfo.check(annotations))
+		if (SubclassInfo.check(annotations))
 			return SubclassInfo.create(this, source, clazz, genericType, annotatedType, annotations);
 
 		//Object / int / Object[] / int[]
@@ -70,23 +65,24 @@ public class ScanHandler {
 				return ArrayInfo.create(source, type, annotations, create(source, type.getComponentType(), null, null));
 			else
 				return ClassInfo.create(type, annotations);
-			}
+		}
 
 		//Thing<T,T>
 		if (genericType instanceof ParameterizedType type)
 
-				return ParameterizedClassInfo.create(this, source, annotations, type, (AnnotatedParameterizedType) annotatedType);
+			return ParameterizedClassInfo.create(this, source, annotations, type, (AnnotatedParameterizedType) annotatedType);
 
 		//T thing
 		if (genericType instanceof TypeVariable type)
-					return TypeClassInfo.create(source, clazz, type);
+			return TypeClassInfo.create(source, clazz, type);
 
 
 		//T[] arrrrrrrr
 		if (genericType instanceof GenericArrayType type)
-				return ArrayInfo.createGeneric(this, source, annotations, clazz, type, annotatedType);
+			return ArrayInfo.createGeneric(this, source, annotations, clazz, type, annotatedType);
 
-		//<?>if (genericType instanceof WildcardType wildcardType) {
+		//<?>
+		if (genericType instanceof WildcardType wildcardType) {
 			if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class)
 				return UNKNOWN_INFO;
 

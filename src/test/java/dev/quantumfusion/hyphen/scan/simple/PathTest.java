@@ -13,8 +13,6 @@ public class PathTest {
 		this.superGaming = superGaming;
 	}
 
-	@FailTest(AccessException.class)
-
 	// FIXME: the tester shouldn't run inner classes
 	@FailTest(AccessException.class)
 	public static class Thing1 {
