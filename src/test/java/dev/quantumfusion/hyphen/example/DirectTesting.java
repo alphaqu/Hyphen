@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.example;
 
+import dev.quantumfusion.hyphen.io.ArrayIO;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.util.MeasureHandler;
@@ -12,17 +13,16 @@ import java.util.Objects;
 
 public final class DirectTesting {
 
-	public static void measure_Data(final Data data, final MeasureHandler unsafeIO) {
-		unsafeIO.measureString(data.integer);
-		unsafeIO.measureString(data.long1);
+	public static int measure_Data(final Data data) {
+		return data.long1.length() * 2 + 4 + data.integer.length() * 2 + 4;
 	}
 
-	public static void measure_DataArray(final DataArray data, final MeasureHandler unsafeIO) {
-		final Data[] array = data.array;
-		unsafeIO.measureInt();
-		for (Data data1 : array) {
-			measure_Data(data1, unsafeIO);
+	public static int measure_DataArray(final DataArray data) {
+		int size = 4;
+		for (Data data1 : data.array) {
+			size += measure_Data(data1);
 		}
+		return size;
 	}
 
 	public static void encode_Data(final Data data, final IOInterface unsafeIO) {
@@ -54,33 +54,34 @@ public final class DirectTesting {
 	public static void main(String[] args) {
 		Data data = new Data("69696969696969696969696969696969696969696969696969696969696969\u263C", "420");
 
-		Data[] data1 = new Data[500_000];
+		Data[] data1 = new Data[250_000];
 		Arrays.fill(data1, data);
 		DataArray dataArray = new DataArray(data1);
 
 
 		//MEASURE
 		Instant measureTime = Instant.now();
-		MeasureHandler measure = new MeasureHandler();
-		measure_DataArray(dataArray, measure);
+		int size = measure_DataArray(dataArray);
 		System.out.println("Measure [" + Duration.between(measureTime, Instant.now()).toMillis() + "ms]");
 
 		//shh
-		int currentSize = measure.currentSize;
-		System.out.println(Math.round(currentSize / 1_000_0f) / 100f + "MB");
+		System.out.println(Math.round(size / 1_000_0f) / 100f + "MB");
 
 
-		test(2, dataArray, ByteBufferIO.create(currentSize));
+		test(40, dataArray, ArrayIO.create(size));
 		System.out.println();
-		test(2, dataArray, UnsafeIO.create(currentSize));
-
+		test(40, dataArray, UnsafeIO.create(size));
+		System.out.println();
+		test(40, dataArray, ArrayIO.create(size));
+		System.out.println();
+		test(40, dataArray, UnsafeIO.create(size));
 	}
 
 	public static void test(int times, DataArray dataArray, IOInterface io) {
 		//ENCODE
 		Instant encodeTime = Instant.now();
 		encode_DataArray(dataArray, io);
-		System.out.println("Encode [" + Duration.between(encodeTime, Instant.now()).toMillis() + "ms]");
+		System.out.println("Encode [" + Duration.between(encodeTime, Instant.now()).toMillis() + "ms]" + io.getClass().getSimpleName());
 		DataArray decodeData = null;
 		Instant decodeTime = Instant.now();
 		for (int i = 0; i < times; i++) {
@@ -91,8 +92,9 @@ public final class DirectTesting {
 		}
 
 		System.out.println();
-		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() / times + "ms]");
+		System.out.println("Decode [" + Duration.between(decodeTime, Instant.now()).toMillis() / times + "ms]" + io.getClass().getSimpleName());
 		System.out.println(decodeData.array.length);
+		io.close();
 	}
 
 	public static final class DataArray {
