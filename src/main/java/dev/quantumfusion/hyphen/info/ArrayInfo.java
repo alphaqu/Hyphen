@@ -22,18 +22,19 @@ import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 public class ArrayInfo extends TypeInfo {
 	public final TypeInfo values;
 
-	public ArrayInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, TypeInfo values) {
+	public ArrayInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, TypeInfo values) {
 		super(clazz, type, annotatedType, annotations);
 		this.values = values;
 	}
 
 	public static ArrayInfo createType(ScanHandler handler, TypeInfo source, ArrayType arrayType, AnnotatedType annotatedType) {
-		Map<Class<Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
+		var annotations = ScanUtils.parseAnnotations(annotatedType);
 		Class<?> type = arrayType.getType();
 		TypeInfo values;
-		if (annotatedType != null)
-			values = handler.create(source, arrayType.getComponentType(), null, ((AnnotatedArrayType) annotatedType).getAnnotatedGenericComponentType());
-		else values = handler.create(source, arrayType.getComponentType(), null, null);
+		if (annotatedType != null) {
+			AnnotatedType annotatedGenericComponentType = ((AnnotatedArrayType) annotatedType).getAnnotatedGenericComponentType();
+			values = handler.create(source, arrayType.getComponentType(), null, annotatedGenericComponentType);
+		} else values = handler.create(source, arrayType.getComponentType(), null, null);
 
 		if (values == ScanHandler.UNKNOWN_INFO) {
 			throw ThrowHandler.fatal(ClassScanException::new, "Type could not be identified",

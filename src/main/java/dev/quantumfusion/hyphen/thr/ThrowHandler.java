@@ -79,12 +79,12 @@ public class ThrowHandler {
 
 	//returns just for javac to stfu in some spots
 	@Contract("_, _, _ -> fail")
-	public static HyphenException fatal(Function<? super String, ? extends RuntimeException> ex, String reason, Throwable... throwable) {
-		RuntimeException runtimeException = ex.apply(reason);
-		if (runtimeException instanceof HyphenException hyphenException)
+	public static HyphenException fatal(Function<? super String, ? extends java.lang.Throwable> ex, String reason, Throwable... throwable) {
+		java.lang.Throwable error = ex.apply(reason);
+		if (error instanceof HyphenException hyphenException)
 			throw hyphenException.addEntries(throwable);
 		else
-			throw new HyphenException(runtimeException).addEntries(throwable);
+			throw new HyphenException(error).addEntries(throwable);
 	}
 
 

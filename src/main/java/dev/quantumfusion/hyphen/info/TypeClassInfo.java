@@ -19,7 +19,7 @@ public class TypeClassInfo extends TypeInfo {
 	private final Class<?> rawType;
 	private final TypeInfo actual;
 
-	public TypeClassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, String typeName, Class<?> rawType, TypeInfo actual) {
+	public TypeClassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, String typeName, Class<?> rawType, TypeInfo actual) {
 		super(clazz, type, annotatedType, annotations);
 		this.typeName = typeName;
 		this.rawType = rawType;
@@ -27,7 +27,7 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, TypeVariable<?> typeVariable, AnnotatedType annotatedType) {
-		Map<Class<Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
+		var annotations = ScanUtils.parseAnnotations(annotatedType);
 		if (source instanceof ParameterizedInfo info) {
 			var typeName = typeVariable.getName();
 			var classInfo = info.types.get(typeName);

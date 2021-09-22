@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.TestUtil;
 import dev.quantumfusion.hyphen.scan.poly.PolyArray;
 import org.junit.jupiter.api.DynamicNode;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.TestFactory;
 import java.util.Collections;
 import java.util.Iterator;
 
+@FailTest()
 public class ScanTestFactory {
 
 	@TestFactory

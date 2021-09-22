@@ -7,31 +7,20 @@ import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
-import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import dev.quantumfusion.hyphen.util.ArrayType;
-import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import dev.quantumfusion.hyphen.util.TypeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 public class ScanHandler {
-	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, Map.of()) {
-		@Override
-		public String toString() {
-			return "UNKNOWN";
-		}
-
-		@Override
-		public String toFancyString() {
-			return Color.BLUE + "?";
-		}
-	};
+	public static final TypeInfo UNKNOWN_INFO = WildcardInfo.UNKNOWN;
 	public final Map<TypeInfo, SerializerMetadata> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
 	public final Map<Object, List<Class<?>>> subclasses;
@@ -45,42 +34,57 @@ public class ScanHandler {
 		this.methods = methods;
 	}
 
-	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type rawType, @Nullable AnnotatedType annotatedType) {
-		if (rawType == null) rawType = clazz;
-		Type genericType = TypeUtil.applyType(rawType, annotatedType);
+	public TypeInfo create(TypeInfo source, Class<?> clazz) {
+		return this.create(source, clazz, clazz, null);
+	}
 
+	private static void validateInput(@Nullable Class<?> clazz, @Nullable Type type, @Nullable AnnotatedType annotatedType) {
 
-		if (source == null) {
-			throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
-					ThrowEntry.of("ClassType", clazz),
-					ThrowEntry.of("Type", genericType),
+		try {
+			assert annotatedType == null || type == null || annotatedType.getType() == type;
+			Class<?> clazzOrNull = ScanUtils.getClazzOrNull(type);
+			assert clazz == null || clazz == clazzOrNull || clazzOrNull == null;
+		} catch (IllegalArgumentException ignored) {
+		} catch (AssertionError assertionError) {
+			throw ThrowHandler.fatal(AssertionError::new, "input validation failed",
+					ThrowEntry.of("Class", clazz),
+					ThrowEntry.of("Type", type),
 					ThrowEntry.of("AnnotatedType", annotatedType)
 			);
 		}
+	}
 
-		if (genericType instanceof Class<?> type) return ClassInfo.createType(this, source, type, annotatedType);
-		if (genericType instanceof ArrayType type) return ArrayInfo.createType(this, source, type, annotatedType);
+	public TypeInfo create(@NotNull TypeInfo source, @Nullable Class<?> clazz, @Nullable Type rawType, @Nullable AnnotatedType annotatedType) {
+		validateInput(clazz, rawType, annotatedType);
 
-		if (genericType instanceof ParameterizedType type)
-			return ParameterizedInfo.createType(this, source, clazz, type, annotatedType);
+		if (rawType == null) rawType = annotatedType == null ? clazz : annotatedType.getType();
+		if (clazz == null) clazz = ScanUtils.getClazzOrNull(rawType);
+
+		Type genericType = TypeUtil.applyType(rawType, annotatedType);
 
 		if (genericType instanceof TypeVariable type)
 			return TypeClassInfo.createType(this, source, clazz, type, annotatedType);
 
+		if (genericType instanceof ArrayType type) return ArrayInfo.createType(this, source, type, annotatedType);
+
 		if (genericType instanceof GenericArrayType type)
 			return ArrayInfo.createGenericType(this, source, clazz, type, annotatedType);
 
+		Map<Class<? extends Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
+		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
+		if (SubclassInfo.check(annotations))
+			return SubclassInfo.create(this, source, clazz, rawType, annotatedType, annotations);
+
+		if (genericType instanceof Class<?> type)
+			return ClassInfo.createType(this, source, type, annotatedType, annotations);
+
+		if (genericType instanceof ParameterizedType type)
+			return ParameterizedInfo.createType(this, source, clazz, type, annotatedType, annotations);
+
+
 		//<?>
-		if (genericType instanceof WildcardType wildcardType) {
-			if (wildcardType.getLowerBounds().length == 0 && wildcardType.getUpperBounds().length == 1 && wildcardType.getUpperBounds()[0] == Object.class)
-				return UNKNOWN_INFO;
-
-
-			throw ThrowHandler.fatal(NotYetImplementedException::new, "Can't handle wildcards yet",
-					ThrowEntry.of("GenericType", wildcardType),
-					ThrowEntry.of("UpperBounds", Arrays.toString(wildcardType.getUpperBounds())),
-					ThrowEntry.of("LowerBounds", Arrays.toString(wildcardType.getLowerBounds()))
-			);
+		if (genericType instanceof WildcardType type) {
+			return WildcardInfo.createType(this, source, clazz, type, annotatedType, annotations);
 		}
 
 		throw ThrowHandler.fatal(IllegalArgumentException::new, "Unsupported generic type",

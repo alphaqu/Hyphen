@@ -16,7 +16,7 @@ public class HyphenException extends RuntimeException {
 		super(message);
 	}
 
-	public HyphenException(Throwable cause) {
+	public HyphenException(java.lang.Throwable cause) {
 		super(cause);
 	}
 

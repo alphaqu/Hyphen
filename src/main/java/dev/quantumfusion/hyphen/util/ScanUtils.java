@@ -54,16 +54,21 @@ public class ScanUtils {
 		if (type instanceof Class<?> c) return c;
 		else if (type instanceof ParameterizedType parameterizedType) return getClazz(parameterizedType.getRawType());
 		else
-			throw new IllegalStateException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
+			throw new IllegalArgumentException("Blame kroppeb: " + type.getClass().getSimpleName() + ": " + type.getTypeName());
 	}
 
-	public static Map<Class<Annotation>, Annotation> parseAnnotations(@Nullable AnnotatedType type) {
-		var options = new HashMap<Class<Annotation>, Annotation>();
+	public static Class<?> getClazzOrNull(Type type) {
+		if (type instanceof Class<?> c) return c;
+		else if (type instanceof ParameterizedType parameterizedType) return getClazz(parameterizedType.getRawType());
+		else return null;
+	}
+
+	public static Map<Class<? extends Annotation>, Annotation> parseAnnotations(@Nullable AnnotatedType type) {
+		var options = new HashMap<Class<? extends Annotation>, Annotation>();
 		if (type != null) {
 			for (Annotation declaredAnnotation : type.getDeclaredAnnotations()) {
 				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
-					//noinspection unchecked
-					options.put((Class<Annotation>) declaredAnnotation.annotationType(), declaredAnnotation);
+					options.put(declaredAnnotation.annotationType(), declaredAnnotation);
 				}
 			}
 		}

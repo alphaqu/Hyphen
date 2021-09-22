@@ -21,21 +21,16 @@ import java.util.function.Predicate;
 public class ClassInfo extends TypeInfo implements Type {
 	private SerializerMetadata metadata;
 
-	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations) {
+	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, type, annotatedType, annotations);
 	}
 
 
-	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
+	public ClassInfo(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, clazz, null, annotations);
 	}
 
-	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> type, @Nullable AnnotatedType annotatedType) {
-		Map<Class<Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
-		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
-		if (SubclassInfo.check(annotations))
-			return SubclassInfo.create(handler, source, type, type, annotatedType, annotations);
-
+	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
 		return new ClassInfo(type, type, annotatedType, annotations);
 	}
 

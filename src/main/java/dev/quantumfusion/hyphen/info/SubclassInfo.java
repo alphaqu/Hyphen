@@ -23,17 +23,17 @@ public class SubclassInfo extends TypeInfo {
 	private final TypeInfo field;
 	private final List<? extends TypeInfo> classInfos;
 
-	public SubclassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
+	public SubclassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
 		super(clazz, type, annotatedType, annotations);
 		this.field = field;
 		this.classInfos = classInfos;
 	}
 
-	public static boolean check(Map<Class<Annotation>, Annotation> annotations) {
+	public static boolean check(Map<Class<? extends Annotation>, Annotation> annotations) {
 		return annotations.containsKey(SerSubclasses.class) || annotations.containsKey(SerComplexSubClass.class) || annotations.containsKey(SerComplexSubClasses.class);
 	}
 
-	public static SubclassInfo create(ScanHandler handler, TypeInfo source, Class<?> superClass, Type genericType, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> options) {
+	public static SubclassInfo create(ScanHandler handler, TypeInfo source, Class<?> superClass, Type genericType, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> options) {
 		var globalSubclasses = handler.subclasses;
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(

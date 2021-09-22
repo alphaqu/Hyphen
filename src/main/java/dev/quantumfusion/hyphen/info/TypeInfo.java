@@ -17,9 +17,9 @@ public abstract class TypeInfo {
 
 	@Nullable
 	public final AnnotatedType annotatedType;
-	public final Map<Class<Annotation>, Annotation> annotations;
+	public final Map<Class<? extends Annotation>, Annotation> annotations;
 
-	public TypeInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, @NotNull Map<Class<Annotation>, Annotation> annotations) {
+	public TypeInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, @NotNull Map<Class<? extends Annotation>, Annotation> annotations) {
 		this.clazz = clazz;
 		this.type = type;
 		this.annotatedType = annotatedType;

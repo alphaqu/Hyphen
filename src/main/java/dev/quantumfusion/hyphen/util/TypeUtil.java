@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.info.ParameterizedInfo;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.info.WildcardInfo;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
@@ -28,16 +29,17 @@ public class TypeUtil {
 	}
 
 
-	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
+	//map all of the types,  A<S, K>{ B<K,S> } => A<String,Integer> -> B<K,S> == B<String, Integer>
 	public static LinkedHashMap<String, TypeInfo> mapTypes(ScanHandler factory, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		var annotatedParameters = annotatedType == null ? null : annotatedType.getAnnotatedActualTypeArguments();
 		var out = new LinkedHashMap<String, TypeInfo>();
-		var clazz = (Class<?>) type.getRawType();
+		var clazz = ScanUtils.getClazz(type.getRawType());
 		var innerTypes = clazz.getTypeParameters();
 		var parameters = type.getActualTypeArguments();
 		for (int i = 0; i < parameters.length; i++) {
 			AnnotatedType annotatedParameter = annotatedParameters == null ? null : annotatedParameters[i];
-			out.put(innerTypes[i].getName(), factory.create(source, clazz, parameters[i], annotatedParameter));
+			// TODO: fix
+			out.put(innerTypes[i].getName(), factory.create(source, null, parameters[i], annotatedParameter));
 		}
 		return out;
 	}
@@ -125,6 +127,8 @@ public class TypeUtil {
 					} else throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types");
 				} else if (typeInfo instanceof SubclassInfo)
 					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification");
+				else if (typeInfo instanceof WildcardInfo)
+					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Wildcard type unification");
 				else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
 			} else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
 		} catch (HyphenException ex) {
@@ -140,14 +144,14 @@ public class TypeUtil {
 			ScanHandler factory,
 			TypeInfo source,
 			Class<?> superClass,
-			ParameterizedType supperType,
+			ParameterizedType superType,
 			AnnotatedParameterizedType annotatedSuperType,
 			Class<?> subClass
 	) {
 		try {
 			if (subClass == null) return null;
 			else if (subClass == superClass) {
-				return mapTypes(factory, source, supperType, annotatedSuperType);
+				return mapTypes(factory, source, superType, annotatedSuperType);
 			} else {
 				Type[] types = ScanUtils.pathTo(subClass, superClass, 0);
 
@@ -156,7 +160,7 @@ public class TypeUtil {
 							IllegalInheritanceException::new, "Subclass does not implement super.");
 				}
 
-				Map<String, TypeInfo> typeMap = mapTypes(factory, source, supperType, annotatedSuperType);
+				Map<String, TypeInfo> typeMap = mapTypes(factory, source, superType, annotatedSuperType);
 
 				for (int i = types.length - 1; i >= 0; i--) {
 					Type currentType = types[i];
@@ -175,10 +179,10 @@ public class TypeUtil {
 		} catch (HyphenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Source", source),
-					ThrowEntry.of("FieldClass", superClass.getSimpleName()),
-					ThrowEntry.of("FieldType", supperType),
-					ThrowEntry.of("AnnotatedFieldType", annotatedSuperType),
-					ThrowEntry.of("SubClass", subClass.getSimpleName())
+					ThrowEntry.of("SuperClass", superClass),
+					ThrowEntry.of("SuperType", superType),
+					ThrowEntry.of("AnnotatedSuperType", annotatedSuperType),
+					ThrowEntry.of("SubClass", subClass)
 			);
 		}
 	}

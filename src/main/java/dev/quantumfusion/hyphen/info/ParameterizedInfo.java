@@ -2,7 +2,6 @@ package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.Color;
-import dev.quantumfusion.hyphen.util.ScanUtils;
 import dev.quantumfusion.hyphen.util.TypeUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,17 +15,13 @@ import java.util.*;
 public class ParameterizedInfo extends ClassInfo {
 	public final LinkedHashMap<String, TypeInfo> types;
 
-	public ParameterizedInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
+	public ParameterizedInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
 		super(clazz, type, annotatedType, annotations);
 		this.types = types;
 	}
 
-	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, ParameterizedType type, @Nullable AnnotatedType annotatedType) {
-		var annotations = ScanUtils.parseAnnotations(annotatedType);
-		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
-		if (SubclassInfo.check(annotations))
-			return SubclassInfo.create(handler, source, clazz, type, annotatedType, annotations);
-		return new ParameterizedInfo((Class<?>) type.getRawType(), type, annotatedType, annotations, TypeUtil.mapTypes(handler, source, type, (AnnotatedParameterizedType) annotatedType));
+	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, ParameterizedType type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
+		return new ParameterizedInfo(clazz, type, annotatedType, annotations, TypeUtil.mapTypes(handler, source, type, (AnnotatedParameterizedType) annotatedType));
 	}
 
 	@Override
