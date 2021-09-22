@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.info.ClassInfo;
-import dev.quantumfusion.hyphen.info.ParameterizedClassInfo;
+import dev.quantumfusion.hyphen.info.ParameterizedInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,7 +72,7 @@ public class ScanUtils {
 
 	public static void checkConstructor(ScanHandler factory, ClassInfo source) {
 		ClassInfo parent = source;
-		if (source instanceof ParameterizedClassInfo classInfo) {
+		if (source instanceof ParameterizedInfo classInfo) {
 			parent = classInfo.copyWithoutTypeKnowledge();
 		}
 		List<ClassSerializerMetadata.FieldEntry> allFields = parent.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);

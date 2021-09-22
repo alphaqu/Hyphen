@@ -23,8 +23,8 @@ public class SubclassInfo extends TypeInfo {
 	private final TypeInfo field;
 	private final List<? extends TypeInfo> classInfos;
 
-	public SubclassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
-		super(clazz, annotations);
+	public SubclassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
+		super(clazz, type, annotatedType, annotations);
 		this.field = field;
 		this.classInfos = classInfos;
 	}
@@ -33,8 +33,8 @@ public class SubclassInfo extends TypeInfo {
 		return annotations.containsKey(SerSubclasses.class) || annotations.containsKey(SerComplexSubClass.class) || annotations.containsKey(SerComplexSubClasses.class);
 	}
 
-	public static SubclassInfo create(ScanHandler factory, TypeInfo source, Class<?> superClass, Type genericType, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> options) {
-		var globalSubclasses = factory.subclasses;
+	public static SubclassInfo create(ScanHandler handler, TypeInfo source, Class<?> superClass, Type genericType, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> options) {
+		var globalSubclasses = handler.subclasses;
 		if (options.containsKey(SerComplexSubClass.class) || options.containsKey(SerComplexSubClasses.class)) {
 			throw ThrowHandler.fatal(
 					IllegalStateException::new, "NYI: handling of SerComplexSubClass annotation",
@@ -61,36 +61,38 @@ public class SubclassInfo extends TypeInfo {
 		if (value != null) dedup.addAll(List.of(value));
 
 		var out = new ArrayList<TypeInfo>(dedup.size());
-		for (Class<?> aClass : dedup) {
+		for (Class<?> subClass : dedup) {
 			TypeInfo subClassInfo;
-			var typeParameters = aClass.getTypeParameters();
+			var typeParameters = subClass.getTypeParameters();
 
 			if (typeParameters.length != 0) {
-				if (genericType instanceof ParameterizedType parameterizedFieldType) {
-					var types = TypeUtil.findTypes(factory, source, superClass, parameterizedFieldType, (AnnotatedParameterizedType) annotatedType, aClass);
+				if (genericType instanceof ParameterizedType parameterizedType) {
+					AnnotatedParameterizedType annotatedParameterizedType = (AnnotatedParameterizedType) annotatedType;
+					var types = TypeUtil.findTypes(handler, source, superClass, parameterizedType, annotatedParameterizedType, subClass);
 
 					if (types == null) {
 						throw ThrowHandler.fatal(
 								ClassScanException::new, "Failed to find the type",
 								ThrowEntry.of("SourceClass", source),
-								ThrowEntry.of("SubType", aClass),
+								ThrowEntry.of("SubType", subClass),
 								ThrowEntry.of("FieldClass", superClass),
-								ThrowEntry.of("ParameterizedFieldType", parameterizedFieldType)
+								ThrowEntry.of("ParameterizedFieldType", parameterizedType)
 						);
 					}
 
-					subClassInfo = new ParameterizedClassInfo(aClass, Map.of(), types);
+					subClassInfo = new ParameterizedInfo(subClass, parameterizedType, annotatedParameterizedType, Map.of(), types);
 				} else {
 					throw ThrowHandler.fatal(ClassScanException::new, "*Confused noizes*",
 							ThrowEntry.of("SourceClass", source),
-							ThrowEntry.of("SubType", aClass),
+							ThrowEntry.of("SubType", subClass),
 							ThrowEntry.of("Poly", superClass));
 				}
-			} else subClassInfo = ClassInfo.create(aClass, Map.of());
+			} else
+				subClassInfo = handler.create(source, subClass, null, null);
 			out.add(subClassInfo);
 		}
 
-		return new SubclassInfo(superClass, options, factory.create(source, superClass, genericType, null), out);
+		return new SubclassInfo(superClass, genericType, annotatedType, options, handler.create(source, superClass, genericType, null), out);
 	}
 
 	public SerializerMetadata createMetadata(ScanHandler factory) {

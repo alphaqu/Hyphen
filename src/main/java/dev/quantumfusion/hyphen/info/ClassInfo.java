@@ -7,33 +7,36 @@ import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 public class ClassInfo extends TypeInfo implements Type {
-	private static final Map<ClassInfo, ClassInfo> dedupMap = new HashMap<>();
 	private SerializerMetadata metadata;
 
-	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
-		super(clazz, annotations);
+	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations) {
+		super(clazz, type, annotatedType, annotations);
 	}
 
-	public static ClassInfo create(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
-		// the @Serialize annotation counts
-		ClassInfo classInfo = new ClassInfo(clazz, annotations);
-		/*
-		the following code breaks tests
-		if (dedupMap.containsKey(classInfo)) return dedupMap.get(classInfo);
-		dedupMap.put(classInfo, classInfo);
-		 */
-		return classInfo;
+
+	public ClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations) {
+		super(clazz, clazz, null, annotations);
+	}
+
+	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> type, @Nullable AnnotatedType annotatedType) {
+		Map<Class<Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
+		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
+		if (SubclassInfo.check(annotations))
+			return SubclassInfo.create(handler, source, type, type, annotatedType, annotations);
+
+		return new ClassInfo(type, type, annotatedType, annotations);
 	}
 
 	private List<ClassSerializerMetadata.FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
@@ -67,7 +70,7 @@ public class ClassInfo extends TypeInfo implements Type {
 				if (typeInfo instanceof ClassInfo classInfo) {
 					out.addAll(classInfo.getAllFields(factory, filter));
 				}
-			} catch (HyphenException hyphenException){
+			} catch (HyphenException hyphenException) {
 				throw hyphenException.addParent(this, "superclass");
 			}
 		}

@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.info.ParameterizedClassInfo;
+import dev.quantumfusion.hyphen.info.ParameterizedInfo;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
@@ -20,6 +20,14 @@ import java.util.Map;
 import static dev.quantumfusion.hyphen.ScanHandler.UNKNOWN_INFO;
 
 public class TypeUtil {
+	public static Type applyType(Type type, AnnotatedType annotatedType) {
+		if (type instanceof Class<?> clazz) {
+			if (clazz.isArray()) return new ArrayType.ArrayTypeImpl(clazz.getComponentType(), clazz);
+		}
+		return type;
+	}
+
+
 	//map all of the types,  A<String,Integer> -> B<K,S> == B<K = String, S = Integer>
 	public static LinkedHashMap<String, TypeInfo> mapTypes(ScanHandler factory, TypeInfo source, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
 		var annotatedParameters = annotatedType == null ? null : annotatedType.getAnnotatedActualTypeArguments();
@@ -95,7 +103,7 @@ public class TypeUtil {
 					}
 				}
 			} else if (typeParameter instanceof ParameterizedType superParameterizedType) {
-				if (typeInfo instanceof ParameterizedClassInfo selfParameterizedType) {
+				if (typeInfo instanceof ParameterizedInfo selfParameterizedType) {
 					Class<?> clazz = ScanUtils.getClazz(superParameterizedType);
 					if (clazz == typeInfo.clazz) {
 						var superTypeArguments = superParameterizedType.getActualTypeArguments();

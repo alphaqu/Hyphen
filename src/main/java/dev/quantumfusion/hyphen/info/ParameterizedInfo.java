@@ -2,24 +2,31 @@ package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.Color;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 import dev.quantumfusion.hyphen.util.TypeUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
-public class ParameterizedClassInfo extends ClassInfo {
+public class ParameterizedInfo extends ClassInfo {
 	public final LinkedHashMap<String, TypeInfo> types;
 
-	public ParameterizedClassInfo(Class<?> clazz, Map<Class<Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
-		super(clazz, annotations);
+	public ParameterizedInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, LinkedHashMap<String, TypeInfo> types) {
+		super(clazz, type, annotatedType, annotations);
 		this.types = types;
 	}
 
-	public static ParameterizedClassInfo create(ScanHandler factory, TypeInfo source, Map<Class<Annotation>, Annotation> annotations, ParameterizedType type, @Nullable AnnotatedParameterizedType annotatedType) {
-		return new ParameterizedClassInfo((Class<?>) type.getRawType(), annotations, TypeUtil.mapTypes(factory, source, type, annotatedType));
+	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, ParameterizedType type, @Nullable AnnotatedType annotatedType) {
+		var annotations = ScanUtils.parseAnnotations(annotatedType);
+		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
+		if (SubclassInfo.check(annotations))
+			return SubclassInfo.create(handler, source, clazz, type, annotatedType, annotations);
+		return new ParameterizedInfo((Class<?>) type.getRawType(), type, annotatedType, annotations, TypeUtil.mapTypes(handler, source, type, (AnnotatedParameterizedType) annotatedType));
 	}
 
 	@Override
@@ -59,7 +66,7 @@ public class ParameterizedClassInfo extends ClassInfo {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ParameterizedClassInfo that)) return false;
+		if (!(o instanceof ParameterizedInfo that)) return false;
 		if (!super.equals(o)) return false;
 		return Objects.equals(types, that.types);
 	}
@@ -71,9 +78,9 @@ public class ParameterizedClassInfo extends ClassInfo {
 
 	public ClassInfo copyWithoutTypeKnowledge() {
 		LinkedHashMap<String, TypeInfo> typesCloned = new LinkedHashMap<>();
-		ClassInfo value = new ClassInfo(Object.class, null);
+		ClassInfo value = new ClassInfo(Object.class, Map.of());
 		types.forEach((s, info) -> typesCloned.put(s, value));
-		return new ParameterizedClassInfo(clazz, new HashMap<>(annotations), typesCloned);
+		return new ParameterizedInfo(clazz, type, annotatedType, new HashMap<>(annotations), typesCloned);
 	}
 
 }

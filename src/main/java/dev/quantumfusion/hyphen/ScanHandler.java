@@ -7,8 +7,10 @@ import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
+import dev.quantumfusion.hyphen.util.ArrayType;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
+import dev.quantumfusion.hyphen.util.TypeUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
@@ -18,7 +20,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class ScanHandler {
-	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, null) {
+	public static final TypeInfo UNKNOWN_INFO = new ClassInfo(null, Map.of()) {
 		@Override
 		public String toString() {
 			return "UNKNOWN";
@@ -42,8 +44,10 @@ public class ScanHandler {
 		this.methods = methods;
 	}
 
-	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type genericType, @Nullable AnnotatedType annotatedType) {
-		if (genericType == null) genericType = clazz;
+	public TypeInfo create(TypeInfo source, Class<?> clazz, @Nullable Type rawType, @Nullable AnnotatedType annotatedType) {
+		if (rawType == null) rawType = clazz;
+		Type genericType = TypeUtil.applyType(rawType, annotatedType);
+
 
 		if (source == null) {
 			throw ThrowHandler.fatal(NullPointerException::new, "Source is null",
@@ -53,33 +57,17 @@ public class ScanHandler {
 			);
 		}
 
-		var annotations = ScanUtils.parseAnnotations(annotatedType);
+		if (genericType instanceof Class<?> type) return ClassInfo.createType(this, source, type, annotatedType);
+		if (genericType instanceof ArrayType type) return ArrayInfo.createType(this, source, type, annotatedType);
 
-		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
-		if (SubclassInfo.check(annotations))
-			return SubclassInfo.create(this, source, clazz, genericType, annotatedType, annotations);
-
-		//Object / int / Object[] / int[]
-		if (genericType instanceof Class<?> type) {
-			if (type.isArray())
-				return ArrayInfo.create(source, type, annotations, create(source, type.getComponentType(), null, null));
-			else
-				return ClassInfo.create(type, annotations);
-		}
-
-		//Thing<T,T>
 		if (genericType instanceof ParameterizedType type)
+			return ParameterizedInfo.createType(this, source, clazz, type, annotatedType);
 
-			return ParameterizedClassInfo.create(this, source, annotations, type, (AnnotatedParameterizedType) annotatedType);
-
-		//T thing
 		if (genericType instanceof TypeVariable type)
-			return TypeClassInfo.create(source, clazz, type);
+			return TypeClassInfo.createType(this, source, clazz, type, annotatedType);
 
-
-		//T[] arrrrrrrr
 		if (genericType instanceof GenericArrayType type)
-			return ArrayInfo.createGeneric(this, source, annotations, clazz, type, annotatedType);
+			return ArrayInfo.createGenericType(this, source, clazz, type, annotatedType);
 
 		//<?>
 		if (genericType instanceof WildcardType wildcardType) {
@@ -101,7 +89,7 @@ public class ScanHandler {
 
 
 	public void scan(Class<?> clazz) {
-		this.createSerializeMetadata(ClassInfo.create(clazz, Map.of()));
+		this.createSerializeMetadata(new ClassInfo(clazz, Map.of()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
