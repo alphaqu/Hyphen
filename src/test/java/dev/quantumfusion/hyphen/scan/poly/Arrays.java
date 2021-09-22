@@ -5,8 +5,7 @@ import dev.quantumfusion.hyphen.annotation.Serialize;
 
 public class Arrays {
 	@Serialize
-	@SerSubclasses({Integer.class, Float.class})
-	public Number[] numbers;
+	public Number @SerSubclasses({Integer[].class, Float[].class})[] numbers;
 
 	public Arrays(Number[] numbers) {
 		this.numbers = numbers;
