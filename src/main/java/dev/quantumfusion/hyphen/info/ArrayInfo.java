@@ -20,7 +20,7 @@ import java.util.Objects;
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
 
 public class ArrayInfo extends TypeInfo {
-	private final TypeInfo values;
+	public final TypeInfo values;
 
 	public ArrayInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<Annotation>, Annotation> annotations, TypeInfo values) {
 		super(clazz, type, annotatedType, annotations);

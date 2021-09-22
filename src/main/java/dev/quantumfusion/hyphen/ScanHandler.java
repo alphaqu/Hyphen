@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.gen.impl.ArrayDef;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
@@ -112,6 +113,11 @@ public class ScanHandler {
 
 	public ObjectSerializationDef getDefinition(ClassSerializerMetadata.FieldEntry field, ClassInfo source) {
 		var classInfo = field.clazz();
+		if (classInfo instanceof ArrayInfo arrayInfo) {
+			createSerializeMetadata(arrayInfo.values);
+			return new ArrayDef(arrayInfo.values);
+		}
+
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {

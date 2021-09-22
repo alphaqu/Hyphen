@@ -12,6 +12,6 @@ public class ArraySerializerMetadata extends SerializerMetadata {
 	}
 
 	public String toFancyString() {
-		return value.toFancyString() + Color.PURPLE + "[]";
+		return value.clazz.getMethodName(false) + Color.PURPLE + "[]";
 	}
 }

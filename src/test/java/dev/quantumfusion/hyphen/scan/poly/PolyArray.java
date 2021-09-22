@@ -7,7 +7,7 @@ public class PolyArray {
 	@Serialize
 	public @SerSubclasses({Integer.class, Float.class}) Number[] numbers;
 
-	public PolyArray(Number @SerSubclasses({Integer.class, Float.class}) [] numbers) {
+	public PolyArray(Number[] numbers) {
 		this.numbers = numbers;
 	}
 }

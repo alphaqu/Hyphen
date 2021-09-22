@@ -125,6 +125,18 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof SubclassInfo that)) return false;
+		return Objects.equals(classInfos, that.classInfos);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(classInfos);
+	}
+
+	@Override
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Sub");
