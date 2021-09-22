@@ -21,7 +21,7 @@ import java.util.*;
 
 public class SubclassInfo extends TypeInfo {
 	private final TypeInfo field;
-	private final List<? extends TypeInfo> classInfos;
+	public final List<? extends TypeInfo> classInfos;
 
 	public SubclassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
 		super(clazz, type, annotatedType, annotations);

@@ -14,6 +14,7 @@ import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class TypeUtil {
 			assert actualTypeArguments.length == typeParameters.length;
 
 			for (int i = 0; i < actualTypeArguments.length; i++) {
-				unifyType(out, typeInfos.getOrDefault(typeParameters[i].getName(), UNKNOWN_INFO), actualTypeArguments[i]);
+				unifyType(out, typeInfos.getOrDefault(typeParameters[i].getName(), UNKNOWN_INFO), actualTypeArguments[i], UnificationType.EXTENDS);
 			}
 
 			return out;
@@ -67,14 +68,14 @@ public class TypeUtil {
 	}
 
 	@SuppressWarnings("StatementWithEmptyBody")
-	public static void unifyType(Map<? super String, ? super TypeInfo> resolved, TypeInfo typeInfo, Type typeParameter) {
+	public static void unifyType(Map<? super String, ? super TypeInfo> resolved, TypeInfo typeInfo, Type typeParameter, UnificationType unificationType) {
 		try {
 			if (typeParameter instanceof Class<?> clazz) {
 				if (typeInfo == UNKNOWN_INFO) {
 					// resolve type that was unknown
 					// I don't think we have to do something here? Although I do think there might be invalid case that we
 					// need to consider
-				} else if (typeInfo.clazz != clazz) {
+				} else if (!unificationType.canAssign2(typeInfo, clazz)) {
 					// TODO: error not good enough, should handles cases like IncompatibleTypeFail
 					throw ThrowHandler.fatal(IncompatibleTypeException::new, "Not a valid subtype");
 				}
@@ -92,16 +93,13 @@ public class TypeUtil {
 					resolved.put(typeVariable.getName(), typeInfo);
 
 					Type[] bounds = typeVariable.getBounds();
+					System.out.println(Arrays.toString(bounds));
 
 					for (Type bound : bounds) {
-						if (bound == Object.class) {
-							// TODO: i think this shouldn't be a special case here and instead be handled by class/class unifying?
-							continue;
-						}
-
 						// eg Foo<A, B extends List<A>> extends Bar<B> with Bar<List<Int>>
 						// TODO: we should mark this as a <? extends Bound>
-						unifyType(resolved, typeInfo, bound);
+						// TODO: if the input kind is super, what should this be? is that even a possibility?
+						unifyType(resolved, typeInfo, bound, UnificationType.EXTENDS);
 					}
 				}
 			} else if (typeParameter instanceof ParameterizedType superParameterizedType) {
@@ -117,7 +115,7 @@ public class TypeUtil {
 						for (var selfType : selfTypeArguments.values()) {
 							Type superType = superTypeArguments[i++];
 
-							unifyType(resolved, selfType, superType);
+							unifyType(resolved, selfType, superType, UnificationType.EXACT);
 						}
 					} else if (clazz.isAssignableFrom(typeInfo.clazz)) {
 						throw ThrowHandler.fatal(
@@ -126,17 +124,62 @@ public class TypeUtil {
 						);
 					} else throw ThrowHandler.fatal(IncompatibleTypeException::new, "Incompatible Types");
 				} else if (typeInfo instanceof SubclassInfo)
-					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Polymorphic type unification");
+					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Parametric <> Polymorphic type unification");
 				else if (typeInfo instanceof WildcardInfo)
-					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Wildcard type unification");
+					throw ThrowHandler.fatal(NotYetImplementedException::new, "NYI: Parametric <> Wildcard type unification");
 				else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
-			} else throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
+			} else if (typeParameter instanceof WildcardType wildcardType) {
+				for (Type upperBound : wildcardType.getUpperBounds()) {
+					// TODO: can we just pass extends here?
+					unifyType(resolved, typeInfo, upperBound, UnificationType.EXTENDS);
+				}
+				for (Type lowerBound : wildcardType.getLowerBounds()) {
+					// TODO: can we just pass extends here?
+					unifyType(resolved, typeInfo, lowerBound, UnificationType.SUPER);
+				}
+			} else {
+				throw ThrowHandler.fatal(IllegalArgumentException::new, "Unexpected type unification request");
+			}
 		} catch (HyphenException ex) {
 			throw ex.addEntries(
 					ThrowEntry.of("Resolved", resolved),
 					ThrowEntry.of("TypeInfo", typeInfo),
 					ThrowEntry.of("TypeParameter", typeParameter)
 			);
+		}
+	}
+
+	enum UnificationType {
+		EXACT {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return a == b;
+			}
+		}, EXTENDS {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return b.isAssignableFrom(a);
+			}
+		}, SUPER {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return a.isAssignableFrom(b);
+			}
+		};
+
+		abstract boolean canAssign(Class<?> a, Class<?> b);
+
+		public boolean canAssign2(TypeInfo typeInfo, Class<?> clazz) {
+			// TODO: consider making this a method on typeinfo instead?
+			if (typeInfo instanceof WildcardInfo wildcardInfo) {
+				// TODO: fix
+				return true;
+			} else if (typeInfo instanceof SubclassInfo subclassInfo) {
+				for (TypeInfo subInfo : subclassInfo.classInfos) if (this.canAssign2(subInfo, clazz)) return true;
+				return false;
+			} else {
+				return this.canAssign(typeInfo.clazz, clazz);
+			}
 		}
 	}
 
