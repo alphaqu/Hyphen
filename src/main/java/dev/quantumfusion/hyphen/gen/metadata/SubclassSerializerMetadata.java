@@ -1,8 +1,10 @@
 package dev.quantumfusion.hyphen.gen.metadata;
 
+import dev.quantumfusion.hyphen.gen.Context;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
+import org.objectweb.asm.MethodVisitor;
 
 import java.util.Map;
 
@@ -14,6 +16,16 @@ public class SubclassSerializerMetadata extends SerializerMetadata {
 		this.subtypes = subtypes;
 	}
 
+
+	@Override
+	public void writeEncode(MethodVisitor mv, TypeInfo parent, Context context) {
+
+	}
+
+	@Override
+	public void writeDecode(MethodVisitor mv, TypeInfo parent, Context ctx) {
+
+	}
 
 	public String toFancyString() {
 		StringBuilder sb = new StringBuilder(super.toFancyString());

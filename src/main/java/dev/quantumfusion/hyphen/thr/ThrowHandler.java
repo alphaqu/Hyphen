@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.thr;
 
-import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
+import dev.quantumfusion.hyphen.gen.FieldEntry;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.AccessException;
@@ -38,7 +38,7 @@ public class ThrowHandler {
 		});
 	}
 
-	public static RuntimeException fieldAccessFail(ClassSerializerMetadata.FieldEntry field, TypeInfo source) {
+	public static RuntimeException fieldAccessFail(FieldEntry field, TypeInfo source) {
 		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier()), new ThrowEntry[]{
 				of("Field Name", field.name()),
 				of("Field Class", field.clazz().clazz.getSimpleName()),
@@ -65,12 +65,12 @@ public class ThrowHandler {
 	}
 
 
-	public static RuntimeException constructorNotFoundFail(List<ClassSerializerMetadata.FieldEntry> fields, ClassInfo info) {
+	public static RuntimeException constructorNotFoundFail(List<FieldEntry> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
 		throwable[0] = ThrowEntry.of("Source Class", info.clazz.getSimpleName());
 		throwable[1] = ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
-			ClassSerializerMetadata.FieldEntry fieldInfo = fields.get(i);
+			FieldEntry fieldInfo = fields.get(i);
 			throwable[i + 2] = ThrowEntry.of('\t' + fieldInfo.name(), fieldInfo.clazz().getClazz());
 		}
 		throw ThrowHandler.fatal(AccessException::new, "Matching Constructor does not exist", throwable);

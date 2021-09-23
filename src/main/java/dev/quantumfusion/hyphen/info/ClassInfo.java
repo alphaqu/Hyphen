@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.gen.FieldEntry;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
@@ -34,8 +35,8 @@ public class ClassInfo extends TypeInfo implements Type {
 		return new ClassInfo(type, type, annotatedType, annotations);
 	}
 
-	private List<ClassSerializerMetadata.FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
-		List<ClassSerializerMetadata.FieldEntry> info = new ArrayList<>();
+	private List<FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
+		List<FieldEntry> info = new ArrayList<>();
 		for (Field declaredField : this.clazz.getDeclaredFields()) {
 			if (filter.test(declaredField)) {
 				try {
@@ -46,7 +47,7 @@ public class ClassInfo extends TypeInfo implements Type {
 					if (classInfo == ScanHandler.UNKNOWN_INFO)
 						throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
 
-					info.add(new ClassSerializerMetadata.FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
+					info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
 				} catch (HyphenException hyphenException) {
 					throw hyphenException.addParent(this, declaredField.getName());
 				}
@@ -56,8 +57,8 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	public List<ClassSerializerMetadata.FieldEntry> getAllFields(ScanHandler factory, Predicate<? super Field> filter) {
-		List<ClassSerializerMetadata.FieldEntry> out = new ArrayList<>();
+	public List<FieldEntry> getAllFields(ScanHandler factory, Predicate<? super Field> filter) {
+		List<FieldEntry> out = new ArrayList<>();
 		Class<?> superclass = this.clazz.getSuperclass();
 		if (superclass != null) {
 			try {
@@ -92,7 +93,7 @@ public class ClassInfo extends TypeInfo implements Type {
 		var allFields = this.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
 		//check if it exists / if its accessible
 		ScanUtils.checkConstructor(factory, this);
-		for (ClassSerializerMetadata.FieldEntry fieldInfo : allFields) {
+		for (FieldEntry fieldInfo : allFields) {
 			try {
 				methodMetadata.fields.put(fieldInfo, factory.getDefinition(fieldInfo, this));
 			} catch (HyphenException hyphenException) {

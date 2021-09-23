@@ -1,8 +1,9 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.gen.FieldEntry;
+import dev.quantumfusion.hyphen.gen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.impl.ArrayDef;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
-import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
@@ -34,10 +35,6 @@ public class ScanHandler {
 		this.methods = methods;
 	}
 
-	public TypeInfo create(TypeInfo source, Class<?> clazz) {
-		return this.create(source, clazz, clazz, null);
-	}
-
 	private static void validateInput(@Nullable Class<?> clazz, @Nullable Type type, @Nullable AnnotatedType annotatedType) {
 
 		try {
@@ -52,6 +49,10 @@ public class ScanHandler {
 					ThrowEntry.of("AnnotatedType", annotatedType)
 			);
 		}
+	}
+
+	public TypeInfo create(TypeInfo source, Class<?> clazz) {
+		return this.create(source, clazz, clazz, null);
 	}
 
 	public TypeInfo create(@NotNull TypeInfo source, @Nullable Class<?> clazz, @Nullable Type rawType, @Nullable AnnotatedType annotatedType) {
@@ -115,23 +116,27 @@ public class ScanHandler {
 		return serializerMetadata;
 	}
 
-	public ObjectSerializationDef getDefinition(ClassSerializerMetadata.FieldEntry field, ClassInfo source) {
-		var classInfo = field.clazz();
+	public ObjectSerializationDef getDefinition(FieldEntry field, ClassInfo source) {
+		return getDefinition(field, field.clazz(), source);
+	}
+
+	public ObjectSerializationDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (classInfo instanceof ArrayInfo arrayInfo) {
 			createSerializeMetadata(arrayInfo.values);
-			return new ArrayDef(arrayInfo.values);
+			return new ArrayDef(getDefinition(null, arrayInfo.values, source));
 		}
 
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
-			//check if field is legal
-			//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
-			ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
+			if (field != null) {
+				//check if field is legal
+				//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
+				ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
+			}
 
 			this.createSerializeMetadata(classInfo);
 			return new MethodCallDef(classInfo);
 		}
 	}
-
 }
