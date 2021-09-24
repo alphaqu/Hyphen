@@ -64,7 +64,14 @@ public class ClassSerializerMetadata extends SerializerMetadata {
 			types[pos++] = Type.getType(fieldEntry.clazz().getClazz());
 		}
 
-		fields.forEach((fieldEntry, objectSerializationDef) -> objectSerializationDef.writeDecode(mv, parent, fieldEntry, ctx));
+		fields.forEach((fieldEntry, objectSerializationDef) -> {
+			if(MODE == 0) {
+				objectSerializationDef.writeDecode(mv, parent, fieldEntry, ctx);
+			} else {
+				ctx.var().IntInsnVar("io", ALOAD);
+				objectSerializationDef.writeDecode2(mv, ctx);
+			}
+		});
 
 		String methodDescriptor = Type.getMethodDescriptor(Type.getType(Void.TYPE), types);
 		mv.visitMethodInsn(INVOKESPECIAL, internalName, "<init>", methodDescriptor, false);

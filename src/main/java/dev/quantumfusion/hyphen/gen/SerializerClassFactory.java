@@ -80,7 +80,6 @@ public class SerializerClassFactory {
 
 		var io = varHandler.createVar("io", mode.ioClass);
 
-
 		serializerMetadata.writeDecode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), null, () -> mv.visitIntInsn(ALOAD, io.index())));
 
 		mv.visitInsn(ARETURN);

@@ -11,7 +11,7 @@ import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.io.ByteBufferIO;
+import dev.quantumfusion.hyphen.io.UnsafeIO;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 import org.objectweb.asm.MethodVisitor;
@@ -74,21 +74,25 @@ public class SerializerFactory {
 		var test = TestClass.create();
 
 		Class<?> build1 = debug.build();
+
+		var byteBufferIO = UnsafeIO.create(10000);
 		try {
-			ByteBufferIO byteBufferIO = ByteBufferIO.create(10000);
+			for (int i = 0; i < 1; i++) {
+				byteBufferIO.rewind();
+				test.thinbruh2 = i;
 
-			if(ClassSerializerMetadata.MODE == 0){
-				build1.getDeclaredMethod("TestClass_encode", TestClass.class, ByteBufferIO.class).invoke(null, test, byteBufferIO);
-			} else {
-				build1.getDeclaredMethod("TestClass_encode", ByteBufferIO.class, TestClass.class).invoke(null, byteBufferIO, test);
+				if (ClassSerializerMetadata.MODE == 0) {
+					build1.getDeclaredMethod("TestClass_encode", TestClass.class, UnsafeIO.class).invoke(null, test, byteBufferIO);
+				} else {
+					build1.getDeclaredMethod("TestClass_encode", UnsafeIO.class, TestClass.class).invoke(null, byteBufferIO, test);
+				}
+				byteBufferIO.rewind();
+				TestClass test_decode = (TestClass) build1.getDeclaredMethod("TestClass_decode", UnsafeIO.class).invoke(null, byteBufferIO);
+
+				if (test.equals(test_decode) /*&& Math.random() == 2*/) {
+					System.out.println("WE FUCKING DID IT");
+				}
 			}
-			byteBufferIO.rewind();
-			TestClass test_decode = (TestClass) build1.getDeclaredMethod("TestClass_decode", ByteBufferIO.class).invoke(null, byteBufferIO);
-
-			if (test.equals(test_decode)) {
-				System.out.println("WE FUCKING DID IT");
-			}
-
 		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 			e.printStackTrace();
 		}
@@ -169,7 +173,7 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.BYTEBUFFER);
+		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.UNSAFE);
 		methods.forEach(serializerClassFactory::createMethod);
 		return serializerClassFactory.compile();
 	}

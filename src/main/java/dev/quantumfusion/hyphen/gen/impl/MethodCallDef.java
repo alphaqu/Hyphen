@@ -39,13 +39,15 @@ public class MethodCallDef extends AbstractDef {
 	}
 
 	@Override
-	public void writeEncode2(MethodVisitor mv, Context context) {
-		String internalName = context.serializer().getInternalName();
-		mv.visitMethodInsn(INVOKESTATIC, internalName, this.target.getMethodName(false) + "_encode", GenUtil.getVoidMethodDesc(context.mode().ioClass, this.target.clazz), false);
+	public void writeEncode2(MethodVisitor mv, Context ctx) {
+		String internalName = ctx.serializer().getInternalName();
+		mv.visitMethodInsn(INVOKESTATIC, internalName, this.target.getMethodName(false) + "_encode", GenUtil.getVoidMethodDesc(ctx.mode().ioClass, this.target.clazz), false);
 	}
 
 	@Override
-	public void writeDecode2(MethodVisitor methodVisitor, Context ctx) {
+	public void writeDecode2(MethodVisitor mv, Context ctx) {
+		String internalName = ctx.serializer().getInternalName();
+		mv.visitMethodInsn(INVOKESTATIC, internalName, this.target.getMethodName(false) + "_decode", GenUtil.getMethodDesc(this.target.clazz, ctx.mode().ioClass), false);
 	}
 
 	@Override

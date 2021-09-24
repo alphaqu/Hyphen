@@ -79,8 +79,10 @@ public class ArrayDef implements ObjectSerializationDef {
 	public void writeDecode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context ctx) {
 		VarHandler var = ctx.var();
 
-		Label top = var.createScope();
+		Label top = new Label();
 		Label end = new Label();
+
+		var.pushScope();
 
 		var i = var.createVar("i", int.class);
 		var l = var.createVar("l", int.class);
@@ -110,8 +112,9 @@ public class ArrayDef implements ObjectSerializationDef {
 
 		mv.visitIincInsn(i.index(), 1);
 		mv.visitJumpInsn(GOTO, top);
-		var.popScope(end);
+		mv.visitLabel(end);
 		var.IntInsnVar(array, ALOAD);
+		var.popScope();
 	}
 
 	@Override
@@ -164,8 +167,58 @@ public class ArrayDef implements ObjectSerializationDef {
 	}
 
 	@Override
-	public void writeDecode2(MethodVisitor methodVisitor, Context ctx) {
+	public void writeDecode2(MethodVisitor mv, Context ctx) {
+		VarHandler var = ctx.var();
 
+
+		Label top = new Label();
+		Label end = new Label();
+
+		var.pushScope();
+
+		var io = var.getVar("io");
+		var i = var.createVar("i", int.class);
+		var l = var.createVar("l", int.class);
+		Class<?> arrayClazz = this.arrayInfo.getClazz();
+		var array = var.createVar("array", arrayClazz);
+
+		// io
+		ctx.mode().callMethod(mv, "getInt", GenUtil.getMethodDesc(int.class));
+		// length
+		mv.visitInsn(DUP);
+		// length length
+		var.IntInsnVar(l, ISTORE);
+		// length
+		mv.visitTypeInsn(ANEWARRAY, Type.getInternalName(arrayClazz.getComponentType()));
+		// array
+		var.IntInsnVar(array, ASTORE);
+		// --
+
+		mv.visitInsn(ICONST_0);
+		var.IntInsnVar(i, ISTORE);
+		// i = 0
+
+		mv.visitLabel(top);
+		var.IntInsnVar(i, ILOAD);
+		var.IntInsnVar(l, ILOAD);
+		mv.visitJumpInsn(IF_ICMPGE, end);
+		// if(i >= l) break;
+
+		var.IntInsnVar(array, ALOAD);
+		var.IntInsnVar(i, ILOAD);
+		var.IntInsnVar(io, ALOAD);
+		// array i io
+		this.componentDef.writeDecode2(mv, ctx);
+		// array i element
+		mv.visitInsn(AASTORE); // array[i] = element
+		// --
+
+		mv.visitIincInsn(i.index(), 1); // i++;
+		mv.visitJumpInsn(GOTO, top);
+		mv.visitLabel(end);
+		// array
+		var.IntInsnVar(array, ALOAD);
+		var.popScope();
 	}
 
 	@Override

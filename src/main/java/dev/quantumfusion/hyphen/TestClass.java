@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 
 import java.util.Arrays;
@@ -32,15 +33,20 @@ public class TestClass {
 	@Serialize
 	public long thinbruh4;
 	@Serialize
-	public int thinbruh5;
+	@SerSubclasses({Component0.class, Component.class})
+	public Object thinbruh5;
+	@Serialize
+	@SerSubclasses({Component0.class, Component.class, TestClass.class})
+	public Object thinbruh6;
 
-	public TestClass(int thinbruh2, Component[][] c, int[][] primArr, int thinbruh3, long thinbruh4, int thinbruh5) {
+	public TestClass(int thinbruh2, Component[][] c, int[][] primArr, int thinbruh3, long thinbruh4, Object thinbruh5, Object thinbruh6) {
 		this.thinbruh2 = thinbruh2;
 		this.c = c;
 		this.primArr = primArr;
 		this.thinbruh3 = thinbruh3;
 		this.thinbruh4 = thinbruh4;
 		this.thinbruh5 = thinbruh5;
+		this.thinbruh6 = thinbruh6;
 	}
 
 	@Override
@@ -49,6 +55,9 @@ public class TestClass {
 				|| o instanceof TestClass test
 				&& this.thinbruh2 == test.thinbruh2
 				&& this.thinbruh3 == test.thinbruh3
+				&& this.thinbruh4 == test.thinbruh4
+				&& Objects.equals(this.thinbruh5, test.thinbruh5)
+				&& Objects.equals(this.thinbruh6, test.thinbruh6)
 				&& Objects.equals(this.a, test.a)
 				&& Arrays.deepEquals(this.b, test.b)
 				&& Arrays.deepEquals(this.c, test.c)
@@ -63,6 +72,9 @@ public class TestClass {
 		return Objects.hash(
 				this.thinbruh2,
 				this.thinbruh3,
+				this.thinbruh4,
+				this.thinbruh5,
+				this.thinbruh6,
 				this.a,
 				Arrays.deepHashCode(this.b),
 				Arrays.deepHashCode(this.c),
@@ -70,6 +82,18 @@ public class TestClass {
 				Arrays.deepHashCode(this.e),
 				Arrays.deepHashCode(this.primArr)
 		);
+	}
+
+	public static class Component0 {
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof Component0;
+		}
 	}
 
 	public static class Component {
@@ -109,6 +133,7 @@ public class TestClass {
 		};
 
 
-		return new TestClass(420, thinbruh, thinbruh2, 69, Long.MAX_VALUE, -1);
+		return new TestClass(420, thinbruh, thinbruh2, 69, Long.MAX_VALUE, new Component(17),
+				new TestClass(425, thinbruh, new int[][]{thinbruh2[3]}, 69_420, 123456789101010L, new Component(62), new Component0()));
 	}
 }
