@@ -2,8 +2,8 @@ package dev.quantumfusion.hyphen.gen.impl;
 
 import dev.quantumfusion.hyphen.gen.Context;
 import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.VarHandler;
+import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.GenUtil;
@@ -11,12 +11,14 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.Map;
+
 import static org.objectweb.asm.Opcodes.*;
 
 
 public class ArrayDef implements ObjectSerializationDef {
-	private ObjectSerializationDef componentDef;
-	private final TypeInfo component;
+	protected final TypeInfo component;
+	protected final ObjectSerializationDef componentDef;
 
 	public ArrayDef(ObjectSerializationDef componentDef, TypeInfo component) {
 		this.componentDef = componentDef;
@@ -29,52 +31,43 @@ public class ArrayDef implements ObjectSerializationDef {
 	}
 
 	@Override
-	public void writeEncode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context ctx) {
+	public void writeEncode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context ctx, Runnable alloc) {
 		Label top = new Label();
 		Label end = new Label();
 		VarHandler var = ctx.var();
 
 
-		int i = var.createVar("i", int.class);
-		int l = var.createOrGetVar("l", int.class);
-		int array = var.createVar("array", parent.getClazz());
-
-
+		String i = var.createVar("i", int.class);
+		String l = var.createVar("l", int.class);
 		Class<?> arrayClazz = fieldEntry.clazz().getClazz();
-		String arrayDesc = Type.getDescriptor(arrayClazz);
+		String array = var.createVar("array", arrayClazz);
 
 
-		var.IntInsnVar("data", ALOAD);
-		mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), arrayDesc);
-		mv.visitIntInsn(ASTORE, array);
-
-		mv.visitIntInsn(ALOAD, array);
-		mv.visitFieldInsn(GETFIELD, Type.getInternalName(arrayClazz), "length", "I");
-		mv.visitIntInsn(ISTORE, l);
-
-		var.IntInsnVar("io", ALOAD);
-		mv.visitIntInsn(ILOAD, l);
+		ctx.io().run();
+		alloc.run();
+		mv.visitInsn(DUP);
+		var.IntInsnVar(array, ASTORE);
+		mv.visitInsn(ARRAYLENGTH);
+		mv.visitInsn(DUP);
+		var.IntInsnVar(l, ISTORE);
 		ctx.mode().callMethod(mv, "putInt", GenUtil.getVoidMethodDesc(int.class));
 
 
 		mv.visitInsn(ICONST_0);
-		mv.visitIntInsn(ISTORE, i);
+		var.IntInsnVar(i, ISTORE);
 
 		mv.visitLabel(top);
-		mv.visitIntInsn(ILOAD, i);
-		mv.visitIntInsn(ILOAD, l);
+		var.IntInsnVar(i, ILOAD);
+		var.IntInsnVar(l, ILOAD);
 		mv.visitJumpInsn(IF_ICMPGE, end);
 
-		Class<?> clazz = fieldEntry.clazz().getClazz();
-		String internalName = ctx.serializer().getInternalName();
-		mv.visitIntInsn(ALOAD, array);
-		mv.visitIntInsn(ILOAD, i);
-		mv.visitInsn(AALOAD);
-		ctx.var().IntInsnVar("io", ALOAD);
-		mv.visitMethodInsn(INVOKESTATIC, internalName, fieldEntry.clazz().getMethodName(false) + "_encode", GenUtil.getVoidMethodDesc(clazz, ctx.mode().ioClass), false);
+		componentDef.writeEncode(mv, parent, new FieldEntry(new ClassInfo(arrayClazz.getComponentType(), Map.of()), 0, null), ctx, () -> {
+			var.IntInsnVar(array, ALOAD);
+			var.IntInsnVar(i, ILOAD);
+			mv.visitInsn(AALOAD);
+		});
 
-
-		mv.visitIincInsn(i, 1);
+		mv.visitIincInsn(var.getVar(i), 1);
 		mv.visitJumpInsn(GOTO, top);
 		mv.visitLabel(end);
 	}
@@ -86,45 +79,36 @@ public class ArrayDef implements ObjectSerializationDef {
 		VarHandler var = ctx.var();
 
 
-		int i = var.createVar("i", int.class);
-		int l = var.createOrGetVar("l", int.class);
-		int array = var.createVar("array", parent.getClazz());
+		String i = var.createVar("i", int.class);
+		String l = var.createVar("l", int.class);
+		Class<?> arrayClazz = fieldEntry.clazz().getClazz();
+		String array = var.createVar("array", arrayClazz);
 
-
-		Class<?> clazz1 = component.getClazz();
-		System.out.println(clazz1);
-		String arrayDesc = Type.getInternalName(clazz1);
-
-		ctx.var().IntInsnVar("io", ALOAD);
+		ctx.io().run();
 		ctx.mode().callMethod(mv, "getInt", GenUtil.getMethodDesc(int.class));
-		mv.visitIntInsn(ISTORE, l);
-		mv.visitIntInsn(ILOAD, l);
-		mv.visitTypeInsn(ANEWARRAY, arrayDesc);
-		mv.visitIntInsn(ASTORE, array);
+		mv.visitInsn(DUP);
+		var.IntInsnVar(l, ISTORE);
+		mv.visitTypeInsn(ANEWARRAY, Type.getInternalName(arrayClazz.getComponentType()));
+		var.IntInsnVar(array, ASTORE);
 
 		mv.visitInsn(ICONST_0);
-		mv.visitIntInsn(ISTORE, i);
+		var.IntInsnVar(i, ISTORE);
 
 		mv.visitLabel(top);
-		mv.visitIntInsn(ILOAD, i);
-		mv.visitIntInsn(ILOAD, l);
+		var.IntInsnVar(i, ILOAD);
+		var.IntInsnVar(l, ILOAD);
 		mv.visitJumpInsn(IF_ICMPGE, end);
 
-		Class<?> clazz = fieldEntry.clazz().getClazz();
-		String internalName = ctx.serializer().getInternalName();
-
-
-		mv.visitIntInsn(ALOAD, array);
-		mv.visitIntInsn(ILOAD, i);
-		ctx.var().IntInsnVar("io", ALOAD);
-		mv.visitMethodInsn(INVOKESTATIC, internalName, fieldEntry.clazz().getMethodName(false) + "_decode", GenUtil.getMethodDesc(clazz, ctx.mode().ioClass), false);
+		var.IntInsnVar(array, ALOAD);
+		var.IntInsnVar(i, ILOAD);
+		componentDef.writeDecode(mv, parent, new FieldEntry(new ClassInfo(arrayClazz.getComponentType(), Map.of()), 0, null), ctx);
 		mv.visitInsn(AASTORE);
 
 
-		mv.visitIincInsn(i, 1);
+		mv.visitIincInsn(var.getVar(i), 1);
 		mv.visitJumpInsn(GOTO, top);
 		mv.visitLabel(end);
-		mv.visitIntInsn(ALOAD, array);
+		var.IntInsnVar(array, ALOAD);
 	}
 
 	@Override

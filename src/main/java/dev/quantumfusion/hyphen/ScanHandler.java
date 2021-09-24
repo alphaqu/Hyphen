@@ -1,9 +1,9 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.impl.ArrayDef;
 import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
+import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
@@ -122,8 +122,7 @@ public class ScanHandler {
 
 	public ObjectSerializationDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (classInfo instanceof ArrayInfo arrayInfo) {
-			createSerializeMetadata(arrayInfo.values);
-			return new ArrayDef(getDefinition(null, arrayInfo.values, source), null);
+			return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo.values);
 		}
 
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {

@@ -34,30 +34,26 @@ public class VarHandler {
 		methodVisitor.visitIntInsn(opcode, getVar(name));
 	}
 
-	public int createOrGetVar(String name, Class<?> clazz) {
+	public String createOrGetVar(String name, Class<?> clazz) {
 		if (variables.containsKey(name))
-			return variables.get(name);
+			return name;
 
 		return createVar(name, Type.getType(clazz), 0);
 	}
 
 
-	public int createVar(String name, Class<?> clazz) {
+	public String createVar(String name, Class<?> clazz) {
 		return createVar(name, Type.getType(clazz), 0);
 	}
 
-	public int createVar(String rawName, Type type, int number) {
+	public String createVar(String rawName, Type type, int number) {
 		String name = rawName + number;
-		if (variableTypes.containsKey(name)) {
-			if (variableTypes.get(name).equals(type)) return variables.get(name);
-			else {
-				return createVar(rawName, type, number + 1);
-			}
-		}
-		final int pos = variables.size();
-		variables.put(name, pos);
+		if (variableTypes.containsKey(name))
+			return createVar(rawName, type, number + 1);
+
+		variables.put(name, variables.size());
 		variableTypes.put(name, type);
-		return pos;
+		return name;
 	}
 
 	public void applyLocals(MethodVisitor mv, Label start, Label stop) {

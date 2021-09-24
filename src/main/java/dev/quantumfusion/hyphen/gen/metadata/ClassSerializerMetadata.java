@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.gen.metadata;
 
 import dev.quantumfusion.hyphen.gen.Context;
 import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.ObjectSerializationDef;
+import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
@@ -25,7 +25,12 @@ public class ClassSerializerMetadata extends SerializerMetadata {
 
 	@Override
 	public void writeEncode(MethodVisitor mv, TypeInfo parent, Context context) {
-		fields.forEach((fieldEntry, objectSerializationDef) -> objectSerializationDef.writeEncode(mv, parent, fieldEntry, context));
+		fields.forEach((fieldEntry, objectSerializationDef) -> {
+			objectSerializationDef.writeEncode(mv, parent, fieldEntry, context, () -> {
+				context.data().run();
+				mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), Type.getDescriptor(fieldEntry.clazz().getClazz()));
+			});
+		});
 	}
 
 	@Override

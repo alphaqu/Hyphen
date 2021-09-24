@@ -1,13 +1,16 @@
 package dev.quantumfusion.hyphen.gen;
 
+import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.GenUtil;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.*;
+import org.objectweb.asm.util.CheckClassAdapter;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -43,12 +46,11 @@ public class SerializerClassFactory {
 	private void writeEncode(TypeInfo typeInfo, SerializerMetadata serializerMetadata) {
 		MethodVisitor mv = createMethodName(typeInfo, "_encode", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(typeInfo.clazz), Type.getType(mode.ioClass)));
 		VarHandler varHandler = new VarHandler(mv);
-		varHandler.createVar("data", typeInfo.getClazz());
-		varHandler.createVar("io", mode.ioClass);
+		String data = varHandler.createVar("data", typeInfo.getClazz());
+		String io = varHandler.createVar("io", mode.ioClass);
 		Label start = new Label();
 		mv.visitLabel(start);
-
-		serializerMetadata.writeEncode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer ")));
+		serializerMetadata.writeEncode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), () -> mv.visitIntInsn(ALOAD, varHandler.getVar(data)), () -> mv.visitIntInsn(ALOAD, varHandler.getVar(io))));
 		Label stop = new Label();
 		mv.visitLabel(stop);
 		varHandler.applyLocals(mv, start, stop);
@@ -60,11 +62,11 @@ public class SerializerClassFactory {
 	private void writeDecode(TypeInfo typeInfo, SerializerMetadata serializerMetadata) {
 		MethodVisitor mv = createMethodName(typeInfo, "_decode", Type.getMethodDescriptor(Type.getType(typeInfo.clazz), Type.getType(mode.ioClass)));
 		VarHandler varHandler = new VarHandler(mv);
-		varHandler.createVar("io", mode.ioClass);
+		String io = varHandler.createVar("io", mode.ioClass);
 		Label start = new Label();
 		mv.visitLabel(start);
 
-		serializerMetadata.writeDecode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer ")));
+		serializerMetadata.writeDecode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), null, () -> mv.visitIntInsn(ALOAD, varHandler.getVar(io))));
 
 		mv.visitInsn(ARETURN);
 		Label stop = new Label();
@@ -81,7 +83,13 @@ public class SerializerClassFactory {
 	public Class<?> compile() {
 		// the finished serializer
 		byte[] b = compileCode();
-		return new Loader().addClass("serializer", b, 0, b.length);
+		CheckClassAdapter.verify(new ClassReader(b), null, true, new PrintWriter(System.out));
+		try {
+			Files.write(Path.of("C:\\Program Files (x86)\\inkscape\\MinecraftMods\\Hyphen\\thing.class"), b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new Loader().addClass("Serializer", b, 0, b.length);
 	}
 
 	public byte[] compileCode() {

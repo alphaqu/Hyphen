@@ -6,9 +6,8 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 public class MethodCallDef extends AbstractDef {
 	public final TypeInfo target;
@@ -23,17 +22,20 @@ public class MethodCallDef extends AbstractDef {
 	}
 
 	@Override
-	public void writeEncode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context context) {
+	public void writeEncode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context context, Runnable alloc) {
 		Class<?> clazz = fieldEntry.clazz().getClazz();
 		String internalName = context.serializer().getInternalName();
-		context.var().IntInsnVar("data", ALOAD);
-		mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), Type.getDescriptor(clazz));
-		context.var().IntInsnVar("io", ALOAD);
+		alloc.run();
+		context.io().run();
 		mv.visitMethodInsn(INVOKESTATIC, internalName, fieldEntry.clazz().getMethodName(false) + "_encode", GenUtil.getVoidMethodDesc(clazz, context.mode().ioClass), false);
 	}
 
 	@Override
-	public void writeDecode(MethodVisitor methodVisitor, TypeInfo parent, FieldEntry fieldEntry, Context ctx) {
+	public void writeDecode(MethodVisitor mv, TypeInfo parent, FieldEntry fieldEntry, Context ctx) {
+		Class<?> clazz = fieldEntry.clazz().getClazz();
+		String internalName = ctx.serializer().getInternalName();
+		ctx.io().run();
+		mv.visitMethodInsn(INVOKESTATIC, internalName, fieldEntry.clazz().getMethodName(false) + "_decode", GenUtil.getMethodDesc(clazz, ctx.mode().ioClass), false);
 	}
 
 	@Override
