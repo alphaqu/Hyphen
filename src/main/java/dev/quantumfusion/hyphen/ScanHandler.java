@@ -123,7 +123,7 @@ public class ScanHandler {
 	public ObjectSerializationDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (classInfo instanceof ArrayInfo arrayInfo) {
 			createSerializeMetadata(arrayInfo.values);
-			return new ArrayDef(getDefinition(null, arrayInfo.values, source));
+			return new ArrayDef(getDefinition(null, arrayInfo.values, source), null);
 		}
 
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {

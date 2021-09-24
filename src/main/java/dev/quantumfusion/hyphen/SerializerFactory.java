@@ -46,6 +46,8 @@ public class SerializerFactory {
 	}
 
 	public static void main(String[] args) throws IOException {
+
+		Thigns gouber = Thigns.GOUBER;
 		SerializerFactory debug = SerializerFactory.createDebug(Test.class);
 		byte[] build = debug.build();
 		CheckClassAdapter.verify(new ClassReader(build), null, true, new PrintWriter(System.out));
@@ -104,6 +106,13 @@ public class SerializerFactory {
 		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.UNSAFE);
 		methods.forEach(serializerClassFactory::createMethod);
 		return serializerClassFactory.compileCode();
+	}
+
+
+	public enum Thigns {
+		FUCK,
+		S,
+		GOUBER
 	}
 
 	public static class Test {

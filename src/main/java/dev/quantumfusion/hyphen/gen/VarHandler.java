@@ -38,17 +38,22 @@ public class VarHandler {
 		if (variables.containsKey(name))
 			return variables.get(name);
 
-		return createVar(name, Type.getType(clazz));
+		return createVar(name, Type.getType(clazz), 0);
 	}
 
 
 	public int createVar(String name, Class<?> clazz) {
-		return createVar(name, Type.getType(clazz));
+		return createVar(name, Type.getType(clazz), 0);
 	}
 
-	public int createVar(String name, Type type) {
-		if (variables.containsKey(name))
-			throw new RuntimeException("Variable " + name + " already exists\n " + variables);
+	public int createVar(String rawName, Type type, int number) {
+		String name = rawName + number;
+		if (variableTypes.containsKey(name)) {
+			if (variableTypes.get(name).equals(type)) return variables.get(name);
+			else {
+				return createVar(rawName, type, number + 1);
+			}
+		}
 		final int pos = variables.size();
 		variables.put(name, pos);
 		variableTypes.put(name, type);
