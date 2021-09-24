@@ -83,12 +83,12 @@ public class SerializerClassFactory {
 	public Class<?> compile() {
 		// the finished serializer
 		byte[] b = compileCode();
-		CheckClassAdapter.verify(new ClassReader(b), null, true, new PrintWriter(System.out));
 		try {
 			Files.write(Path.of("C:\\Program Files (x86)\\inkscape\\MinecraftMods\\Hyphen\\thing.class"), b);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		CheckClassAdapter.verify(new ClassReader(b), null, true, new PrintWriter(System.out));
 		return new Loader().addClass("Serializer", b, 0, b.length);
 	}
 

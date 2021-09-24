@@ -6,7 +6,8 @@ import dev.quantumfusion.hyphen.gen.FieldEntry;
 import dev.quantumfusion.hyphen.gen.IOMode;
 import dev.quantumfusion.hyphen.gen.SerializerClassFactory;
 import dev.quantumfusion.hyphen.gen.impl.AbstractDef;
-import dev.quantumfusion.hyphen.gen.impl.IntDef;
+import dev.quantumfusion.hyphen.gen.impl.IOArrayDef;
+import dev.quantumfusion.hyphen.gen.impl.IOPrimDef;
 import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
@@ -41,9 +42,27 @@ public class SerializerFactory {
 	}
 
 	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
-		final SerializerFactory scanHandler = new SerializerFactory(debugMode, clazz);
-		scanHandler.addImpl(int.class, (field) -> new IntDef());
-		return scanHandler;
+		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
+		sh.addImpl(IOPrimDef.create(boolean.class));
+		sh.addImpl(IOPrimDef.create(byte.class));
+		sh.addImpl(IOPrimDef.create(char.class));
+		sh.addImpl(IOPrimDef.create(short.class));
+		sh.addImpl(IOPrimDef.create(int.class));
+		sh.addImpl(IOPrimDef.create(long.class));
+		sh.addImpl(IOPrimDef.create(float.class));
+		sh.addImpl(IOPrimDef.create(double.class));
+		sh.addImpl(IOPrimDef.create(String.class));
+
+		sh.addImpl(IOArrayDef.create(boolean[].class));
+		sh.addImpl(IOArrayDef.create(byte[].class));
+		sh.addImpl(IOArrayDef.create(char[].class));
+		sh.addImpl(IOArrayDef.create(short[].class));
+		sh.addImpl(IOArrayDef.create(int[].class));
+		sh.addImpl(IOArrayDef.create(long[].class));
+		sh.addImpl(IOArrayDef.create(float[].class));
+		sh.addImpl(IOArrayDef.create(double[].class));
+		sh.addImpl(IOArrayDef.create(String[].class));
+		return sh;
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -56,10 +75,15 @@ public class SerializerFactory {
 		for (int i = 0; i < thinbruh.length; i++) {
 			thinbruh[i] = new Component[]{new Component(23), new Component(32)};
 		}
-		Test test = new Test(420, thinbruh, 69);
+
+		int[][] thinbruh2 = new int[5][];
+		for (int i = 0; i < thinbruh.length; i++) {
+			thinbruh2[i] = new int[]{534, 2341, 3};
+		}
+		Test test = new Test(420, thinbruh, thinbruh2, 69);
 		Class<?> build1 = debug.build();
 		try {
-			ByteBufferIO byteBufferIO = ByteBufferIO.create(1000);
+			ByteBufferIO byteBufferIO = ByteBufferIO.create(10000);
 
 			build1.getDeclaredMethod("Test_encode", Test.class, ByteBufferIO.class).invoke(null, test, byteBufferIO);
 			byteBufferIO.rewind();
@@ -85,6 +109,10 @@ public class SerializerFactory {
 
 	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends ObjectSerializationDef> creator) {
 		this.implementations.put(clazz, creator);
+	}
+
+	public void addImpl(ObjectSerializationDef def) {
+		this.implementations.put(def.getType(), (f) -> def);
 	}
 
 	public void addTestImpl(Class<?>... clazz) {
@@ -153,12 +181,16 @@ public class SerializerFactory {
 		public int thinbruh2;
 		@Serialize
 		public Component[][] thinbruh;
+
+		@Serialize
+		public int[][] primArr;
 		@Serialize
 		public int thinbruh3;
 
-		public Test(int thinbruh2, Component[][] thinbruh, int thinbruh3) {
+		public Test(int thinbruh2, Component[][] thinbruh, int[][] primArr, int thinbruh3) {
 			this.thinbruh2 = thinbruh2;
 			this.thinbruh = thinbruh;
+			this.primArr = primArr;
 			this.thinbruh3 = thinbruh3;
 		}
 

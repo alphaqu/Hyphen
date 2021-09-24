@@ -121,13 +121,13 @@ public class ScanHandler {
 	}
 
 	public ObjectSerializationDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
-		if (classInfo instanceof ArrayInfo arrayInfo) {
-			return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo.values);
-		}
-
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
+			if (classInfo instanceof ArrayInfo arrayInfo) {
+				return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo.values);
+			}
+
 			if (field != null) {
 				//check if field is legal
 				//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
