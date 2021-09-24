@@ -7,7 +7,7 @@ import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.MethodVisitor;
 
-import static org.objectweb.asm.Opcodes.INVOKESTATIC;
+import static org.objectweb.asm.Opcodes.*;
 
 public class MethodCallDef extends AbstractDef {
 	public final TypeInfo target;
@@ -36,6 +36,16 @@ public class MethodCallDef extends AbstractDef {
 		String internalName = ctx.serializer().getInternalName();
 		ctx.io().run();
 		mv.visitMethodInsn(INVOKESTATIC, internalName, fieldEntry.clazz().getMethodName(false) + "_decode", GenUtil.getMethodDesc(clazz, ctx.mode().ioClass), false);
+	}
+
+	@Override
+	public void writeEncode2(MethodVisitor mv, Context context) {
+		String internalName = context.serializer().getInternalName();
+		mv.visitMethodInsn(INVOKESTATIC, internalName, this.target.getMethodName(false) + "_encode", GenUtil.getVoidMethodDesc(context.mode().ioClass, this.target.clazz), false);
+	}
+
+	@Override
+	public void writeDecode2(MethodVisitor methodVisitor, Context ctx) {
 	}
 
 	@Override

@@ -14,6 +14,10 @@ public interface ObjectSerializationDef {
 
 	void writeDecode(MethodVisitor methodVisitor, TypeInfo parent, FieldEntry fieldEntry, Context ctx);
 
+	void writeEncode2(MethodVisitor methodVisitor, Context ctx);
+
+	void writeDecode2(MethodVisitor methodVisitor, Context ctx);
+
 	default String toFancyString() {
 		return Color.RED + this.toString();
 	}

@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.gen.Context;
 import dev.quantumfusion.hyphen.gen.FieldEntry;
 import dev.quantumfusion.hyphen.gen.IOMode;
@@ -9,6 +8,7 @@ import dev.quantumfusion.hyphen.gen.impl.AbstractDef;
 import dev.quantumfusion.hyphen.gen.impl.IOArrayDef;
 import dev.quantumfusion.hyphen.gen.impl.IOPrimDef;
 import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
@@ -18,6 +18,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
 
@@ -65,29 +66,24 @@ public class SerializerFactory {
 		return sh;
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, URISyntaxException {
 
-		Thigns gouber = Thigns.GOUBER;
-		SerializerFactory debug = SerializerFactory.createDebug(Test.class);
+		SerializerFactory debug = SerializerFactory.createDebug(TestClass.class);
 
 
-		Component[][] thinbruh = new Component[5][];
-		for (int i = 0; i < thinbruh.length; i++) {
-			thinbruh[i] = new Component[]{new Component(23), new Component(32)};
-		}
+		var test = TestClass.create();
 
-		int[][] thinbruh2 = new int[5][];
-		for (int i = 0; i < thinbruh.length; i++) {
-			thinbruh2[i] = new int[]{534, 2341, 3};
-		}
-		Test test = new Test(420, thinbruh, thinbruh2, 69);
 		Class<?> build1 = debug.build();
 		try {
 			ByteBufferIO byteBufferIO = ByteBufferIO.create(10000);
 
-			build1.getDeclaredMethod("Test_encode", Test.class, ByteBufferIO.class).invoke(null, test, byteBufferIO);
+			if(ClassSerializerMetadata.MODE == 0){
+				build1.getDeclaredMethod("TestClass_encode", TestClass.class, ByteBufferIO.class).invoke(null, test, byteBufferIO);
+			} else {
+				build1.getDeclaredMethod("TestClass_encode", ByteBufferIO.class, TestClass.class).invoke(null, byteBufferIO, test);
+			}
 			byteBufferIO.rewind();
-			Test test_decode = (Test) build1.getDeclaredMethod("Test_decode", ByteBufferIO.class).invoke(null, byteBufferIO);
+			TestClass test_decode = (TestClass) build1.getDeclaredMethod("TestClass_decode", ByteBufferIO.class).invoke(null, byteBufferIO);
 
 			if (test.equals(test_decode)) {
 				System.out.println("WE FUCKING DID IT");
@@ -96,7 +92,6 @@ public class SerializerFactory {
 		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public void addSubclasses(Class<?> clazz, Class<?>... subclass) {
@@ -137,6 +132,16 @@ public class SerializerFactory {
 			}
 
 			@Override
+			public void writeEncode2(MethodVisitor methodVisitor, Context ctx) {
+
+			}
+
+			@Override
+			public void writeDecode2(MethodVisitor methodVisitor, Context ctx) {
+
+			}
+
+			@Override
 			public String toString() {
 				return "FakeTestDef" + clazz.getSimpleName();
 			}
@@ -167,68 +172,5 @@ public class SerializerFactory {
 		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.BYTEBUFFER);
 		methods.forEach(serializerClassFactory::createMethod);
 		return serializerClassFactory.compile();
-	}
-
-
-	public enum Thigns {
-		FUCK,
-		S,
-		GOUBER
-	}
-
-	public static class Test {
-		@Serialize
-		public int thinbruh2;
-		@Serialize
-		public Component[][] thinbruh;
-
-		@Serialize
-		public int[][] primArr;
-		@Serialize
-		public int thinbruh3;
-
-		public Test(int thinbruh2, Component[][] thinbruh, int[][] primArr, int thinbruh3) {
-			this.thinbruh2 = thinbruh2;
-			this.thinbruh = thinbruh;
-			this.primArr = primArr;
-			this.thinbruh3 = thinbruh3;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (!(o instanceof Test)) return false;
-			Test test = (Test) o;
-			return thinbruh2 == test.thinbruh2 && thinbruh3 == test.thinbruh3 && Arrays.deepEquals(thinbruh, test.thinbruh);
-		}
-
-		@Override
-		public int hashCode() {
-			int result = Objects.hash(thinbruh2, thinbruh3);
-			result = 31 * result + Arrays.deepHashCode(thinbruh);
-			return result;
-		}
-	}
-
-	public static class Component {
-		@Serialize
-		public int thinbruh;
-
-		public Component(int thinbruh) {
-			this.thinbruh = thinbruh;
-		}
-
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (!(o instanceof Component component)) return false;
-			return thinbruh == component.thinbruh;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(thinbruh);
-		}
 	}
 }

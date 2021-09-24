@@ -1,10 +1,14 @@
 package dev.quantumfusion.hyphen.gen;
 
 import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
+import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.GenUtil;
-import org.objectweb.asm.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.IOException;
@@ -44,16 +48,26 @@ public class SerializerClassFactory {
 	}
 
 	private void writeEncode(TypeInfo typeInfo, SerializerMetadata serializerMetadata) {
-		MethodVisitor mv = createMethodName(typeInfo, "_encode", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(typeInfo.clazz), Type.getType(mode.ioClass)));
+		MethodVisitor mv;
+		if (ClassSerializerMetadata.MODE == 0) {
+			mv = createMethodName(typeInfo, "_encode", GenUtil.getVoidMethodDesc(typeInfo.clazz, mode.ioClass));
+		} else {
+			mv = createMethodName(typeInfo, "_encode", GenUtil.getVoidMethodDesc(mode.ioClass, typeInfo.clazz));
+		}
+
 		VarHandler varHandler = new VarHandler(mv);
-		String data = varHandler.createVar("data", typeInfo.getClazz());
-		String io = varHandler.createVar("io", mode.ioClass);
-		Label start = new Label();
-		mv.visitLabel(start);
-		serializerMetadata.writeEncode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), () -> mv.visitIntInsn(ALOAD, varHandler.getVar(data)), () -> mv.visitIntInsn(ALOAD, varHandler.getVar(io))));
-		Label stop = new Label();
-		mv.visitLabel(stop);
-		varHandler.applyLocals(mv, start, stop);
+		varHandler.pushScope();
+		VarHandler.Var io;
+		VarHandler.Var data;
+		if (ClassSerializerMetadata.MODE == 1) {
+			io = varHandler.createVar("io", mode.ioClass);
+			data = varHandler.createVar("data", typeInfo.getClazz());
+		} else {
+			data = varHandler.createVar("data", typeInfo.getClazz());
+			io = varHandler.createVar("io", mode.ioClass);
+		}
+		serializerMetadata.writeEncode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), () -> mv.visitIntInsn(ALOAD, data.index()), () -> mv.visitIntInsn(ALOAD, io.index())));
+		varHandler.popScope();
 		mv.visitInsn(RETURN);
 		mv.visitMaxs(0, 0);
 		mv.visitEnd();
@@ -62,29 +76,30 @@ public class SerializerClassFactory {
 	private void writeDecode(TypeInfo typeInfo, SerializerMetadata serializerMetadata) {
 		MethodVisitor mv = createMethodName(typeInfo, "_decode", Type.getMethodDescriptor(Type.getType(typeInfo.clazz), Type.getType(mode.ioClass)));
 		VarHandler varHandler = new VarHandler(mv);
-		String io = varHandler.createVar("io", mode.ioClass);
-		Label start = new Label();
-		mv.visitLabel(start);
+		varHandler.pushScope();
 
-		serializerMetadata.writeDecode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), null, () -> mv.visitIntInsn(ALOAD, varHandler.getVar(io))));
+		var io = varHandler.createVar("io", mode.ioClass);
+
+
+		serializerMetadata.writeDecode(mv, typeInfo, new Context(mode, varHandler, Type.getType("L" + "Serializer "), null, () -> mv.visitIntInsn(ALOAD, io.index())));
 
 		mv.visitInsn(ARETURN);
-		Label stop = new Label();
-		mv.visitLabel(stop);
-		varHandler.applyLocals(mv, start, stop);
+		varHandler.popScope();
+
 		mv.visitMaxs(0, 0);
 		mv.visitEnd();
 	}
 
 	private MethodVisitor createMethodName(TypeInfo info, String suffix, String methodDescriptor) {
-		return classWriter.visitMethod(ACC_PUBLIC + ACC_STATIC, info.getMethodName(false) + suffix, methodDescriptor, null, null);
+		return this.classWriter.visitMethod(ACC_PUBLIC + ACC_STATIC, info.getMethodName(false) + suffix, methodDescriptor, null, null);
 	}
 
 	public Class<?> compile() {
 		// the finished serializer
-		byte[] b = compileCode();
+		byte[] b = this.compileCode();
 		try {
-			Files.write(Path.of("C:\\Program Files (x86)\\inkscape\\MinecraftMods\\Hyphen\\thing.class"), b);
+			// FIXME
+			Files.write(Path.of("./Serializer.class"), b);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -93,7 +108,7 @@ public class SerializerClassFactory {
 	}
 
 	public byte[] compileCode() {
-		return classWriter.toByteArray();
+		return this.classWriter.toByteArray();
 	}
 
 	private static class Loader extends ClassLoader {

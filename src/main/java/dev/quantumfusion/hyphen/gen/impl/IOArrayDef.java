@@ -54,4 +54,26 @@ public final class IOArrayDef extends AbstractDef {
 		ctx.mode().callMethod(mv, "getInt", GenUtil.getMethodDesc(int.class));
 		ctx.mode().callMethod(mv, decodeMethod, GenUtil.getMethodDesc(clazz, int.class));
 	}
+
+	@Override
+	public void writeEncode2(MethodVisitor mv, Context ctx) {
+		// io data
+		mv.visitInsn(DUP2);
+		// io data io data
+		mv.visitInsn(ARRAYLENGTH);
+		// io data io length
+		ctx.mode().callMethod(mv, "putInt", GenUtil.getVoidMethodDesc(int.class));
+		// io data
+		ctx.mode().callMethod(mv, this.encodeMethod, GenUtil.getVoidMethodDesc(this.clazz));
+	}
+
+	@Override
+	public void writeDecode2(MethodVisitor mv, Context ctx) {
+		// io
+		mv.visitInsn(DUP);
+		// io io
+		ctx.mode().callMethod(mv, "getInt", GenUtil.getMethodDesc(int.class));
+		// io length
+		ctx.mode().callMethod(mv, this.decodeMethod, GenUtil.getMethodDesc(this.clazz, int.class));
+	}
 }

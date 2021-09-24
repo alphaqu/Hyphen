@@ -16,6 +16,8 @@ import java.util.Set;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassSerializerMetadata extends SerializerMetadata {
+	public static final int MODE = 1;
+
 	public final Map<FieldEntry, ObjectSerializationDef> fields;
 
 	public ClassSerializerMetadata(ClassInfo clazz) {
@@ -25,12 +27,27 @@ public class ClassSerializerMetadata extends SerializerMetadata {
 
 	@Override
 	public void writeEncode(MethodVisitor mv, TypeInfo parent, Context context) {
-		fields.forEach((fieldEntry, objectSerializationDef) -> {
-			objectSerializationDef.writeEncode(mv, parent, fieldEntry, context, () -> {
-				context.data().run();
-				mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), Type.getDescriptor(fieldEntry.clazz().getClazz()));
-			});
+		this.fields.forEach((fieldEntry, objectSerializationDef) -> {
+			if(fieldEntry != null) {
+				if(MODE == 0){
+					objectSerializationDef.writeEncode(mv, parent, fieldEntry, context, () -> {
+						context.data().run();
+						mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), Type.getDescriptor(fieldEntry.clazz().getClazz()));
+					});
+				} else {
+					this.loadField(mv, parent, context, fieldEntry);
+					objectSerializationDef.writeEncode2(mv, context);
+				}
+			}
 		});
+	}
+
+	private void loadField(MethodVisitor mv, TypeInfo parent, Context ctx, FieldEntry fieldEntry) {
+		ctx.var().IntInsnVar("io", ALOAD);
+		ctx.var().IntInsnVar("data", ALOAD);
+		Class<?> clazz = fieldEntry.clazz().getClazz();
+		mv.visitFieldInsn(GETFIELD, Type.getInternalName(parent.getClazz()), fieldEntry.name(), Type.getDescriptor(clazz));
+
 	}
 
 	@Override
