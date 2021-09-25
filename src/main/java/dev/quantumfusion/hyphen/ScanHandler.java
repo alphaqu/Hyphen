@@ -125,7 +125,7 @@ public class ScanHandler {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
 			if (classInfo instanceof ArrayInfo arrayInfo) {
-				return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo.values);
+				return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo);
 			}
 
 			if (field != null) {

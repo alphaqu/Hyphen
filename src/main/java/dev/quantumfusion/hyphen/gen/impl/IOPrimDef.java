@@ -44,4 +44,16 @@ public final class IOPrimDef extends AbstractDef {
 		ctx.io().run();
 		ctx.mode().callMethod(mv, decodeMethod, GenUtil.getMethodDesc(clazz));
 	}
+
+	@Override
+	public void writeEncode2(MethodVisitor mv, Context context) {
+		// io data
+		context.mode().callMethod(mv, this.encodeMethod, GenUtil.getVoidMethodDesc(this.clazz));
+	}
+
+	@Override
+	public void writeDecode2(MethodVisitor mv, Context ctx) {
+		// io
+		ctx.mode().callMethod(mv, this.decodeMethod, GenUtil.getMethodDesc(this.clazz));
+	}
 }

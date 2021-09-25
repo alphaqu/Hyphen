@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
+import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
 import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
 import dev.quantumfusion.hyphen.gen.metadata.SubclassSerializerMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
@@ -96,7 +97,7 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	public SerializerMetadata createMetadata(ScanHandler factory) {
-		var subTypeMap = new LinkedHashMap<Class<?>, TypeInfo>();
+		var subTypeMap = new LinkedHashMap<Class<?>, ObjectSerializationDef>();
 		var methodMetadata = new SubclassSerializerMetadata(this, subTypeMap);
 
 		for (TypeInfo subTypeInfo : this.classInfos) {
@@ -105,8 +106,7 @@ public class SubclassInfo extends TypeInfo {
 				//		 or should this be done earlier
 			}
 
-			factory.createSerializeMetadata(subTypeInfo);
-			subTypeMap.put(subTypeInfo.clazz, subTypeInfo);
+			subTypeMap.put(subTypeInfo.clazz, factory.getDefinition(null, subTypeInfo, null));
 		}
 		return methodMetadata;
 	}

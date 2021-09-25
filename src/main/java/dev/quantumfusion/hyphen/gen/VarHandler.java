@@ -4,62 +4,122 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class VarHandler {
-	private final Map<String, Integer> variables = new HashMap<>();
-	private final Map<String, Type> variableTypes = new HashMap<>();
+	private static final boolean NAME_DEDUP = true;
+
+	public record Var(String name, int index, Type type, String internalName) {
+		public void visitIntInsn(MethodVisitor mv, int opcode) {
+			mv.visitIntInsn(opcode, this.index());
+		}
+	}
+
+	private final Map<String, Integer> nameDedup = NAME_DEDUP ? new HashMap<>() : null;
+
+	private static final Var SCOPE_MARKER = new Var("SCOPE_MARKER", -1, null, "");
+
+	private int currentIndex = 0;
+
+	private final List<Var> vars = new ArrayList<>();
+	private final List<Label> scopeStarts = new ArrayList<>();
+
 	private final MethodVisitor methodVisitor;
 
 	public VarHandler(MethodVisitor methodVisitor) {
 		this.methodVisitor = methodVisitor;
 	}
 
-	public int getVar(String name) {
-		if (!variables.containsKey(name))
-			throw new RuntimeException("Variable " + name + " does not exist\n " + variables);
-
-		return variables.get(name);
+	public Var getVarOrNull(String name) {
+		for (Var var : this.vars) {
+			if (var.name().equals(name)) {
+				return var;
+			}
+		}
+		return null;
 	}
 
-	public Type getVarType(String name) {
-		if (!variables.containsKey(name))
-			throw new RuntimeException("Variable " + name + " does not exist\n " + variables);
+	public Label createScope() {
+		this.vars.add(SCOPE_MARKER);
+		Label start = new Label();
+		this.scopeStarts.add(start);
+		return start;
+	}
 
-		return variableTypes.get(name);
+	public Label pushScope() {
+		Label start = this.createScope();
+		this.methodVisitor.visitLabel(start);
+		return start;
+	}
+
+	public void popScope() {
+		this.popScope(new Label());
+	}
+
+	public void popScope(Label stop) {
+		Label start = this.scopeStarts.remove(this.scopeStarts.size() - 1);
+		this.methodVisitor.visitLabel(stop);
+
+		for (int i = this.vars.size() - 1; i >= 0; i--) {
+			Var var = this.vars.remove(i);
+			if (var.index() == -1) return;
+			this.currentIndex--;
+			this.methodVisitor.visitLocalVariable(var.internalName(), var.type().getDescriptor(), null, start, stop, var.index());
+		}
+	}
+
+	public Var getVar(String name) {
+		Var var = this.getVarOrNull(name);
+		if (var != null)
+			return var;
+		throw new RuntimeException("Variable " + name + " does not exist\n " + this.vars);
+	}
+
+	public void IntInsnVar(Var var, int opcode) {
+		this.methodVisitor.visitIntInsn(opcode, var.index);
 	}
 
 	public void IntInsnVar(String name, int opcode) {
-		methodVisitor.visitIntInsn(opcode, getVar(name));
+		this.IntInsnVar(this.getVar(name), opcode);
 	}
 
-	public String createOrGetVar(String name, Class<?> clazz) {
-		if (variables.containsKey(name))
-			return name;
+	public Var createOrGetVar(String name, Class<?> clazz) {
+		Var var = this.getVarOrNull(name);
+		if (var != null) return var;
 
-		return createVar(name, Type.getType(clazz), 0);
+		return this.createVarInternal(name, Type.getType(clazz));
 	}
 
-
-	public String createVar(String name, Class<?> clazz) {
-		return createVar(name, Type.getType(clazz), 0);
+	private Var createVarInternal(String name, Type type) {
+		Var var;
+		if (NAME_DEDUP) {
+			var = new Var(name, this.currentIndex++, type, name + this.nameDedup.merge(name, 1, Integer::sum));
+		} else {
+			var = new Var(name, this.currentIndex++, type, name);
+		}
+		this.vars.add(var);
+		return var;
 	}
 
-	public String createVar(String rawName, Type type, int number) {
-		String name = rawName + number;
-		if (variableTypes.containsKey(name))
-			return createVar(rawName, type, number + 1);
-
-		variables.put(name, variables.size());
-		variableTypes.put(name, type);
-		return name;
+	public Var createVar(String name, Class<?> clazz) {
+		return this.createVar(name, Type.getType(clazz));
 	}
 
-	public void applyLocals(MethodVisitor mv, Label start, Label stop) {
-		variables.forEach((s, pos) -> {
-			Type type = variableTypes.get(s);
-			mv.visitLocalVariable(s, type.getDescriptor(), null, start, stop, pos);
-		});
+	public boolean existsInScope(String name) {
+		for (int i = this.vars.size() - 1; i >= 0; i--) {
+			Var var = this.vars.get(i);
+			if (var.index == -1) return false;
+			if (var.name.equals(name)) return true;
+		}
+		return false;
+	}
+
+	public Var createVar(String name, Type type) {
+		if (this.existsInScope(name))
+			throw new RuntimeException("Variable " + name + " already exists in scope\n " + this.vars);
+		return this.createVarInternal(name, type);
 	}
 }
