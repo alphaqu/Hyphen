@@ -4,7 +4,6 @@ import org.objectweb.asm.Type;
 
 public class GenUtil {
 
-
 	public static String getMethodDesc(Class<?> returnClazz, Class<?>... param) {
 		if (param.length == 0) return Type.getMethodDescriptor(Type.getType(returnClazz));
 		Type[] params = new Type[param.length];
@@ -17,4 +16,5 @@ public class GenUtil {
 	public static String getVoidMethodDesc(Class<?>... param) {
 		return getMethodDesc(Void.TYPE, param);
 	}
+
 }

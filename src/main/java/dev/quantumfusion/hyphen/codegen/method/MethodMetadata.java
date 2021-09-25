@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
-import dev.quantumfusion.hyphen.gen.Context;
+import dev.quantumfusion.hyphen.codegen.IOHandler;
+import dev.quantumfusion.hyphen.gen.VarHandler;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import org.objectweb.asm.MethodVisitor;
 
@@ -11,7 +12,7 @@ public abstract class MethodMetadata {
 		this.info = info;
 	}
 
-	public abstract void writePut(MethodVisitor mv, Context ctx);
+	public abstract void writePut(MethodVisitor mv, IOHandler io, VarHandler var);
 
-	public abstract void writeGet(MethodVisitor mv, Context ctx);
+	public abstract void writeGet(MethodVisitor mv, IOHandler io, VarHandler var);
 }
