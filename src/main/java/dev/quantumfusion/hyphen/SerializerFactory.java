@@ -1,30 +1,20 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.gen.Context;
-import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.IOMode;
-import dev.quantumfusion.hyphen.gen.SerializerClassFactory;
-import dev.quantumfusion.hyphen.gen.impl.AbstractDef;
-import dev.quantumfusion.hyphen.gen.impl.IOArrayDef;
-import dev.quantumfusion.hyphen.gen.impl.IOPrimDef;
-import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
-import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.CodegenHandler;
+import dev.quantumfusion.hyphen.codegen.IOHandler;
+import dev.quantumfusion.hyphen.codegen.def.IODef;
+import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.io.UnsafeIO;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
-import org.objectweb.asm.MethodVisitor;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
 
 public class SerializerFactory {
-	private final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations = new HashMap<>();
-	private final Map<TypeInfo, SerializerMetadata> methods = new LinkedHashMap<>();
+	private final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations = new HashMap<>();
+	private final Map<TypeInfo, MethodMetadata> methods = new LinkedHashMap<>();
 	private final Map<Object, List<Class<?>>> subclasses = new HashMap<>();
 	private final boolean debug;
 	private final Class<?> clazz;
@@ -44,58 +34,9 @@ public class SerializerFactory {
 
 	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
 		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
-		sh.addImpl(IOPrimDef.create(boolean.class));
-		sh.addImpl(IOPrimDef.create(byte.class));
-		sh.addImpl(IOPrimDef.create(char.class));
-		sh.addImpl(IOPrimDef.create(short.class));
-		sh.addImpl(IOPrimDef.create(int.class));
-		sh.addImpl(IOPrimDef.create(long.class));
-		sh.addImpl(IOPrimDef.create(float.class));
-		sh.addImpl(IOPrimDef.create(double.class));
-		sh.addImpl(IOPrimDef.create(String.class));
-
-		sh.addImpl(IOArrayDef.create(boolean[].class));
-		sh.addImpl(IOArrayDef.create(byte[].class));
-		sh.addImpl(IOArrayDef.create(char[].class));
-		sh.addImpl(IOArrayDef.create(short[].class));
-		sh.addImpl(IOArrayDef.create(int[].class));
-		sh.addImpl(IOArrayDef.create(long[].class));
-		sh.addImpl(IOArrayDef.create(float[].class));
-		sh.addImpl(IOArrayDef.create(double[].class));
-		sh.addImpl(IOArrayDef.create(String[].class));
+		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
+		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
 		return sh;
-	}
-
-	public static void main(String[] args) throws IOException, URISyntaxException {
-
-		SerializerFactory debug = SerializerFactory.createDebug(TestClass.class);
-
-
-		var test = TestClass.create();
-
-		Class<?> build1 = debug.build();
-
-		var byteBufferIO = UnsafeIO.create(10000);
-		try {
-			for (int i = 0; i < 1; i++) {
-				byteBufferIO.rewind();
-				test.thinbruh2 = i;
-
-				if (ClassSerializerMetadata.MODE == 0) {
-					build1.getDeclaredMethod("TestClass_encode", TestClass.class, UnsafeIO.class).invoke(null, test, byteBufferIO);
-				} else {
-					build1.getDeclaredMethod("TestClass_encode", UnsafeIO.class, TestClass.class).invoke(null, byteBufferIO, test);
-				}
-				byteBufferIO.rewind();
-				TestClass test_decode = (TestClass) build1.getDeclaredMethod("TestClass_decode", UnsafeIO.class).invoke(null, byteBufferIO);
-
-				if (test.equals(test_decode) /*&& Math.random() == 2*/) {
-					System.out.println("WE FUCKING DID IT");
-				}
-			}
-		} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void addSubclasses(Class<?> clazz, Class<?>... subclass) {
@@ -106,63 +47,20 @@ public class SerializerFactory {
 		subclasses.computeIfAbsent(key, c -> new ArrayList<>()).addAll(Arrays.asList(subclass));
 	}
 
-	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends ObjectSerializationDef> creator) {
+	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends SerializerDef> creator) {
 		this.implementations.put(clazz, creator);
 	}
 
-	public void addImpl(ObjectSerializationDef def) {
-		this.implementations.put(def.getType(), (f) -> def);
+	public void addImpl(SerializerDef... defs) {
+		for (SerializerDef def : defs)
+			this.implementations.put(def.getType(), (f) -> def);
 	}
 
-	public void addTestImpl(Class<?>... clazz) {
-		for (Class<?> aClass : clazz) {
-			this.addTestImpl(aClass);
+	public void addImpl(Function<Class<?>, SerializerDef> creator, Class<?>... classes) {
+		for (Class<?> aClass : classes) {
+			final SerializerDef def = creator.apply(aClass);
+			this.implementations.put(def.getType(), (f) -> def);
 		}
-	}
-
-	public void addTestImpl(Class<?> clazz) {
-		this.addImpl(clazz, (field) -> new AbstractDef() {
-			@Override
-			public Class<?> getType() {
-				return clazz;
-			}
-
-			@Override
-			public void writeEncode(MethodVisitor methodVisitor, TypeInfo parent, FieldEntry fieldEntry, Context context, Runnable alloc) {
-			}
-
-			@Override
-			public void writeDecode(MethodVisitor methodVisitor, TypeInfo parent, FieldEntry fieldEntry, Context ctx) {
-			}
-
-			@Override
-			public void writeEncode2(MethodVisitor methodVisitor, Context ctx) {
-
-			}
-
-			@Override
-			public void writeDecode2(MethodVisitor methodVisitor, Context ctx) {
-
-			}
-
-			@Override
-			public String toString() {
-				return "FakeTestDef" + clazz.getSimpleName();
-			}
-		});
-	}
-
-	private byte[] buildCode() {
-		if (clazz.getTypeParameters().length > 0) {
-			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
-		}
-		ScanHandler scanner = new ScanHandler(methods, implementations, subclasses, debug);
-		scanner.scan(clazz);
-
-
-		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.BYTEBUFFER);
-		methods.forEach(serializerClassFactory::createMethod);
-		return serializerClassFactory.compileCode();
 	}
 
 	public Class<?> build() {
@@ -173,8 +71,10 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-		SerializerClassFactory serializerClassFactory = new SerializerClassFactory(implementations, IOMode.UNSAFE);
-		methods.forEach(serializerClassFactory::createMethod);
-		return serializerClassFactory.compile();
+		CodegenHandler handler = new CodegenHandler(IOHandler.UNSAFE, "UWUSerializer");
+		handler.createConstructor();
+		methods.forEach(handler::createEncode);
+		methods.forEach(handler::createDecode);
+		return handler.export();
 	}
 }

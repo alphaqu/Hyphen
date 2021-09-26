@@ -1,10 +1,9 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.impl.ArrayDef;
-import dev.quantumfusion.hyphen.gen.impl.MethodCallDef;
-import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.FieldEntry;
+import dev.quantumfusion.hyphen.codegen.def.MethodCallDef;
+import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.*;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
@@ -22,13 +21,13 @@ import java.util.function.Function;
 
 public class ScanHandler {
 	public static final TypeInfo UNKNOWN_INFO = WildcardInfo.UNKNOWN;
-	public final Map<TypeInfo, SerializerMetadata> methods;
-	public final Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations;
+	public final Map<TypeInfo, MethodMetadata> methods;
+	public final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations;
 	public final Map<Object, List<Class<?>>> subclasses;
 	@Nullable
 	private final DebugHandler debugHandler;
 
-	protected ScanHandler(Map<TypeInfo, SerializerMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends ObjectSerializationDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
+	protected ScanHandler(Map<TypeInfo, MethodMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
 		this.implementations = implementations;
 		this.subclasses = subclasses;
 		this.debugHandler = debug ? new DebugHandler(this) : null;
@@ -102,32 +101,28 @@ public class ScanHandler {
 		}
 	}
 
-	private SerializerMetadata createSerializeMetadataInternal(TypeInfo typeInfo) {
+	private MethodMetadata createSerializeMetadataInternal(TypeInfo typeInfo) {
 		return typeInfo.createMetadata(this);
 	}
 
-	public SerializerMetadata createSerializeMetadata(TypeInfo typeInfo) {
+	public MethodMetadata createSerializeMetadata(TypeInfo typeInfo) {
 		if (this.methods.containsKey(typeInfo)) {
 			return this.methods.get(typeInfo);
 		}
 
-		SerializerMetadata serializerMetadata = this.createSerializeMetadataInternal(typeInfo);
+		MethodMetadata serializerMetadata = this.createSerializeMetadataInternal(typeInfo);
 		this.methods.put(typeInfo, serializerMetadata);
 		return serializerMetadata;
 	}
 
-	public ObjectSerializationDef getDefinition(FieldEntry field, ClassInfo source) {
+	public SerializerDef getDefinition(FieldEntry field, ClassInfo source) {
 		return getDefinition(field, field.clazz(), source);
 	}
 
-	public ObjectSerializationDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
+	public SerializerDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {
 			return implementations.get(classInfo.clazz).apply(classInfo);
 		} else {
-			if (classInfo instanceof ArrayInfo arrayInfo) {
-				return new ArrayDef(getDefinition(null, arrayInfo.values, source), arrayInfo);
-			}
-
 			if (field != null) {
 				//check if field is legal
 				//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way

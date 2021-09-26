@@ -1,11 +1,12 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.gen.Context;
-import org.objectweb.asm.MethodVisitor;
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
 public abstract class SerializerDef {
 
-	public abstract void writePut(MethodVisitor mv, Context ctx);
+	public abstract Class<?> getType();
 
-	public abstract void writeGet(MethodVisitor mv, Context ctx);
+	public abstract void writePut(MethodHandler mh);
+
+	public abstract void writeGet(MethodHandler mh);
 }

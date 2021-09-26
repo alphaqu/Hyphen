@@ -3,7 +3,7 @@ package dev.quantumfusion.hyphen.util;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
 import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.gen.FieldEntry;
+import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.ParameterizedInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;

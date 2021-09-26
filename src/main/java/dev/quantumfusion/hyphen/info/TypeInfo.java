@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +26,7 @@ public abstract class TypeInfo {
 		this.annotations = annotations;
 	}
 
-	public abstract SerializerMetadata createMetadata(ScanHandler factory);
+	public abstract MethodMetadata createMetadata(ScanHandler factory);
 
 	public abstract String toFancyString();
 

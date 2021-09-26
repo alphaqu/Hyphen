@@ -4,9 +4,8 @@ import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClass;
 import dev.quantumfusion.hyphen.annotation.SerComplexSubClasses;
 import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.gen.impl.ObjectSerializationDef;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
-import dev.quantumfusion.hyphen.gen.metadata.SubclassSerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
+import dev.quantumfusion.hyphen.codegen.method.SubclassMethod;
 import dev.quantumfusion.hyphen.thr.ThrowEntry;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
@@ -21,8 +20,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class SubclassInfo extends TypeInfo {
-	private final TypeInfo field;
 	public final List<? extends TypeInfo> classInfos;
+	private final TypeInfo field;
 
 	public SubclassInfo(Class<?> clazz, Type type, AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, TypeInfo field, List<? extends TypeInfo> classInfos) {
 		super(clazz, type, annotatedType, annotations);
@@ -96,19 +95,8 @@ public class SubclassInfo extends TypeInfo {
 		return new SubclassInfo(superClass, genericType, annotatedType, options, handler.create(source, superClass, genericType, null), out);
 	}
 
-	public SerializerMetadata createMetadata(ScanHandler factory) {
-		var subTypeMap = new LinkedHashMap<Class<?>, ObjectSerializationDef>();
-		var methodMetadata = new SubclassSerializerMetadata(this, subTypeMap);
-
-		for (TypeInfo subTypeInfo : this.classInfos) {
-			if (subTypeMap.containsKey(subTypeInfo.clazz)) {
-				// TODO: throw error, cause there is a duplicated class
-				//		 or should this be done earlier
-			}
-
-			subTypeMap.put(subTypeInfo.clazz, factory.getDefinition(null, subTypeInfo, null));
-		}
-		return methodMetadata;
+	public MethodMetadata createMetadata(ScanHandler handler) {
+		return SubclassMethod.create(this, handler);
 	}
 
 	@Override

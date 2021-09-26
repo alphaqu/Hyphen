@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.gen;
+package dev.quantumfusion.hyphen.codegen;
 
 import dev.quantumfusion.hyphen.info.TypeInfo;
 

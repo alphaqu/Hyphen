@@ -1,13 +1,11 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.metadata.ClassSerializerMetadata;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.FieldEntry;
+import dev.quantumfusion.hyphen.codegen.method.ClassMethod;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
-import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -20,7 +18,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class ClassInfo extends TypeInfo implements Type {
-	private SerializerMetadata metadata;
+	private MethodMetadata metadata;
 
 	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, type, annotatedType, annotations);
@@ -75,33 +73,9 @@ public class ClassInfo extends TypeInfo implements Type {
 	}
 
 	@Override
-	public SerializerMetadata createMetadata(ScanHandler factory) {
+	public MethodMetadata createMetadata(ScanHandler handler) {
 		if (this.metadata != null) return this.metadata;
-
-		var methods = factory.methods;
-		var implementations = factory.implementations;
-
-		var methodMetadata = new ClassSerializerMetadata(this);
-		methods.put(this, methodMetadata);
-
-		if (implementations.containsKey(this.clazz)) {
-			methodMetadata.fields.put(null, implementations.get(this.clazz).apply(this));
-			return methodMetadata;
-		}
-
-		//get the fields
-		var allFields = this.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
-		//check if it exists / if its accessible
-		ScanUtils.checkConstructor(factory, this);
-		for (FieldEntry fieldInfo : allFields) {
-			try {
-				methodMetadata.fields.put(fieldInfo, factory.getDefinition(fieldInfo, this));
-			} catch (HyphenException hyphenException) {
-				throw hyphenException.addParent(this, fieldInfo.name());
-			}
-		}
-
-		return this.metadata = methodMetadata;
+		return this.metadata = ClassMethod.create(this, handler);
 	}
 
 	@Override

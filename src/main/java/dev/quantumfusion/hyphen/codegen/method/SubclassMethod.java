@@ -1,10 +1,10 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
-import dev.quantumfusion.hyphen.codegen.IOHandler;
+import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
-import dev.quantumfusion.hyphen.gen.VarHandler;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
-import org.objectweb.asm.MethodVisitor;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,17 +16,31 @@ public class SubclassMethod extends MethodMetadata {
 		super(info);
 	}
 
+	public static SubclassMethod create(SubclassInfo info, ScanHandler handler) {
+		var methodMetadata = new SubclassMethod(info);
+		final Map<Class<?>, SerializerDef> subtypes = methodMetadata.subtypes;
+		for (TypeInfo subTypeInfo : info.classInfos) {
+			if (subtypes.containsKey(subTypeInfo.clazz)) {
+				// TODO: throw error, cause there is a duplicated class
+				//		 or should this be done earlier
+			}
+
+			subtypes.put(subTypeInfo.clazz, handler.getDefinition(null, subTypeInfo, null));
+		}
+		return methodMetadata;
+	}
+
 	public void addSubclass(Class<?> clazz, SerializerDef def) {
 		subtypes.put(clazz, def);
 	}
 
 	@Override
-	public void writePut(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writePut(MethodHandler mh) {
 
 	}
 
 	@Override
-	public void writeGet(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writeGet(MethodHandler mh) {
 
 	}
 }

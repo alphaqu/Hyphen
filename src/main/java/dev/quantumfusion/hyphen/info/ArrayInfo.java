@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.gen.metadata.ArraySerializerMetadata;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.method.ArrayMethod;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.util.ArrayType;
@@ -61,8 +61,8 @@ public class ArrayInfo extends TypeInfo {
 
 
 	@Override
-	public SerializerMetadata createMetadata(ScanHandler factory) {
-		return new ArraySerializerMetadata(this, factory.createSerializeMetadata(this.values));
+	public MethodMetadata createMetadata(ScanHandler factory) {
+		return ArrayMethod.create(this, factory);
 	}
 
 	@Override

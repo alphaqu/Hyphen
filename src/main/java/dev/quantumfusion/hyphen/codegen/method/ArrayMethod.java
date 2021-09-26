@@ -1,26 +1,30 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
-import dev.quantumfusion.hyphen.codegen.IOHandler;
-import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
-import dev.quantumfusion.hyphen.gen.VarHandler;
+import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
-import org.objectweb.asm.MethodVisitor;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 
 public class ArrayMethod extends MethodMetadata {
-	private final SerializerDef component;
+	private final TypeInfo values;
 
-	public ArrayMethod(ArrayInfo info, SerializerDef component) {
+	private ArrayMethod(ArrayInfo info) {
 		super(info);
-		this.component = component;
+		this.values = info.values;
+	}
+
+	public static ArrayMethod create(ArrayInfo info, ScanHandler scanHandler) {
+		scanHandler.createSerializeMetadata(info.values);
+		return new ArrayMethod(info);
 	}
 
 	@Override
-	public void writePut(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writePut(MethodHandler mh) {
 
 	}
 
 	@Override
-	public void writeGet(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writeGet(MethodHandler mh) {
 
 	}
 }

@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.UnknownTypeException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
@@ -58,7 +58,7 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	@Override
-	public SerializerMetadata createMetadata(ScanHandler factory) {
+	public MethodMetadata createMetadata(ScanHandler factory) {
 		return factory.createSerializeMetadata(this.actual);
 	}
 

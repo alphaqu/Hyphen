@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.gen.metadata.SerializerMetadata;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.util.Color;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +16,17 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 public class WildcardInfo extends TypeInfo {
+	public static WildcardInfo UNKNOWN = new WildcardInfo(null, null, null, Map.of(), true, List.of(new ClassInfo(Object.class, Map.of()))) {
+		@Override
+		public String toString() {
+			return "UNKNOWN";
+		}
+
+		@Override
+		public String toFancyString() {
+			return Color.BLUE + "?";
+		}
+	};
 	private final boolean upperBound;
 	private final List<? extends TypeInfo> bounds;
 
@@ -23,29 +34,6 @@ public class WildcardInfo extends TypeInfo {
 		super(clazz, type, annotatedType, annotations);
 		this.upperBound = upperBound;
 		this.bounds = bounds;
-	}
-
-	@Override
-	public SerializerMetadata createMetadata(ScanHandler factory) {
-		return null;
-	}
-
-	@Override
-	public String toFancyString() {
-		StringJoiner sj = new StringJoiner(" & ", this.upperBound ? "? extends " : "? super ", "");
-		for (TypeInfo bound : this.bounds) {
-			sj.add(bound.toFancyString());
-		}
-		return sj.toString();
-	}
-
-	@Override
-	public String getMethodName(boolean absolute) {
-		StringJoiner sj = new StringJoiner(" & ", this.upperBound ? "? extends " : "? super ", "");
-		for (TypeInfo bound : this.bounds) {
-			sj.add(bound.getMethodName(absolute));
-		}
-		return sj.toString();
 	}
 
 	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, WildcardType wildcardType, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
@@ -78,7 +66,6 @@ public class WildcardInfo extends TypeInfo {
 		return createWildcardInfo(handler, source, clazz, wildcardType, annotatedType, annotations, upperBounds, annotatedUpperBounds, true);
 	}
 
-
 	private static WildcardInfo createWildcardInfo(ScanHandler handler, TypeInfo source, Class<?> clazz, WildcardType wildcardType, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations, Type[] bounds, AnnotatedType[] annotatedBounds, boolean upper) {
 		assert bounds.length == annotatedBounds.length;
 
@@ -95,15 +82,26 @@ public class WildcardInfo extends TypeInfo {
 		return new WildcardInfo(clazz, wildcardType, annotatedType, annotations, upper, boundInfos);
 	}
 
-	public static WildcardInfo UNKNOWN = new WildcardInfo(null, null, null, Map.of(), true, List.of(new ClassInfo(Object.class, Map.of()))) {
-		@Override
-		public String toString() {
-			return "UNKNOWN";
-		}
+	@Override
+	public MethodMetadata createMetadata(ScanHandler factory) {
+		return null;
+	}
 
-		@Override
-		public String toFancyString() {
-			return Color.BLUE + "?";
+	@Override
+	public String toFancyString() {
+		StringJoiner sj = new StringJoiner(" & ", this.upperBound ? "? extends " : "? super ", "");
+		for (TypeInfo bound : this.bounds) {
+			sj.add(bound.toFancyString());
 		}
-	};
+		return sj.toString();
+	}
+
+	@Override
+	public String getMethodName(boolean absolute) {
+		StringJoiner sj = new StringJoiner(" & ", this.upperBound ? "? extends " : "? super ", "");
+		for (TypeInfo bound : this.bounds) {
+			sj.add(bound.getMethodName(absolute));
+		}
+		return sj.toString();
+	}
 }

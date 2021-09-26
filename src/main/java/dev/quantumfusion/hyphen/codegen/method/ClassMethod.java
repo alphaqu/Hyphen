@@ -1,20 +1,52 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
-import dev.quantumfusion.hyphen.codegen.IOHandler;
+import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.codegen.FieldEntry;
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
-import dev.quantumfusion.hyphen.gen.FieldEntry;
-import dev.quantumfusion.hyphen.gen.VarHandler;
 import dev.quantumfusion.hyphen.info.ClassInfo;
-import org.objectweb.asm.MethodVisitor;
+import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ClassMethod extends MethodMetadata {
-	private final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
+	private final Map<FieldEntry, SerializerDef> fields;
 
-	public ClassMethod(ClassInfo info) {
+
+	private ClassMethod(TypeInfo info, Map<FieldEntry, SerializerDef> fields) {
 		super(info);
+		this.fields = fields;
+	}
+
+	public static ClassMethod create(ClassInfo info, ScanHandler handler) {
+		var methods = handler.methods;
+		var implementations = handler.implementations;
+
+		var methodMetadata = new ClassMethod(info, new LinkedHashMap<>());
+		methods.put(info, methodMetadata);
+
+		if (implementations.containsKey(info.clazz)) {
+			methodMetadata.fields.put(null, implementations.get(info.clazz).apply(info));
+			return methodMetadata;
+		}
+
+		//get the fields
+		var allFields = info.getAllFields(handler, field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		//check if it exists / if its accessible
+		ScanUtils.checkConstructor(handler, info);
+		for (FieldEntry fieldInfo : allFields) {
+			try {
+				methodMetadata.fields.put(fieldInfo, handler.getDefinition(fieldInfo, info));
+			} catch (HyphenException hyphenException) {
+				throw hyphenException.addParent(info, fieldInfo.name());
+			}
+		}
+
+		return methodMetadata;
 	}
 
 	public void addField(FieldEntry entry, SerializerDef def) {
@@ -23,12 +55,12 @@ public class ClassMethod extends MethodMetadata {
 
 
 	@Override
-	public void writePut(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writePut(MethodHandler mh) {
 
 	}
 
 	@Override
-	public void writeGet(MethodVisitor mv, IOHandler io, VarHandler var) {
+	public void writeGet(MethodHandler mh) {
 
 	}
 
