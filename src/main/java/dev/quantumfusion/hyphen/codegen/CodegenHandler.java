@@ -38,7 +38,7 @@ public class CodegenHandler {
 		try (MethodHandler mh = MethodHandler.createVoid(this.cw, this.io, ACC_PUBLIC, "<init>")) {
 			mh.visitIntInsn(ALOAD, 0);
 			mh.callSpecialMethod(Object.class, "<init>", Void.TYPE);
-			mh.visitInsn(RETURN);
+			mh.returnOp();
 		}
 	}
 
@@ -53,7 +53,7 @@ public class CodegenHandler {
 			mh.callInstanceMethod(Integer.class, "intValue", int.class);
 			// io int
 			mh.callIOPut(int.class);
-			mh.visitInsn(RETURN);
+			mh.returnOp();
 		}
 	}
 
@@ -67,7 +67,7 @@ public class CodegenHandler {
 			// int
 			mh.callStaticMethod(Integer.class, "valueOf", Integer.class, int.class);
 			// Integer
-			mh.visitInsn(ARETURN);
+			mh.returnOp();
 		}
 	}
 

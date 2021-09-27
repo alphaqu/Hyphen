@@ -16,23 +16,24 @@ import static org.objectweb.asm.Opcodes.*;
 @SuppressWarnings("WeakerAccess")
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private final IOHandler io;
+	private final Class<?> returnClazz;
 
 	// ================================== CREATE ==================================
-	public MethodHandler(MethodVisitor mv, IOHandler io) {
+	public MethodHandler(MethodVisitor mv, IOHandler io, Class<?> returnClazz) {
 		super(Opcodes.ASM9, mv);
 		this.io = io;
-
+		this.returnClazz = returnClazz;
 		this.pushScope();
 	}
 
 	public static MethodHandler createVoid(ClassWriter cw, IOHandler io, int tag, String name, Class<?>... param) {
 		final MethodVisitor mv = cw.visitMethod(tag, name, getVoidMethodDesc(param), null, null);
-		return new MethodHandler(mv, io);
+		return new MethodHandler(mv, io, Void.TYPE);
 	}
 
 	public static MethodHandler create(ClassWriter cw, IOHandler io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
 		final MethodVisitor mv = cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
-		return new MethodHandler(mv, io);
+		return new MethodHandler(mv, io, returnClazz);
 	}
 
 	// ================================== CLAZZY ====================================
@@ -66,6 +67,15 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public void createMultiArray(Class<?> descriptor, int numDimensions) {
 		super.visitMultiANewArrayInsn(Type.getDescriptor(descriptor), numDimensions);
+	}
+
+	// =================================== UTIL ===================================
+	public void returnOp() {
+		this.visitInsn(Type.getType(returnClazz).getOpcode(IRETURN));
+	}
+
+	public void cast(Class<?> clazz) {
+		this.visitTypeInsn(CHECKCAST, Type.getInternalName(clazz));
 	}
 
 	// ==================================== IO ====================================
@@ -122,19 +132,23 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		}
 
 		public void load() {
-			this.visitIntInsn(this.type.getOpcode(ILOAD));
+			this.inst(ILOAD);
 		}
 
 		public void store() {
-			this.visitIntInsn(this.type.getOpcode(ISTORE));
+			this.inst(ISTORE);
 		}
 
 		public void loadFromArray() {
-			this.visitIntInsn(this.type.getOpcode(IALOAD));
+			this.inst(IALOAD);
 		}
 
 		public void storeToArray() {
-			this.visitIntInsn(this.type.getOpcode(IASTORE));
+			this.inst(IASTORE);
+		}
+
+		public void inst(int op) {
+			this.visitIntInsn(this.type.getOpcode(op));
 		}
 	}
 
