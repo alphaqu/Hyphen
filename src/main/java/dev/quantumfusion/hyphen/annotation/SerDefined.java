@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE})
-@HyphenOptionAnnotation
+@HyphenAnnotation
 public @interface SerDefined {
 	String name();
 

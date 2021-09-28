@@ -1,11 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.annotation.HyphenOptionAnnotation;
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotation.HyphenAnnotation;
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.ParameterizedInfo;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,11 +63,17 @@ public class ScanUtils {
 		else return null;
 	}
 
-	public static Map<Class<? extends Annotation>, Annotation> parseAnnotations(@Nullable AnnotatedType type) {
+	public static Map<Class<? extends Annotation>, Annotation> getAnnotations(TypeInfo source, @Nullable AnnotatedType type) {
+		var options = parseAnnotations(type == null ? null : type.getDeclaredAnnotations());
+		options.putAll(source.classAnnotations);
+		return options;
+	}
+
+	public static Map<Class<? extends Annotation>, Annotation> parseAnnotations(Annotation @Nullable [] annotations) {
 		var options = new HashMap<Class<? extends Annotation>, Annotation>();
-		if (type != null) {
-			for (Annotation declaredAnnotation : type.getDeclaredAnnotations()) {
-				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenOptionAnnotation.class) != null) {
+		if (annotations != null) {
+			for (Annotation declaredAnnotation : annotations) {
+				if (declaredAnnotation.annotationType().getDeclaredAnnotation(HyphenAnnotation.class) != null) {
 					options.put(declaredAnnotation.annotationType(), declaredAnnotation);
 				}
 			}
@@ -80,7 +86,7 @@ public class ScanUtils {
 		if (source instanceof ParameterizedInfo classInfo) {
 			parent = classInfo.copyWithoutTypeKnowledge();
 		}
-		List<FieldEntry> allFields = parent.getAllFields(factory, field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		List<FieldEntry> allFields = parent.getAllFields(factory);
 		Class<?>[] classes = new Class[allFields.size()];
 		for (int i = 0; i < allFields.size(); i++) {
 			classes[i] = allFields.get(i).clazz().getClazz();

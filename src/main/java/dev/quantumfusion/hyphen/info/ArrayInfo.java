@@ -28,7 +28,7 @@ public class ArrayInfo extends TypeInfo {
 	}
 
 	public static ArrayInfo createType(ScanHandler handler, TypeInfo source, ArrayType arrayType, AnnotatedType annotatedType) {
-		var annotations = ScanUtils.parseAnnotations(annotatedType);
+		var annotations = ScanUtils.getAnnotations(source, annotatedType);
 		Class<?> type = arrayType.getType();
 		TypeInfo values;
 		if (annotatedType != null) {
@@ -56,7 +56,7 @@ public class ArrayInfo extends TypeInfo {
 					of("Source Class", source.clazz.getName()),
 					of("Error Class", clazz.getName()));
 
-		return new ArrayInfo(clazz, arrayType, annotatedType, ScanUtils.parseAnnotations(annotatedType), values);
+		return new ArrayInfo(clazz, arrayType, annotatedType, ScanUtils.getAnnotations(source, annotatedType), values);
 	}
 
 

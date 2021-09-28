@@ -27,7 +27,7 @@ public class TypeClassInfo extends TypeInfo {
 	}
 
 	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> clazz, TypeVariable<?> typeVariable, AnnotatedType annotatedType) {
-		var annotations = ScanUtils.parseAnnotations(annotatedType);
+		var annotations = ScanUtils.getAnnotations(source, annotatedType);
 		if (source instanceof ParameterizedInfo info) {
 			var typeName = typeVariable.getName();
 			var classInfo = info.types.get(typeName);

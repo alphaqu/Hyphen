@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
@@ -35,7 +34,7 @@ public class ClassMethod extends MethodMetadata {
 		}
 
 		//get the fields
-		var allFields = info.getAllFields(handler, field -> field.getDeclaredAnnotation(Serialize.class) != null);
+		var allFields = info.getAllFields(handler);
 		//check if it exists / if its accessible
 		ScanUtils.checkConstructor(handler, info);
 		for (FieldEntry fieldInfo : allFields) {

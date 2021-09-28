@@ -70,7 +70,7 @@ public class ScanHandler {
 		if (genericType instanceof GenericArrayType type)
 			return ArrayInfo.createGenericType(this, source, clazz, type, annotatedType);
 
-		Map<Class<? extends Annotation>, Annotation> annotations = ScanUtils.parseAnnotations(annotatedType);
+		Map<Class<? extends Annotation>, Annotation> annotations = ScanUtils.getAnnotations(source, annotatedType);
 		// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
 		if (SubclassInfo.check(annotations))
 			return SubclassInfo.create(this, source, clazz, rawType, annotatedType, annotations);

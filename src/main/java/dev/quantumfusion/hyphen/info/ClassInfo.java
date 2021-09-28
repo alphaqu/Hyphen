@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.method.ClassMethod;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
@@ -15,7 +16,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class ClassInfo extends TypeInfo implements Type {
 	private MethodMetadata metadata;
@@ -33,21 +33,21 @@ public class ClassInfo extends TypeInfo implements Type {
 		return new ClassInfo(type, type, annotatedType, annotations);
 	}
 
-	private List<FieldEntry> getFields(ScanHandler factory, Predicate<? super Field> filter) {
+	private List<FieldEntry> getFields(ScanHandler factory) {
 		List<FieldEntry> info = new ArrayList<>();
-		for (Field declaredField : this.clazz.getDeclaredFields()) {
-			if (filter.test(declaredField)) {
+		for (Field field : this.clazz.getDeclaredFields()) {
+			if (classAnnotations.get(Serialize.class) != null || field.getDeclaredAnnotation(Serialize.class) != null) {
 				try {
-					Type genericType = declaredField.getGenericType();
+					Type genericType = field.getGenericType();
 
-					TypeInfo classInfo = factory.create(this, declaredField.getType(), genericType, declaredField.getAnnotatedType());
+					TypeInfo classInfo = factory.create(this, field.getType(), genericType, field.getAnnotatedType());
 
 					if (classInfo == ScanHandler.UNKNOWN_INFO)
-						throw ThrowHandler.typeFail("Type could not be identified", this, declaredField);
+						throw ThrowHandler.typeFail("Type could not be identified", this, field);
 
-					info.add(new FieldEntry(classInfo, declaredField.getModifiers(), declaredField.getName()));
+					info.add(new FieldEntry(classInfo, field.getModifiers(), field.getName()));
 				} catch (HyphenException hyphenException) {
-					throw hyphenException.addParent(this, declaredField.getName());
+					throw hyphenException.addParent(this, field.getName());
 				}
 			}
 		}
@@ -55,20 +55,20 @@ public class ClassInfo extends TypeInfo implements Type {
 		return info;
 	}
 
-	public List<FieldEntry> getAllFields(ScanHandler factory, Predicate<? super Field> filter) {
+	public List<FieldEntry> getAllFields(ScanHandler factory) {
 		List<FieldEntry> out = new ArrayList<>();
 		Class<?> superclass = this.clazz.getSuperclass();
 		if (superclass != null) {
 			try {
 				TypeInfo typeInfo = factory.create(this, superclass, this.clazz.getGenericSuperclass(), this.clazz.getAnnotatedSuperclass());
 				if (typeInfo instanceof ClassInfo classInfo) {
-					out.addAll(classInfo.getAllFields(factory, filter));
+					out.addAll(classInfo.getAllFields(factory));
 				}
 			} catch (HyphenException hyphenException) {
 				throw hyphenException.addParent(this, "superclass");
 			}
 		}
-		out.addAll(this.getFields(factory, filter));
+		out.addAll(this.getFields(factory));
 		return out;
 	}
 
