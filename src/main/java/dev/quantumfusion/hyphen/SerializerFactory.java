@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.IOHandler;
 import dev.quantumfusion.hyphen.codegen.def.IODef;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
+import dev.quantumfusion.hyphen.codegen.def.StaleDef;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
@@ -36,6 +37,7 @@ public class SerializerFactory {
 		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
 		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
 		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
+		sh.addImpl(List.class, new StaleDef());
 		return sh;
 	}
 
@@ -49,6 +51,10 @@ public class SerializerFactory {
 
 	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends SerializerDef> creator) {
 		this.implementations.put(clazz, creator);
+	}
+
+	public void addImpl(Class<?> clazz, SerializerDef def) {
+		this.implementations.put(clazz, (ti) -> def);
 	}
 
 	public void addImpl(SerializerDef... defs) {

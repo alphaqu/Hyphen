@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 
 public class ScanUtils {
 
+	@Nullable
 	public static Class<?>[] pathTo(Class<?> clazz, Predicate<? super Class<?>> matcher, Function<Class<?>, Class<?>[]> splitter, int depth) {
 		if (matcher.test(clazz))
 			return new Class[depth];

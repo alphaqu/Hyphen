@@ -149,40 +149,6 @@ public class TypeUtil {
 		}
 	}
 
-	enum UnificationType {
-		EXACT {
-			@Override
-			boolean canAssign(Class<?> a, Class<?> b) {
-				return a == b;
-			}
-		}, EXTENDS {
-			@Override
-			boolean canAssign(Class<?> a, Class<?> b) {
-				return b.isAssignableFrom(a);
-			}
-		}, SUPER {
-			@Override
-			boolean canAssign(Class<?> a, Class<?> b) {
-				return a.isAssignableFrom(b);
-			}
-		};
-
-		abstract boolean canAssign(Class<?> a, Class<?> b);
-
-		public boolean canAssign2(TypeInfo typeInfo, Class<?> clazz) {
-			// TODO: consider making this a method on typeinfo instead?
-			if (typeInfo instanceof WildcardInfo wildcardInfo) {
-				// TODO: fix
-				return true;
-			} else if (typeInfo instanceof SubclassInfo subclassInfo) {
-				for (TypeInfo subInfo : subclassInfo.classInfos) if (this.canAssign2(subInfo, clazz)) return true;
-				return false;
-			} else {
-				return this.canAssign(typeInfo.clazz, clazz);
-			}
-		}
-	}
-
 	public static LinkedHashMap<String, TypeInfo> findTypes(
 			ScanHandler factory,
 			TypeInfo source,
@@ -243,4 +209,53 @@ public class TypeUtil {
 			return out;
 		}
 	}
+
+	public static Class<?>[] getInheritedClasses(Class<?> clazz) {
+		Class<?> superclass = clazz.getSuperclass();
+		Class<?>[] interfaces = clazz.getInterfaces();
+
+		if (superclass == null) {
+			return interfaces;
+		} else {
+			Class<?>[] out = new Class<?>[interfaces.length + 1];
+			out[0] = superclass;
+			System.arraycopy(interfaces, 0, out, 1, interfaces.length);
+			return out;
+		}
+	}
+
+	enum UnificationType {
+		EXACT {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return a == b;
+			}
+		}, EXTENDS {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return b.isAssignableFrom(a);
+			}
+		}, SUPER {
+			@Override
+			boolean canAssign(Class<?> a, Class<?> b) {
+				return a.isAssignableFrom(b);
+			}
+		};
+
+		abstract boolean canAssign(Class<?> a, Class<?> b);
+
+		public boolean canAssign2(TypeInfo typeInfo, Class<?> clazz) {
+			// TODO: consider making this a method on typeinfo instead?
+			if (typeInfo instanceof WildcardInfo wildcardInfo) {
+				// TODO: fix
+				return true;
+			} else if (typeInfo instanceof SubclassInfo subclassInfo) {
+				for (TypeInfo subInfo : subclassInfo.classInfos) if (this.canAssign2(subInfo, clazz)) return true;
+				return false;
+			} else {
+				return this.canAssign(typeInfo.clazz, clazz);
+			}
+		}
+	}
+
 }

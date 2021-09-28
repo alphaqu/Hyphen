@@ -120,17 +120,19 @@ public class ScanHandler {
 	}
 
 	public SerializerDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
-		if (!(classInfo instanceof SubclassInfo) && implementations.containsKey(classInfo.clazz)) {
-			return implementations.get(classInfo.clazz).apply(classInfo);
-		} else {
-			if (field != null) {
-				//check if field is legal
-				//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
-				ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
+		if (!(classInfo instanceof SubclassInfo)) {
+			final Class<?>[] classes = ScanUtils.pathTo(classInfo.clazz, implementations::containsKey, TypeUtil::getInheritedClasses, 0);
+			if (classes != null) {
+				return implementations.get(classes[classes.length - 1]).apply(classInfo);
 			}
-
-			this.createSerializeMetadata(classInfo);
-			return new MethodCallDef(classInfo);
 		}
+		if (field != null) {
+			//check if field is legal
+			//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way
+			ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
+		}
+
+		this.createSerializeMetadata(classInfo);
+		return new MethodCallDef(classInfo);
 	}
 }
