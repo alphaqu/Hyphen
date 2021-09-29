@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.TestUtil;
-import dev.quantumfusion.hyphen.scan.simple.SubDefTest;
+import dev.quantumfusion.hyphen.scan.poly.Arrays;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
@@ -15,7 +15,7 @@ public class ScanTestFactory {
 
 	@TestFactory
 	Iterator<DynamicNode> bareTest() {
-		return Collections.singletonList(TestUtil.test(SubDefTest.class)).iterator();
+		return Collections.singletonList(TestUtil.test(Arrays.class)).iterator();
 	}
 
 	@Nested

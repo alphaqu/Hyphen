@@ -122,7 +122,7 @@ public class ScanHandler {
 	public SerializerDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (!(classInfo instanceof SubclassInfo)) {
 			final Class<?>[] classes = ScanUtils.pathTo(classInfo.clazz, implementations::containsKey, TypeUtil::getInheritedClasses, 0);
-			if (classes != null) {
+			if (classes != null && classes.length > 0) {
 				return implementations.get(classes[classes.length - 1]).apply(classInfo);
 			}
 		}

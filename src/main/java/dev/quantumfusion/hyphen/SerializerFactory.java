@@ -10,6 +10,10 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
@@ -113,6 +117,8 @@ public class SerializerFactory {
 			this.implementations.put(def.getType(), (f) -> def);
 		}
 	}
+	private static final boolean EXPORT = true;
+	private static final String uwuSerializer = "UWUSerializer";
 
 	/**
 	 * Builds the Serializer Class
@@ -127,11 +133,19 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-		CodegenHandler handler = new CodegenHandler(ioMode, "UWUSerializer");
+
+		CodegenHandler handler = new CodegenHandler(ioMode, uwuSerializer);
 		handler.createConstructor();
 		methods.forEach(handler::createEncode);
 		methods.forEach(handler::createDecode);
 		final Class<?> export = handler.export();
+		if(EXPORT){
+			try {
+				Files.write(Path.of("./" + uwuSerializer + ".class"), handler.byteArray());
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
 		return null;
 	}
 
@@ -142,4 +156,6 @@ public class SerializerFactory {
 		sh.addImpl(new StaleDef(List.class));
 		return sh;
 	}
+
+
 }

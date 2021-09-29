@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.info;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.util.ScanUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +34,7 @@ public abstract class TypeInfo {
 
 	public abstract String toFancyString();
 
+	@Contract(pure = true)
 	public abstract String getMethodName(boolean absolute);
 
 	@Override

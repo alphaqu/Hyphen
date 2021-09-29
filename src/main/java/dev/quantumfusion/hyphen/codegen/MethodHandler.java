@@ -2,7 +2,10 @@ package dev.quantumfusion.hyphen.codegen;
 
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.*;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,24 +19,26 @@ import static org.objectweb.asm.Opcodes.*;
 @SuppressWarnings("WeakerAccess")
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private final IOHandler io;
-	private final Class<?> returnClazz;
+	public final Class<?> returnClazz;
+	private final CodegenHandler codegenHandler;
 
 	// ================================== CREATE ==================================
-	public MethodHandler(MethodVisitor mv, IOHandler io, Class<?> returnClazz) {
+	public MethodHandler(MethodVisitor mv, IOHandler io, Class<?> returnClazz, CodegenHandler codegenHandler) {
 		super(Opcodes.ASM9, mv);
 		this.io = io;
 		this.returnClazz = returnClazz;
+		this.codegenHandler = codegenHandler;
 		this.pushScope();
 	}
 
-	public static MethodHandler createVoid(ClassWriter cw, IOHandler io, int tag, String name, Class<?>... param) {
-		final MethodVisitor mv = cw.visitMethod(tag, name, getVoidMethodDesc(param), null, null);
-		return new MethodHandler(mv, io, Void.TYPE);
+	public static MethodHandler createVoid(CodegenHandler codegenHandler, IOHandler io, int tag, String name, Class<?>... param) {
+		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getVoidMethodDesc(param), null, null);
+		return new MethodHandler(mv, io, Void.TYPE, codegenHandler);
 	}
 
-	public static MethodHandler create(ClassWriter cw, IOHandler io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
-		final MethodVisitor mv = cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
-		return new MethodHandler(mv, io, returnClazz);
+	public static MethodHandler create(CodegenHandler codegenHandler, IOHandler io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
+		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
+		return new MethodHandler(mv, io, returnClazz, codegenHandler);
 	}
 
 	// ================================== CLAZZY ====================================
@@ -63,6 +68,10 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public void callInterfaceMethod(Class<?> owner, String name, @Nullable Class<?> returnClass, Class<?>... parameters) {
 		this.callMethod(INVOKEINTERFACE, owner, name, true, returnClass, parameters);
+	}
+
+	public void callInternalStaticMethod(String name, @Nullable Class<?> returnClass, Class<?>... parameters) {
+		this.visitMethodInsn(INVOKESTATIC, this.codegenHandler.name, name, GenUtil.getMethodDesc(returnClass, parameters), false);
 	}
 
 	public void createMultiArray(Class<?> descriptor, int numDimensions) {
@@ -127,10 +136,6 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			this.internalName = internalName;
 		}
 
-		private void visitIntInsn(int opcode) {
-			MethodHandler.this.visitIntInsn(opcode, this.index);
-		}
-
 		public void load() {
 			this.inst(ILOAD);
 		}
@@ -148,7 +153,11 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		}
 
 		public void inst(int op) {
-			this.visitIntInsn(this.type.getOpcode(op));
+			MethodHandler.this.visitIntInsn(this.type.getOpcode(op), this.index);
+		}
+
+		public void iinc(int value) {
+			MethodHandler.this.visitIincInsn(this.index, value);
 		}
 	}
 
