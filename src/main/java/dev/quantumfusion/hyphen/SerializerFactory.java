@@ -25,43 +25,88 @@ public class SerializerFactory {
 		this.clazz = clazz;
 	}
 
+	/**
+	 * Creates a {@code SerializerFactory} for creating the serializer class.
+	 * This factory holds the implementations and logic for creating the classes.
+	 *
+	 * <blockquote>
+	 * {@code SerializerFactory.create(class).build()}
+	 * </blockquote>
+	 * <p>
+	 * Where {@code class} is the class you are going to be serializing.
+	 *
+	 * <p> If you want to add a custom implementation you can do
+	 *
+	 * <blockquote>
+	 * {@code SerializerFactory factory = SerializerFactory.create(Integer.class);}
+	 * <p> {@code factory.addImpl(new CustomImpl());}</p>
+	 * <p> {@code factory.build();}</p>
+	 * </blockquote>
+	 * </p>
+	 *
+	 * @param clazz The DataClass.
+	 * @return the Factory in charge of creating the serializer.
+	 */
 	public static SerializerFactory create(Class<?> clazz) {
 		return createInternal(false, clazz);
 	}
 
+	/**
+	 * Create the {@code SerializerFactory} with debug features.
+	 *
+	 * @param clazz The DataClass.
+	 * @return The {@code SerializerFactory}.
+	 */
 	public static SerializerFactory createDebug(Class<?> clazz) {
 		return createInternal(true, clazz);
 	}
 
-	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
-		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
-		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
-		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
-		sh.addImpl(List.class, new StaleDef());
-		return sh;
+	/**
+	 * Adds all the subclasses.
+	 *
+	 * @param clazz      The Super Class
+	 * @param subclasses The Subclasses
+	 */
+	public void addSubclasses(Class<?> clazz, Class<?>... subclasses) {
+		this.subclasses.computeIfAbsent(clazz, c -> new ArrayList<>()).addAll(Arrays.asList(subclasses));
 	}
 
-	public void addSubclasses(Class<?> clazz, Class<?>... subclass) {
-		subclasses.computeIfAbsent(clazz, c -> new ArrayList<>()).addAll(Arrays.asList(subclass));
+	/**
+	 * Adds all the subclasses to the key.
+	 *
+	 * @param key        The Annotation Key
+	 * @param subclasses The Subclasses
+	 */
+	public void addSubclassKeys(String key, Class<?>... subclasses) {
+		this.subclasses.computeIfAbsent(key, c -> new ArrayList<>()).addAll(Arrays.asList(subclasses));
 	}
 
-	public void addSubclassKeys(String key, Class<?>... subclass) {
-		subclasses.computeIfAbsent(key, c -> new ArrayList<>()).addAll(Arrays.asList(subclass));
-	}
-
-	public void addImpl(Class<?> clazz, Function<? super TypeInfo, ? extends SerializerDef> creator) {
+	/**
+	 * Adds an {@link SerializerDef} that requires to be created on field scan. (to pull annotations and such)
+	 *
+	 * @param creator The Creator
+	 * @param clazz   The Class
+	 */
+	public void addTypeImpl(Function<? super TypeInfo, ? extends SerializerDef> creator, Class<?> clazz) {
 		this.implementations.put(clazz, creator);
 	}
 
-	public void addImpl(Class<?> clazz, SerializerDef def) {
-		this.implementations.put(clazz, (ti) -> def);
-	}
-
+	/**
+	 * Adds multiple static {@link SerializerDef}
+	 *
+	 * @param defs The Definitions.
+	 */
 	public void addImpl(SerializerDef... defs) {
 		for (SerializerDef def : defs)
 			this.implementations.put(def.getType(), (f) -> def);
 	}
 
+	/**
+	 * Adds Multiple static {@link SerializerDef}
+	 *
+	 * @param creator The Classes Iterator that creates the {@link SerializerDef}
+	 * @param classes The Classes
+	 */
 	public void addImpl(Function<Class<?>, SerializerDef> creator, Class<?>... classes) {
 		for (Class<?> aClass : classes) {
 			final SerializerDef def = creator.apply(aClass);
@@ -69,7 +114,12 @@ public class SerializerFactory {
 		}
 	}
 
-	public Class<?> build() {
+	/**
+	 * Builds the Serializer Class
+	 *
+	 * @return The Serializer Class.
+	 */
+	public <IO> HyphenSerializer<?, IO> build(IOHandler ioMode) {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
@@ -77,10 +127,19 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-		CodegenHandler handler = new CodegenHandler(IOHandler.UNSAFE, "UWUSerializer");
+		CodegenHandler handler = new CodegenHandler(ioMode, "UWUSerializer");
 		handler.createConstructor();
 		methods.forEach(handler::createEncode);
 		methods.forEach(handler::createDecode);
-		return handler.export();
+		final Class<?> export = handler.export();
+		return null;
+	}
+
+	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
+		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
+		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
+		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
+		sh.addImpl(new StaleDef(List.class));
+		return sh;
 	}
 }
