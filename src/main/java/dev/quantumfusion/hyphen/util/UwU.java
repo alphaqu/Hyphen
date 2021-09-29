@@ -1,9 +1,8 @@
 package dev.quantumfusion.hyphen.util;
 
-public class UwU {
-
-    public static final synchronized strictfp void uwu() {
+@SuppressWarnings("ALL")
+public final strictfp class UwU {
+    private static final synchronized strictfp boolean uwu() {
         throw new RuntimeException("UwU");
     }
-
 }
