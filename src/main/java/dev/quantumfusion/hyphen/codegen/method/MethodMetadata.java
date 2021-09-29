@@ -10,7 +10,7 @@ public abstract class MethodMetadata {
 		this.info = info;
 	}
 
-	public abstract void writePut(MethodHandler mh);
+	public abstract void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data);
 
-	public abstract void writeGet(MethodHandler mh);
+	public abstract void writeGet(MethodHandler mh, MethodHandler.Var io);
 }

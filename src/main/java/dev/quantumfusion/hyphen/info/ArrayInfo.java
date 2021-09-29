@@ -72,7 +72,7 @@ public class ArrayInfo extends TypeInfo {
 
 	@Override
 	public String getMethodName(boolean absolute) {
-		return values.getMethodName(absolute);
+		return values.getMethodName(absolute) + "{}";
 	}
 
 	@Override

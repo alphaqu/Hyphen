@@ -9,6 +9,8 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+
 public class SubclassMethod extends MethodMetadata {
 	private final Map<Class<?>, SerializerDef> subtypes = new LinkedHashMap<>();
 
@@ -35,12 +37,14 @@ public class SubclassMethod extends MethodMetadata {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh) {
+	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
 
+		mh.returnOp();
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
-
+	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
+		mh.visitInsn(ACONST_NULL);
+		mh.returnOp();
 	}
 }

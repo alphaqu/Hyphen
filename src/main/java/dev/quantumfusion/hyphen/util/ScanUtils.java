@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotation.HyphenAnnotation;
+import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.ParameterizedInfo;
@@ -67,6 +68,19 @@ public class ScanUtils {
 	public static Map<Class<? extends Annotation>, Annotation> getAnnotations(TypeInfo source, @Nullable AnnotatedType type) {
 		var options = parseAnnotations(type == null ? null : type.getDeclaredAnnotations());
 		options.putAll(source.classAnnotations);
+
+		// find @Serialize on packages
+		String packageName = source.clazz.getPackageName();
+		int i = packageName.length();
+		do {
+			Package p = ClassLoader
+					.getSystemClassLoader()
+					.getDefinedPackage(packageName.substring(0, i));
+			if (p != null && p.isAnnotationPresent(Serialize.class)) {
+				options.put(Serialize.class, p.getAnnotation(Serialize.class));
+				break;
+			}
+		} while ((i = packageName.lastIndexOf('.', i - 1)) >= 0);
 		return options;
 	}
 

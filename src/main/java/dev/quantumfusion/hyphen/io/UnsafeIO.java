@@ -305,4 +305,80 @@ public final class UnsafeIO implements IOInterface {
 	public final void close() {
 		UNSAFE.freeMemory(address);
 	}
+
+
+	public static void main(String[] args) throws NoSuchFieldException {
+		Test test = new Test(69, 420, 69420);
+		Test[] tests = {test};
+		W w = new W(test);
+		WW w2 = new WW(w);
+		UnsafeIO unsafeIO = UnsafeIO.create(64);
+		long testAddress = UNSAFE.getLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")));
+		long testAddress2 = UNSAFE.getLong(tests, LONG_OFFSET);
+
+		System.out.println(testAddress);
+		System.out.println(testAddress2);
+		System.out.println(unsafeIO.currentAddress);
+
+		System.out.println(Long.toHexString(testAddress));
+		System.out.println(Long.toHexString(testAddress2));
+		System.out.println(Long.toHexString(unsafeIO.currentAddress));
+
+		long wAddress = UNSAFE.getLong(w2, UNSAFE.objectFieldOffset(WW.class.getDeclaredField("test")));
+		UNSAFE.putLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")), wAddress);
+
+
+		/*
+		UNSAFE.copyMemory(
+				testAddress2 + UNSAFE.objectFieldOffset(Test.class.getDeclaredField("t0")),
+				unsafeIO.currentAddress,
+				16);*/
+		//System.out.println(Arrays.toString(unsafeIO.getByteArray(64)));
+		System.out.println(w.success());
+		w.debug();
+	}
+
+	static private class WW{
+		W test;
+
+		public WW(W test) {
+			this.test = test;
+		}
+
+		@Override
+		public String toString() {
+			return "WW{" +
+					"test=" + test +
+					'}';
+		}
+	}
+
+	static private class W{
+		final Test test;
+
+		public W(Test test) {
+			this.test = test;
+		}
+
+		public boolean success(){
+			return (Object)this.test == this;
+		}
+
+		public void debug() {
+			System.out.println(this);
+			System.out.println(this.test);
+		}
+	}
+
+	static private class Test{
+		int t0;
+		int t1;
+		int t2;
+
+		public Test(int t0, int t1, int t2) {
+			this.t0 = t0;
+			this.t1 = t1;
+			this.t2 = t2;
+		}
+	}
 }

@@ -10,6 +10,10 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
@@ -69,6 +73,9 @@ public class SerializerFactory {
 		}
 	}
 
+	private static final boolean EXPORT = true;
+	private static final String uwuSerializer = "UWUSerializer";
+
 	public Class<?> build() {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
@@ -77,10 +84,21 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-		CodegenHandler handler = new CodegenHandler(IOHandler.UNSAFE, "UWUSerializer");
+
+		CodegenHandler handler = new CodegenHandler(IOHandler.UNSAFE, uwuSerializer);
 		handler.createConstructor();
 		methods.forEach(handler::createEncode);
 		methods.forEach(handler::createDecode);
+
+		if(EXPORT){
+			try {
+				Files.write(Path.of("./" + uwuSerializer + ".class"), handler.byteArray());
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
 		return handler.export();
 	}
+
+
 }
