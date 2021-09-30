@@ -1,12 +1,14 @@
 package dev.quantumfusion.hyphen.codegen;
 
-import dev.quantumfusion.hyphen.io.ArrayIO;
-import dev.quantumfusion.hyphen.util.GenUtil;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.io.ArrayIO;
+import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -115,7 +117,63 @@ public class CodegenHandler {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
+	private static final boolean CRY = false;
+
+	private void createCry(int count) {
+		try (MethodHandler mh = MethodHandler.create(this, this.io, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "cry", int.class, int.class)) {
+			var input = mh.createVar("input", int.class);
+
+
+			Label LSwitch = new Label();
+			Label LA = new Label();
+			Label LDef = new Label();
+
+
+			Label[] labels = new Label[count];
+			for (int i = 0; i < count; i++) {
+				labels[i] = new Label();
+			}
+
+
+			input.load();
+			mh.visitJumpInsn(IFGE, LSwitch);
+			input.load();
+			mh.visitInsn(INEG);
+			mh.callInternalStaticMethod("cry", int.class, int.class);
+			mh.visitJumpInsn(IFGE, LA);
+			input.load();
+			mh.visitInsn(INEG);
+			mh.visitLdcInsn(20);
+			mh.visitInsn(IADD);
+			mh.callInternalStaticMethod("cry", int.class, int.class);
+			mh.visitInsn(POP);
+
+			mh.visitJumpInsn(GOTO, CRY ? labels[count - 1] : LSwitch);
+
+			mh.visitLabel(LA);
+			input.load();
+			mh.callStaticMethod(Integer.class, "valueOf", Integer.class, int.class);
+			mh.visitInsn(POP);
+
+			mh.visitLabel(LSwitch);
+			input.load();
+			mh.visitTableSwitchInsn(0, count - 1, LDef, labels);
+
+			for (int i = count - 1; i >= 0; i--) {
+				mh.visitLabel(labels[i]);
+				mh.visitFieldInsn(GETSTATIC, Type.getInternalName(System.class), "out", Type.getDescriptor(System.out.getClass()));
+				mh.visitLdcInsn("" + i);
+				mh.callInstanceMethod(PrintStream.class, "println", null, String.class);
+			}
+
+			mh.visitLabel(LDef);
+			mh.visitLdcInsn(69_420);
+			mh.returnOp();
+		}
+	}
+
+
+	public static void otherMain(String[] args) throws Exception {
 		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "UwU");
 
 		uwu.createConstructor();
@@ -144,6 +202,17 @@ public class CodegenHandler {
 		System.out.println(arrayIO.getInt());
 	}
 
+
+	public static void main(String[] args) throws Exception {
+		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "CRY");
+
+		uwu.createCry(100);
+
+		byte[] bytes = uwu.cw.toByteArray();
+
+		Files.write(Path.of("./cry.class"), bytes);
+	}
+
 	public byte[] byteArray() {
 		return this.cw.toByteArray();
 	}
@@ -159,7 +228,7 @@ public class CodegenHandler {
 	}
 
 	@FunctionalInterface
-	public interface UWUWU{
+	public interface UWUWU {
 		void uwu(ArrayIO io, Integer i);
 	}
 

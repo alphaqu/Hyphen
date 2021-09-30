@@ -50,11 +50,12 @@ public class ParameterizedInfo extends ClassInfo {
 	@Override
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("<");
+		builder.append(super.getMethodName(absolute));
+		builder.append("{");
 		for (TypeInfo value : types.values()) {
 			builder.append(value.getMethodName(absolute));
 		}
-		builder.append(">");
+		builder.append("}");
 		return builder.toString();
 	}
 

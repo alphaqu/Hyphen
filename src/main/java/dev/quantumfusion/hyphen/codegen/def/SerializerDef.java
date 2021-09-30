@@ -6,7 +6,7 @@ public abstract class SerializerDef {
 
 	public abstract Class<?> getType();
 
-	public abstract void writePut(MethodHandler mh);
+	public abstract void doPut(MethodHandler mh);
 
-	public abstract void writeGet(MethodHandler mh);
+	public abstract void doGet(MethodHandler mh);
 }
