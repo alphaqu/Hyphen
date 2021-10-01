@@ -37,6 +37,16 @@ public abstract class TypeInfo {
 	@Contract(pure = true)
 	public abstract String getMethodName(boolean absolute);
 
+	@Nullable
+	@Contract(pure = true)
+	public Annotation getAnnotation(Class<? extends Annotation> annotation) {
+		if (annotations.containsKey(annotation)) {
+			return annotations.get(annotation);
+		} else {
+			return classAnnotations.get(annotation);
+		}
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		return this == o

@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.codegen.Constants;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
@@ -64,7 +65,7 @@ public class ArrayMethod extends MethodMetadata {
 		mh.visitInsn(AALOAD);
 		// io | data | io | data[i]
 		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod("encode_" + this.values.getMethodName(false), null, UnsafeIO.class, this.values.clazz);
+		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, UnsafeIO.class, this.values.clazz);
 		// io | data
 		i.iinc(1); // i++
 		mh.visitJumpInsn(GOTO, start);
@@ -116,7 +117,7 @@ public class ArrayMethod extends MethodMetadata {
 		io.load();
 		// array | array | i | io
 		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod("decode_" + this.values.getMethodName(false), this.values.clazz, UnsafeIO.class);
+		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.clazz, UnsafeIO.class);
 		// array | array | i | component
 		mh.visitInsn(AASTORE);
 		// array

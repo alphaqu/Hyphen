@@ -112,12 +112,10 @@ public final class UnsafeIO implements IOInterface {
 		UNSAFE.putByte(null, currentAddress++ + BYTE_OFFSET, value);
 	}
 
-
 	public final void putChar(final char value) {
 		UNSAFE.putChar(null, currentAddress + CHAR_OFFSET, value);
 		currentAddress += 2;
 	}
-
 
 	public final void putShort(final short value) {
 		UNSAFE.putShort(null, currentAddress + SHORT_OFFSET, value);
@@ -129,18 +127,15 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += 4;
 	}
 
-
 	public final void putLong(final long value) {
 		UNSAFE.putLong(null, currentAddress + LONG_OFFSET, value);
 		currentAddress += 8;
 	}
 
-
 	public final void putFloat(final float value) {
 		UNSAFE.putFloat(null, currentAddress + FLOAT_OFFSET, value);
 		currentAddress += 4;
 	}
-
 
 	public final void putDouble(final double value) {
 		UNSAFE.putDouble(null, currentAddress + DOUBLE_OFFSET, value);
@@ -155,7 +150,6 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += length + 4;
 	}
 
-
 	public final boolean[] getBooleanArray(final int bytes) {
 		final boolean[] array = new boolean[bytes];
 		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
@@ -163,14 +157,12 @@ public final class UnsafeIO implements IOInterface {
 		return array;
 	}
 
-
 	public final byte[] getByteArray(final int bytes) {
 		final byte[] array = new byte[bytes];
 		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BYTE_OFFSET, bytes);
 		currentAddress += bytes;
 		return array;
 	}
-
 
 	public final char[] getCharArray(final int length) {
 		final char[] array = new char[length];
@@ -180,7 +172,6 @@ public final class UnsafeIO implements IOInterface {
 		return array;
 	}
 
-
 	public final short[] getShortArray(final int length) {
 		final short[] array = new short[length];
 		final int bytes = length * 2;
@@ -188,7 +179,6 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 		return array;
 	}
-
 
 	public final int[] getIntArray(final int length) {
 		final int[] array = new int[length];
@@ -198,7 +188,6 @@ public final class UnsafeIO implements IOInterface {
 		return array;
 	}
 
-
 	public final long[] getLongArray(final int length) {
 		final long[] array = new long[length];
 		final int bytes = length * 8;
@@ -207,7 +196,6 @@ public final class UnsafeIO implements IOInterface {
 		return array;
 	}
 
-
 	public final float[] getFloatArray(final int length) {
 		final float[] array = new float[length];
 		final int bytes = length * 4;
@@ -215,7 +203,6 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 		return array;
 	}
-
 
 	public final double[] getDoubleArray(final int length) {
 		final double[] array = new double[length];
@@ -232,13 +219,11 @@ public final class UnsafeIO implements IOInterface {
 		return out;
 	}
 
-
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
 		UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 		currentAddress += bytes;
 	}
-
 
 	public final void putByteArray(final byte[] value) {
 		final int bytes = value.length;
@@ -246,13 +231,11 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 	}
 
-
 	public final void putCharArray(final char[] value) {
 		final int bytes = value.length * 2;
 		UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 		currentAddress += bytes;
 	}
-
 
 	public final void putShortArray(final short[] value) {
 		final int bytes = value.length * 2;
@@ -260,13 +243,11 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 	}
 
-
 	public final void putIntArray(final int[] value) {
 		final int bytes = value.length * 4;
 		UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 		currentAddress += bytes;
 	}
-
 
 	public final void putLongArray(final long[] value) {
 		final int bytes = value.length * 8;
@@ -274,13 +255,11 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 	}
 
-
 	public final void putFloatArray(final float[] value) {
 		final int bytes = value.length * 4;
 		UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 		currentAddress += bytes;
 	}
-
 
 	public final void putDoubleArray(final double[] value) {
 		final int bytes = value.length * 8;
@@ -296,49 +275,15 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress = address;
 	}
 
-
 	public final int pos() {
 		return (int) ((int) currentAddress - address);
 	}
-
 
 	public final void close() {
 		UNSAFE.freeMemory(address);
 	}
 
-
-	public static void main(String[] args) throws NoSuchFieldException {
-		Test test = new Test(69, 420, 69420);
-		Test[] tests = {test};
-		W w = new W(test);
-		WW w2 = new WW(w);
-		UnsafeIO unsafeIO = UnsafeIO.create(64);
-		long testAddress = UNSAFE.getLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")));
-		long testAddress2 = UNSAFE.getLong(tests, LONG_OFFSET);
-
-		System.out.println(testAddress);
-		System.out.println(testAddress2);
-		System.out.println(unsafeIO.currentAddress);
-
-		System.out.println(Long.toHexString(testAddress));
-		System.out.println(Long.toHexString(testAddress2));
-		System.out.println(Long.toHexString(unsafeIO.currentAddress));
-
-		long wAddress = UNSAFE.getLong(w2, UNSAFE.objectFieldOffset(WW.class.getDeclaredField("test")));
-		UNSAFE.putLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")), wAddress);
-
-
-		/*
-		UNSAFE.copyMemory(
-				testAddress2 + UNSAFE.objectFieldOffset(Test.class.getDeclaredField("t0")),
-				unsafeIO.currentAddress,
-				16);*/
-		//System.out.println(Arrays.toString(unsafeIO.getByteArray(64)));
-		System.out.println(w.success());
-		w.debug();
-	}
-
-	static private class WW{
+	static private class WW {
 		W test;
 
 		public WW(W test) {
@@ -353,15 +298,15 @@ public final class UnsafeIO implements IOInterface {
 		}
 	}
 
-	static private class W{
+	static private class W {
 		final Test test;
 
 		public W(Test test) {
 			this.test = test;
 		}
 
-		public boolean success(){
-			return (Object)this.test == this;
+		public boolean success() {
+			return (Object) this.test == this;
 		}
 
 		public void debug() {
@@ -370,7 +315,7 @@ public final class UnsafeIO implements IOInterface {
 		}
 	}
 
-	static private class Test{
+	static private class Test {
 		int t0;
 		int t1;
 		int t2;

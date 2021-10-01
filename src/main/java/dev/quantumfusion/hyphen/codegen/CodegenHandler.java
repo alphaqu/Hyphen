@@ -1,12 +1,15 @@
 package dev.quantumfusion.hyphen.codegen;
 
-import dev.quantumfusion.hyphen.io.ArrayIO;
-import dev.quantumfusion.hyphen.util.GenUtil;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.io.ArrayIO;
+import dev.quantumfusion.hyphen.util.GenUtil;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.util.CheckClassAdapter;
 
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -37,7 +40,7 @@ public class CodegenHandler {
 				this,
 				this.io,
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
-				"encode_" + info.getMethodName(false),
+				Constants.PUT_FUNC + info.getMethodName(false),
 				this.io.ioClass,
 				info.clazz)) {
 
@@ -53,7 +56,7 @@ public class CodegenHandler {
 				this,
 				this.io,
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
-				"decode_" + info.getMethodName(false),
+				Constants.GET_FUNC + info.getMethodName(false),
 				info.clazz,
 				this.io.ioClass)) {
 			var io = mh.createVar("io", this.io.ioClass);
@@ -115,18 +118,31 @@ public class CodegenHandler {
 		}
 	}
 
+	private void createIntCombine() {
+		try (MethodHandler mh = MethodHandler.create(this, this.io, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "combine", Void.TYPE, ArrayIO.class)) {
+			var io = mh.createVar("io", this.io.ioClass);
+
+
+			io.load();
+			mh.visitLdcInsn(69);
+			mh.visitLdcInsn(420);
+			mh.callIOPut(long.class);
+			mh.returnOp();
+		}
+	}
+
 	public static void main(String[] args) throws Exception {
 		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "UwU");
 
 		uwu.createConstructor();
-		uwu.createEncode(null, null);
-		uwu.createDecode(null, null);
-		uwu.createTest();
-		uwu.createTest2();
+
+		uwu.createIntCombine();
 
 		byte[] bytes = uwu.cw.toByteArray();
 
-		Files.write(Path.of("./uwu.class"), bytes);
+		Files.write(Path.of("./UwU.class"), bytes);
+		PrintWriter pw = new PrintWriter(System.out);
+		CheckClassAdapter.verify(new ClassReader(bytes), null, true, pw);
 
 		Loader loader = new Loader(Thread.currentThread().getContextClassLoader());
 		Class<?> clazz = loader.define("UwU", bytes);
