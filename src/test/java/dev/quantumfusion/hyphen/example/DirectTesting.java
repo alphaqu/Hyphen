@@ -1,8 +1,6 @@
 package dev.quantumfusion.hyphen.example;
 
-import dev.quantumfusion.hyphen.io.ArrayIO;
 import dev.quantumfusion.hyphen.io.IOInterface;
-import dev.quantumfusion.hyphen.io.UnsafeIO;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -65,14 +63,14 @@ public final class DirectTesting {
 		//shh
 		System.out.println(Math.round(size / 1_000_0f) / 100f + "MB");
 
-
+		/*
 		test(40, dataArray, ArrayIO.create(size));
 		System.out.println();
 		test(40, dataArray, UnsafeIO.create(size));
 		System.out.println();
 		test(40, dataArray, ArrayIO.create(size));
 		System.out.println();
-		test(40, dataArray, UnsafeIO.create(size));
+		test(40, dataArray, UnsafeIO.create(size));*/
 	}
 
 	public static void test(int times, DataArray dataArray, IOInterface io) {

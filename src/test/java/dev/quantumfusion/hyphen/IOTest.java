@@ -1,9 +1,6 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.io.ArrayIO;
-import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.io.IOInterface;
-import dev.quantumfusion.hyphen.io.UnsafeIO;
 import org.junit.jupiter.api.*;
 
 import java.nio.charset.StandardCharsets;
@@ -278,7 +275,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = UnsafeIO.create(2000);
+			/*ioInterface = UnsafeIO.create(2000);*/
 			ioInterface.putLong(6980000);
 		}
 	}
@@ -295,7 +292,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.create(2000);
+			/*ioInterface = ByteBufferIO.create(2000);*/
 			ioInterface.putLong(6980000);
 		}
 	}
@@ -312,7 +309,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ByteBufferIO.createDirect(2000);
+			/*ioInterface = ByteBufferIO.createDirect(2000);*/
 			ioInterface.putLong(6980000);
 		}
 	}
@@ -329,7 +326,7 @@ public class IOTest {
 
 		@BeforeAll
 		public void init() {
-			ioInterface = ArrayIO.create(2000);
+			/*ioInterface = ArrayIO.create(2000);*/
 			ioInterface.putLong(6980000);
 		}
 	}

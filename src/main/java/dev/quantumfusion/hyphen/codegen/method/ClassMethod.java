@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.*;
 
 public class ClassMethod extends MethodMetadata {
 	private static final int[] METHODS = new int[]{
@@ -36,6 +36,7 @@ public class ClassMethod extends MethodMetadata {
 
 		if (handler.implementations.containsKey(info.clazz)) {
 			methodMetadata.addField(null, handler.implementations.get(info.clazz).apply(info));
+			methodMetadata.compile();
 			return methodMetadata;
 		}
 
@@ -57,7 +58,7 @@ public class ClassMethod extends MethodMetadata {
 		final List<PrimEntry> primitives = new ArrayList<>();
 		this.objects = new LinkedHashMap<>();
 		fields.forEach((field, def) -> {
-			if (isPackable(field.clazz())) primitives.add(PrimEntry.create(field));
+			if (field != null && isPackable(field.clazz())) primitives.add(PrimEntry.create(field));
 			else this.objects.put(field, def);
 		});
 		this.primitives = PrimGroup.createGroups(primitives, METHODS, 8);
@@ -76,13 +77,74 @@ public class ClassMethod extends MethodMetadata {
 
 	@Override
 	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
-		mh.returnOp();
+		if (this.primitives.isEmpty()) {
+			if (this.objects.isEmpty()) {
+				mh.returnOp();
+			} else {
+				io.load();
+				data.load();
+				// io data
+				int i = 0;
+
+				for (var entry : this.objects.entrySet()) {
+					if (++i < this.objects.size()) {
+						mh.visitInsn(DUP2);
+						// (io | data |) io | data
+					}
+
+					var field = entry.getKey();
+					var def = entry.getValue();
+
+					if (field != null)
+						mh.getField(GETFIELD, this.info.clazz, field.name(), field.clazz().getClazz());
+					// io | field
+					def.doPut(mh);
+				}
+
+				mh.returnOp();
+			}
+		} else {
+			mh.returnOp();
+		}
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
-		mh.visitInsn(ACONST_NULL);
-		mh.returnOp();
+		if (this.primitives.isEmpty()) {
+			if (this.objects.isEmpty()) {
+				mh.visitInsn(ACONST_NULL);
+				mh.returnOp();
+			} else if (this.fields.containsKey(null)) {
+				SerializerDef serializerDef = this.fields.get(null);
+				io.load();
+				serializerDef.doGet(mh);
+				mh.returnOp();
+			} else {
+				mh.typeInsn(NEW, this.info.getClazz());
+				mh.visitInsn(DUP);
+				// OBJECT | OBJECT
+
+				for (var def : this.objects.values()) {
+					io.load();
+					def.doGet(mh);
+				}
+
+				// OBJECT | OBJECT | ... fields
+				mh.callSpecialMethod(this.info.getClazz(),
+						"<init>",
+						null,
+						this.fields.keySet()
+								.stream()
+								.map(FieldEntry::clazz)
+								.map(TypeInfo::getClazz)
+								.toArray(Class[]::new));
+				// OBJECT
+				mh.returnOp();
+			}
+		} else {
+			mh.visitInsn(ACONST_NULL);
+			mh.returnOp();
+		}
 	}
 
 	private record PrimEntry(FieldEntry fieldEntry, int size) {
@@ -104,6 +166,8 @@ public class ClassMethod extends MethodMetadata {
 	private record PrimGroup(List<PrimEntry> entries, int size) {
 
 		public static List<PrimGroup> createGroups(List<PrimEntry> entries, int[] methods, int size) {
+			if (entries.isEmpty())
+				return List.of();
 			var construct = construct(entries, size);
 			var lastIndex = construct.size() - 1;
 			var last = construct.get(lastIndex).size;

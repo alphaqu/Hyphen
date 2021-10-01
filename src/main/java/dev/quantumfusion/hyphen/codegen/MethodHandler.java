@@ -42,7 +42,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	// ================================== CLAZZY ====================================
-	public void getType(int opcode, Class<?> type) {
+	public void typeInsn(int opcode, Class<?> type) {
 		super.visitTypeInsn(opcode, Type.getInternalName(type));
 	}
 

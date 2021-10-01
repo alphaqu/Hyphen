@@ -27,11 +27,11 @@ public class IODef extends SerializerDef {
 
 	@Override
 	public void doPut(MethodHandler mh) {
-		mh.callStaticMethod(UnsafeIO.class, "put" + this.name(), null, this.clazz);
+		mh.callInstanceMethod(UnsafeIO.class, "put" + this.name(), null, this.clazz);
 	}
 
 	@Override
 	public void doGet(MethodHandler mh) {
-		mh.callStaticMethod(UnsafeIO.class, "get" + this.name(), this.clazz);
+		mh.callInstanceMethod(UnsafeIO.class, "get" + this.name(), this.clazz);
 	}
 }
