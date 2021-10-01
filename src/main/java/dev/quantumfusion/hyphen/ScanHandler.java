@@ -94,7 +94,7 @@ public class ScanHandler {
 
 
 	public void scan(Class<?> clazz) {
-		this.createSerializeMethod(new ClassInfo(clazz, Map.of()));
+		this.createSerializeMethod(new ClassInfo(clazz, Map.of(), true));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);

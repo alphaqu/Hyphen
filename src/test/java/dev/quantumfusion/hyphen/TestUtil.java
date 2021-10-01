@@ -1,6 +1,9 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
+import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
+import dev.quantumfusion.hyphen.scan.poly.classes.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.WrappedC1;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
@@ -84,7 +87,7 @@ public class TestUtil {
 			executable = () -> {
 				Class<? extends Throwable> value = failTest.value();
 				try {
-					SerializerFactory.createDebug(clazz).build(ByteBufferIO.class);
+					run(clazz);
 				} catch (Throwable throwable) {
 					if (throwable.getClass().equals(value)) {
 						System.err.println("Got expected error: ");
@@ -102,12 +105,28 @@ public class TestUtil {
 				}
 			};
 		} else {
-			executable = () -> SerializerFactory.createDebug(clazz).build(ByteBufferIO.class);
+			executable = () -> run(ByteBufferIO.class);
 		}
 
 		return DynamicTest.dynamicTest(clazz.getSimpleName(), URI.create("class:" + clazz.getName()), executable);
 	}
 
+	private static HyphenSerializer<?, ByteBufferIO> run(Class<?> clazz) {
+		final HyphenSerializer<?, ByteBufferIO> build = SerializerFactory.createDebug(clazz).build(ByteBufferIO.class);
+
+		return build;
+	}
+
+	public static void main(String[] args) {
+		final HyphenSerializer<C1OfC1, ByteBufferIO> build = SerializerFactory.createDebug(C1OfC1.class).build(ByteBufferIO.class);
+		final ByteBufferIO direct = ByteBufferIO.createDirect(500);
+		final C1OfC1 encode = new C1OfC1(new WrappedC1<>(new C1<>(69)));
+		build.encode(direct, encode);
+		direct.rewind();
+		final C1OfC1 decode = build.decode(direct);
+		System.out.println(decode.equals(encode));
+
+	}
 
 	private static Class<?> getClass(Path className, String packageName) {
 		try {

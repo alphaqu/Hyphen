@@ -1,10 +1,7 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
-import dev.quantumfusion.hyphen.codegen.def.BoxedDef;
-import dev.quantumfusion.hyphen.codegen.def.IODef;
-import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
-import dev.quantumfusion.hyphen.codegen.def.StaleDef;
+import dev.quantumfusion.hyphen.codegen.def.*;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
@@ -12,12 +9,13 @@ import dev.quantumfusion.hyphen.thr.exception.IllegalClassException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
-public class SerializerFactory {
+public class SerializerFactory<K> {
 	private static final boolean EXPORT = true;
 	private static final String uwuSerializer = "UWUSerializer";
 	private final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations = new HashMap<>();
@@ -26,7 +24,7 @@ public class SerializerFactory {
 	private final boolean debug;
 	private final Class<?> clazz;
 
-	protected SerializerFactory(boolean debug, Class<?> clazz) {
+	protected SerializerFactory(boolean debug, Class<K> clazz) {
 		this.debug = debug;
 		this.clazz = clazz;
 	}
@@ -53,7 +51,7 @@ public class SerializerFactory {
 	 * @param clazz The DataClass.
 	 * @return the Factory in charge of creating the serializer.
 	 */
-	public static SerializerFactory create(Class<?> clazz) {
+	public static <K> SerializerFactory<K> create(Class<K> clazz) {
 		return createInternal(false, clazz);
 	}
 
@@ -63,15 +61,15 @@ public class SerializerFactory {
 	 * @param clazz The DataClass.
 	 * @return The {@code SerializerFactory}.
 	 */
-	public static SerializerFactory createDebug(Class<?> clazz) {
+	public static <K> SerializerFactory<K> createDebug(Class<K> clazz) {
 		return createInternal(true, clazz);
 	}
 
-	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
-		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
+	private static <K> SerializerFactory<K> createInternal(boolean debugMode, Class<K> clazz) {
+		final SerializerFactory<K> sh = new SerializerFactory<>(debugMode, clazz);
 		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
 		sh.addImpl(new BoxedDef(Boolean.class, new IODef(boolean.class)), new BoxedDef(Byte.class, new IODef(byte.class)), new BoxedDef(Character.class, new IODef(char.class)), new BoxedDef(Short.class, new IODef(short.class)), new BoxedDef(Integer.class, new IODef(int.class)), new BoxedDef(Long.class, new IODef(long.class)), new BoxedDef(Float.class, new IODef(float.class)), new BoxedDef(Double.class, new IODef(double.class)));
-		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
+		sh.addImpl(ArrayIODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
 		sh.addImpl(new StaleDef(List.class));
 		return sh;
 	}
@@ -134,7 +132,7 @@ public class SerializerFactory {
 	 *
 	 * @return The Serializer Class.
 	 */
-	public <IO> HyphenSerializer<?, IO> build(Class<?> io) {
+	public <IO> HyphenSerializer<K, IO> build(Class<IO> io) {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
@@ -144,8 +142,7 @@ public class SerializerFactory {
 
 		CodegenHandler handler = new CodegenHandler(io, uwuSerializer);
 		handler.createConstructor();
-		methods.forEach(handler::createEncode);
-		methods.forEach(handler::createDecode);
+		methods.forEach(handler::createMethods);
 		final Class<?> export = handler.export();
 		if (EXPORT) {
 			try {
@@ -154,7 +151,11 @@ public class SerializerFactory {
 				throw new UncheckedIOException(e);
 			}
 		}
-		return null;
+		try {
+			return (HyphenSerializer<K, IO>) export.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 

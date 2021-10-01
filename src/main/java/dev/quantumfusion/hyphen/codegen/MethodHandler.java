@@ -96,11 +96,16 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		invokeIO(desc, "get" + getSuffix(clazz));
 	}
 
+	public Class<?> getIOClass() {
+		return io.ioClass;
+	}
+
+
 	public void callIOPut(Class<?> clazz) {
 		invokeIO(getVoidMethodDesc(clazz), "put" + getSuffix(clazz));
 	}
 
-	public Class<?> getIOClazz(){
+	public Class<?> getIOClazz() {
 		return this.io.ioClass;
 	}
 
