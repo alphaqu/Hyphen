@@ -1,9 +1,9 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
+import dev.quantumfusion.hyphen.scan.poly.Recursive;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
-import dev.quantumfusion.hyphen.scan.poly.classes.WrappedC1;
+import dev.quantumfusion.hyphen.scan.poly.classes.RecursiveC;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
@@ -118,12 +118,12 @@ public class TestUtil {
 	}
 
 	public static void main(String[] args) {
-		final HyphenSerializer<C1OfC1, ByteBufferIO> build = SerializerFactory.createDebug(C1OfC1.class).build(ByteBufferIO.class);
+		final HyphenSerializer<Recursive, ByteBufferIO> build = SerializerFactory.createDebug(Recursive.class).build(ByteBufferIO.class);
 		final ByteBufferIO direct = ByteBufferIO.createDirect(500);
-		final C1OfC1 encode = new C1OfC1(new WrappedC1<>(new C1<>(69)));
+		final Recursive encode = new Recursive(new RecursiveC<>("420", new C1<>("69")));
 		build.encode(direct, encode);
 		direct.rewind();
-		final C1OfC1 decode = build.decode(direct);
+		final Recursive decode = build.decode(direct);
 		System.out.println(decode.equals(encode));
 
 	}

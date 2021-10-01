@@ -27,4 +27,14 @@ public class StaleDef implements SerializerDef {
 		mh.visitInsn(POP);
 		mh.visitInsn(ACONST_NULL);
 	}
+
+	@Override
+	public long getSize() {
+		return 0;
+	}
+
+	@Override
+	public void calcSubSize(MethodHandler mh) {
+
+	}
 }

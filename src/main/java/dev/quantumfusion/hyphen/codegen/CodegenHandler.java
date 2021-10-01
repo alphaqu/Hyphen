@@ -31,8 +31,9 @@ public class CodegenHandler {
 	}
 
 	public void createMethods(TypeInfo info, MethodMetadata methodMetadata) {
-		createEncode(info, methodMetadata);
-		createDecode(info, methodMetadata);
+		this.createEncode(info, methodMetadata);
+		this.createDecode(info, methodMetadata);
+		this.createSubCalc(info, methodMetadata);
 	}
 
 	public void createEncode(TypeInfo info, MethodMetadata methodMetadata) {
@@ -90,6 +91,23 @@ public class CodegenHandler {
 			} else io = mh.createVar("io", this.io.ioClass);
 
 			methodMetadata.writeGet(mh, io);
+		}
+	}
+
+	public void createSubCalc(TypeInfo info, MethodMetadata methodMetadata) {
+		if(methodMetadata.getSize() >= 0) return; // skip
+
+		try (MethodHandler mh = MethodHandler.create(
+				this,
+				this.io,
+				ACC_STATIC | ACC_PUBLIC | ACC_FINAL,
+				Constants.SUB_CALC_FUNC + info.getMethodName(false),
+				long.class,
+				info.getClazz())
+		) {
+			MethodHandler.Var data;
+			data = mh.createVar("data", info.getClazz());
+			methodMetadata.writeSubCalcSize(mh, data);
 		}
 	}
 

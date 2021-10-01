@@ -12,15 +12,17 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ArrayMethod extends MethodMetadata {
 	private final TypeInfo values;
+	private final MethodMetadata elementSerializer;
 
-	private ArrayMethod(ArrayInfo info) {
+	private ArrayMethod(ArrayInfo info, MethodMetadata elementSerializer) {
 		super(info);
 		this.values = info.values;
+		this.elementSerializer = elementSerializer;
 	}
 
 	public static ArrayMethod create(ArrayInfo info, ScanHandler scanHandler) {
-		scanHandler.createSerializeMethod(info.values);
-		return new ArrayMethod(info);
+		MethodMetadata serializeMethod = scanHandler.createSerializeMethod(info.values);
+		return new ArrayMethod(info, serializeMethod);
 	}
 
 	@Override
@@ -126,5 +128,87 @@ public class ArrayMethod extends MethodMetadata {
 
 		mh.returnOp();
 		mh.popScope();
+	}
+
+	@Override
+	public long getSize() {
+		return ~4; // length
+	}
+
+	@Override
+	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+		long elementSize = this.elementSerializer.getSize();
+
+		boolean dynamic = elementSize >= 0;
+		if (dynamic) elementSize = ~elementSize;
+
+		if(elementSize > 0){
+			// fixed size part
+
+			data.load();
+			// data
+			mh.visitInsn(ARRAYLENGTH);
+			// length
+			if((elementSize & -elementSize) == elementSize){
+				// power of 2
+				int shift = Long.numberOfTrailingZeros(elementSize);
+				mh.visitLdcInsn(shift);
+				mh.visitInsn(LSHL);
+			} else {
+				mh.visitLdcInsn(elementSize);
+				mh.visitInsn(LMUL);
+			}
+		} else {
+			mh.visitInsn(LCONST_0);
+		}
+
+		if(dynamic){
+			// have to check each value
+			mh.pushScope();
+			var length = mh.createVar("length", int.class);
+			var i = mh.createVar("i", int.class);
+
+			data.load();
+			// size | data
+			mh.visitInsn(ARRAYLENGTH);
+			// size | length
+			length.store();
+			// size
+
+			mh.visitInsn(ICONST_0);
+			i.store();
+			// size
+
+			var start = new Label();
+			var end = new Label();
+
+			if(elementSize == 0)
+				mh.visitInsn(ICONST_0);
+
+			mh.visitLabel(start);
+			// size
+			i.load();
+			length.load();
+			// size | i | length
+			mh.visitJumpInsn(IF_ICMPGE, end);
+			// size
+			data.load();
+			// size | data
+			i.load();
+			// size | data | i
+			mh.visitInsn(AALOAD);
+			// size | data[i]
+			this.elementSerializer.callSubCalcSize(mh);
+			// size | elementSize
+			mh.visitInsn(LADD);
+			i.iinc(1); // i++
+			mh.visitJumpInsn(GOTO, start);
+
+			mh.visitLabel(end);
+			// size
+			mh.popScope();
+		}
+
+		mh.returnOp();
 	}
 }

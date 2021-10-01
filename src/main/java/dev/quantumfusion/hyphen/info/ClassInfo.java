@@ -99,5 +99,4 @@ public class ClassInfo extends TypeInfo implements Type {
 	public String toString() {
 		return this.clazz.getSimpleName();
 	}
-
 }

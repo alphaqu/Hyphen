@@ -9,4 +9,10 @@ public interface SerializerDef {
 	void doPut(MethodHandler mh);
 
 	void doGet(MethodHandler mh);
+
+	long getSize();
+
+	default void calcSubSize(MethodHandler mh){
+		throw new IllegalStateException("Shouldn't be called");
+	}
 }

@@ -112,8 +112,10 @@ public class ScanHandler {
 		return this.createSerializeMetadataInternal(typeInfo);
 	}
 
-	public void createSerializeMethod(TypeInfo typeInfo) {
-		this.methods.put(typeInfo, createSerializeMetadata(typeInfo));
+	public MethodMetadata createSerializeMethod(TypeInfo typeInfo) {
+		MethodMetadata serializeMetadata = this.createSerializeMetadata(typeInfo);
+		this.methods.put(typeInfo, serializeMetadata);
+		return serializeMetadata;
 	}
 
 	public SerializerDef getDefinition(FieldEntry field, ClassInfo source) {
@@ -134,7 +136,7 @@ public class ScanHandler {
 			ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
 		}
 
-		this.createSerializeMethod(classInfo);
-		return new MethodCallDef(classInfo);
+		MethodMetadata serializeMethod = this.createSerializeMethod(classInfo);
+		return new MethodCallDef(classInfo, serializeMethod);
 	}
 }

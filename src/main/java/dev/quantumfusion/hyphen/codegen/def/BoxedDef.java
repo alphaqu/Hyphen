@@ -14,6 +14,6 @@ public class BoxedDef extends WrappedDef {
 
 	@Override
 	protected void unwrap(MethodHandler mh) {
-		mh.callSpecialMethod(this.getType(), this.inner.getType().getSimpleName() + "Value", this.inner.getType());
+		mh.callInstanceMethod(this.getType(), this.inner.getType().getSimpleName() + "Value", this.inner.getType());
 	}
 }

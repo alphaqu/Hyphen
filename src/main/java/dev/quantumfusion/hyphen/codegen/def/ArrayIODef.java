@@ -38,4 +38,30 @@ public class ArrayIODef implements SerializerDef {
 		mh.callIOGet(int.class);
 		mh.callInstanceMethod(mh.getIOClazz(), "get" + this.name(), this.clazz, int.class);
 	}
+
+	@Override
+	public long getSize() {
+		return ~4;
+	}
+
+	@Override
+	public void calcSubSize(MethodHandler mh) {
+		if(this.clazz == String[].class){
+
+		} else {
+			int size;
+			if (this.clazz == boolean.class || this.clazz == byte.class) size = 0;
+			else if (this.clazz == char.class || this.clazz == short.class) size = 1;
+			else if (this.clazz == int.class || this.clazz == float.class) size = 2;
+			else /*if (this.clazz == long.class || this.clazz == double.class)*/ size = 3;
+
+			// data
+			mh.visitInsn(ARRAYLENGTH);
+			mh.visitInsn(I2L);
+			if(size != 0){
+				mh.visitLdcInsn(size);
+				mh.visitInsn(LSHL);
+			}
+		}
+	}
 }

@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.TestUtil;
-import dev.quantumfusion.hyphen.scan.poly.Recursive;
+import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
@@ -15,7 +15,7 @@ public class ScanTestFactory {
 
 	@TestFactory
 	Iterator<DynamicNode> bareTest() {
-		return Collections.singletonList(TestUtil.test(Recursive.class)).iterator();
+		return Collections.singletonList(TestUtil.test(C1OfC1.class)).iterator();
 	}
 
 	@Nested

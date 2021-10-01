@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -119,6 +120,75 @@ public class SubclassMethod extends MethodMetadata {
 		// TODO: throw error
 		mh.visitInsn(POP);
 		mh.visitInsn(ACONST_NULL);
+		mh.returnOp();
+	}
+
+	@Override
+	public long getSize() {
+		Iterator<SerializerDef> iterator = this.subtypes.values().iterator();
+
+		if (!iterator.hasNext()) throw new IllegalStateException("no subclasses");
+
+		var size = iterator.next().getSize();
+
+		if (size < 0)
+			// dynamic sized subclass
+			return ~1;
+
+		while (iterator.hasNext()) {
+			var otherSize = iterator.next().getSize();
+			if (otherSize != size)
+				// differently sized subsizes
+				return ~1;
+		}
+
+		return 1 + size;
+	}
+
+	@Override
+	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+		data.load();
+		// data
+		mh.callInstanceMethod(Object.class, "getClass", Class.class);
+		// clazz
+
+		for (Map.Entry<Class<?>, SerializerDef> entry : this.subtypes.entrySet()) {
+			Class<?> clz = entry.getKey();
+			SerializerDef def = entry.getValue();
+			Label skip = new Label();
+
+			mh.visitInsn(DUP);
+			// clazz | clazz
+			mh.visitLdcInsn(Type.getType(clz));
+			// clazz | clazz | clz
+			mh.visitJumpInsn(IF_ACMPNE, skip);
+			// clazz == clz
+			mh.visitInsn(POP);
+			// --
+
+			var size = def.getSize();
+			if(size >= 0){
+				mh.visitLdcInsn(size);
+			} else{
+				data.load();
+				// data
+				mh.cast(clz);
+				// data as clz
+				def.calcSubSize(mh);
+				// size
+				if (size < -1){
+					mh.visitLdcInsn(~size);
+					mh.visitInsn(LADD);
+				}
+			}
+			mh.returnOp();
+			mh.visitLabel(skip);
+		}
+
+		// clazz
+		// TODO: throw error
+		mh.visitInsn(POP);
+		mh.visitInsn(LCONST_0);
 		mh.returnOp();
 	}
 }

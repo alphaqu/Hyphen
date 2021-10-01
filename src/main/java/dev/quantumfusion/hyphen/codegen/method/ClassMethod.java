@@ -203,5 +203,54 @@ public class ClassMethod extends MethodMetadata {
 		}
 	}
 
+	@Override
+	public long getSize() {
+		boolean dynamic = false;
+		int size = 0;
+		for (SerializerDef value : this.fields.values()) {
+			long fieldSize = value.getSize();
+			if (fieldSize < 0) {
+				dynamic = true;
+				fieldSize = ~fieldSize;
+			}
+			size += fieldSize;
+		}
+		return dynamic ? ~size : size;
+	}
 
+	@Override
+	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+		var dynamicFields = this.fields.entrySet().stream().filter(i -> i.getValue().getSize() < 0).toList();
+
+		int i = 0;
+
+		for (var entry : dynamicFields) {
+			data.load();
+			// (size |) data
+
+			var field = entry.getKey();
+			var def = entry.getValue();
+
+
+			if (field != null) {
+				mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getRawType());
+				if (field.clazz() instanceof TypeClassInfo typeClassInfo
+						&& !typeClassInfo.getClazz().isAssignableFrom(typeClassInfo.getRawType())) {
+					mh.cast(typeClassInfo.getClazz());
+				}
+			}
+
+			// (size |) field
+			def.calcSubSize(mh);
+			// (size |) nextSize
+
+			if (i++ > 0) {
+				// size | nextSize
+				mh.visitInsn(LADD);
+				// size
+			}
+		}
+
+		mh.returnOp();
+	}
 }
