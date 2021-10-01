@@ -19,6 +19,10 @@ public final class UnsafeIO {
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private static final long STRING_FIELD_OFFSET;
 	private static final long STRING_ENCODING_OFFSET;
+
+	//If an array is below this value it will just use the regular methods. Else it will use memcpy
+	private static final int COPY_MEMORY_THRESHOLD = 10;
+
 	static {
 		try {
 			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
@@ -170,120 +174,158 @@ public final class UnsafeIO {
 	// ====================================== GET_ARR ======================================== //
 	public final boolean[] getBooleanArray(final int bytes) {
 		final boolean[] array = new boolean[bytes];
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < bytes; i++) array[i] = getBoolean();
 		return array;
 	}
 
 	public final byte[] getByteArray(final int bytes) {
 		final byte[] array = new byte[bytes];
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < bytes; i++) array[i] = getByte();
 		return array;
 	}
 
 	public final char[] getCharArray(final int length) {
 		final char[] array = new char[length];
-		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, CHAR_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, CHAR_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getChar();
 		return array;
 	}
 
 	public final short[] getShortArray(final int length) {
 		final short[] array = new short[length];
-		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, SHORT_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, SHORT_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getShort();
 		return array;
 	}
 
 	public final int[] getIntArray(final int length) {
 		final int[] array = new int[length];
-		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, INT__OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, INT__OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getInt();
 		return array;
 	}
 
 	public final long[] getLongArray(final int length) {
 		final long[] array = new long[length];
-		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, LONG_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, LONG_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getLong();
 		return array;
 	}
 
 	public final float[] getFloatArray(final int length) {
 		final float[] array = new float[length];
-		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, FLOAT_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, FLOAT_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getFloat();
 		return array;
 	}
 
+
 	public final double[] getDoubleArray(final int length) {
 		final double[] array = new double[length];
-		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, DOUBLE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, DOUBLE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getDouble();
 		return array;
 	}
 
 	public final String[] getStringArray(final int length) {
-		final String[] out = new String[length];
-		for (int i = 0; i < length; i++)
-			out[i] = getString();
-		return out;
+		final String[] array = new String[length];
+		for (int i = 0; i < length; i++) array[i] = getString();
+		return array;
 	}
 
 	// ====================================== PUT_ARR ======================================== //
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
-		UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putBoolean(v);
 	}
 
 	public final void putByteArray(final byte[] value) {
 		final int bytes = value.length;
-		UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putByte(v);
 	}
 
 	public final void putCharArray(final char[] value) {
-		final int bytes = value.length * 2;
-		UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putChar(v);
 	}
 
 	public final void putShortArray(final short[] value) {
-		final int bytes = value.length * 2;
-		UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putShort(v);
 	}
 
 	public final void putIntArray(final int[] value) {
-		final int bytes = value.length * 4;
-		UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putInt(v);
 	}
 
 	public final void putLongArray(final long[] value) {
-		final int bytes = value.length * 8;
-		UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putLong(v);
 	}
 
 	public final void putFloatArray(final float[] value) {
-		final int bytes = value.length * 4;
-		UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putFloat(v);
 	}
 
 	public final void putDoubleArray(final double[] value) {
-		final int bytes = value.length * 8;
-		UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putDouble(v);
 	}
 
 	public final void putStringArray(final String[] value) {
