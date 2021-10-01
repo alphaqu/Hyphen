@@ -6,6 +6,7 @@ import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
+import dev.quantumfusion.hyphen.info.TypeClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
@@ -56,7 +57,7 @@ public class ClassMethod extends MethodMetadata {
 
 	public void compile() {
 		final List<PrimEntry> primitives = new ArrayList<>();
-		this.objects =  this.fields;//new LinkedHashMap<>();
+		this.objects = this.fields;//new LinkedHashMap<>();
 		/*
 		fields.forEach((field, def) -> {
 			if (field != null && isPackable(field.clazz())) primitives.add(PrimEntry.create(field));
@@ -97,8 +98,14 @@ public class ClassMethod extends MethodMetadata {
 					var field = entry.getKey();
 					var def = entry.getValue();
 
-					if (field != null)
-						mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getClazz());
+					if (field != null) {
+
+						mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getRawType());
+						if (field.clazz() instanceof TypeClassInfo typeClassInfo
+								&& !typeClassInfo.getClazz().isAssignableFrom(typeClassInfo.getRawType())) {
+							mh.cast(typeClassInfo.getClazz());
+						}
+					}
 					// io | field
 					def.doPut(mh);
 				}
@@ -138,7 +145,7 @@ public class ClassMethod extends MethodMetadata {
 						this.fields.keySet()
 								.stream()
 								.map(FieldEntry::clazz)
-								.map(TypeInfo::getClazz)
+								.map(TypeInfo::getRawType)
 								.toArray(Class[]::new));
 				// OBJECT
 				mh.returnOp();

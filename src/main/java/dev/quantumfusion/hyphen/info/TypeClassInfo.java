@@ -77,4 +77,8 @@ public class TypeClassInfo extends TypeInfo {
 		return actual.hashCode();
 	}
 
+	@Override
+	public Class<?> getRawType() {
+		return rawType;
+	}
 }
