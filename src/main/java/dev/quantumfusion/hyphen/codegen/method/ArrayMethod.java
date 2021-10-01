@@ -20,7 +20,7 @@ public class ArrayMethod extends MethodMetadata {
 	}
 
 	public static ArrayMethod create(ArrayInfo info, ScanHandler scanHandler) {
-		scanHandler.createSerializeMetadata(info.values);
+		scanHandler.createSerializeMethod(info.values);
 		return new ArrayMethod(info);
 	}
 

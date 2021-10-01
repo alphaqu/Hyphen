@@ -67,4 +67,14 @@ public class TypeClassInfo extends TypeInfo {
 		return actual.getClazz();
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		return actual.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return actual.hashCode();
+	}
+
 }

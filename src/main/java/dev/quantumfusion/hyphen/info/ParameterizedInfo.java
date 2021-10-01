@@ -52,11 +52,11 @@ public class ParameterizedInfo extends ClassInfo {
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(super.getMethodName(absolute));
-		builder.append("_E_");
+		builder.append("_");
 		for (TypeInfo value : types.values()) {
 			builder.append(value.getMethodName(absolute));
 		}
-		builder.append("_3_");
+		builder.append("_");
 		return builder.toString();
 	}
 

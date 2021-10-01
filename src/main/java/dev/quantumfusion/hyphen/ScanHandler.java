@@ -94,7 +94,7 @@ public class ScanHandler {
 
 
 	public void scan(Class<?> clazz) {
-		this.createSerializeMetadata(new ClassInfo(clazz, Map.of()));
+		this.createSerializeMethod(new ClassInfo(clazz, Map.of()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
@@ -106,13 +106,14 @@ public class ScanHandler {
 	}
 
 	public MethodMetadata createSerializeMetadata(TypeInfo typeInfo) {
-		if (this.methods.containsKey(typeInfo)) {
+		if (this.methods.containsKey(typeInfo))
 			return this.methods.get(typeInfo);
-		}
 
-		MethodMetadata serializerMetadata = this.createSerializeMetadataInternal(typeInfo);
-		this.methods.put(typeInfo, serializerMetadata);
-		return serializerMetadata;
+		return this.createSerializeMetadataInternal(typeInfo);
+	}
+
+	public void createSerializeMethod(TypeInfo typeInfo) {
+		this.methods.put(typeInfo, createSerializeMetadata(typeInfo));
 	}
 
 	public SerializerDef getDefinition(FieldEntry field, ClassInfo source) {
@@ -121,9 +122,10 @@ public class ScanHandler {
 
 	public SerializerDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (!(classInfo instanceof SubclassInfo)) {
-			final Class<?>[] classes = ScanUtils.pathTo(classInfo.clazz, implementations::containsKey, TypeUtil::getInheritedClasses, 0);
-			if (classes != null && classes.length > 0) {
-				return implementations.get(classes[classes.length - 1]).apply(classInfo);
+			final Class<?> clazz = classInfo.getClazz();
+			final Class<?>[] classes = ScanUtils.pathTo(clazz, implementations::containsKey, TypeUtil::getInheritedClasses, 0);
+			if (classes != null) {
+				return implementations.get(classes.length > 0 ? classes[classes.length - 1] : clazz).apply(classInfo);
 			}
 		}
 		if (field != null) {
@@ -132,7 +134,7 @@ public class ScanHandler {
 			ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
 		}
 
-		this.createSerializeMetadata(classInfo);
+		this.createSerializeMethod(classInfo);
 		return new MethodCallDef(classInfo);
 	}
 }

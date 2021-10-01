@@ -86,8 +86,8 @@ public class ClassMethod extends MethodMetadata {
 				// io data
 				int i = 0;
 
-				for (var entry : this.objects.entrySet()) {
-					if (++i < this.objects.size()) {
+				for (var entry : this.fields.entrySet()) {
+					if (++i < this.fields.size()) {
 						mh.visitInsn(DUP2);
 						// (io | data |) io | data
 					}
@@ -124,7 +124,7 @@ public class ClassMethod extends MethodMetadata {
 				mh.visitInsn(DUP);
 				// OBJECT | OBJECT
 
-				for (var def : this.objects.values()) {
+				for (var def : this.fields.values()) {
 					io.load();
 					def.doGet(mh);
 				}
