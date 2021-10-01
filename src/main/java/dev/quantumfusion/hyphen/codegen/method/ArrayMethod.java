@@ -5,7 +5,6 @@ import dev.quantumfusion.hyphen.codegen.Constants;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.io.UnsafeIO;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
@@ -64,8 +63,7 @@ public class ArrayMethod extends MethodMetadata {
 		// io | data | io | data | i
 		mh.visitInsn(AALOAD);
 		// io | data | io | data[i]
-		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, UnsafeIO.class, this.values.getClazz());
+		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, mh.getIOClazz(), this.values.getClazz());
 		// io | data
 		i.iinc(1); // i++
 		mh.visitJumpInsn(GOTO, start);
@@ -116,8 +114,7 @@ public class ArrayMethod extends MethodMetadata {
 		// array | array | i
 		io.load();
 		// array | array | i | io
-		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.getClazz(), UnsafeIO.class);
+		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.getClazz(), mh.getIOClazz());
 		// array | array | i | component
 		mh.visitInsn(AASTORE);
 		// array

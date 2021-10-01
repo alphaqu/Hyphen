@@ -100,6 +100,10 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		invokeIO(getVoidMethodDesc(clazz), "put" + getSuffix(clazz));
 	}
 
+	public Class<?> getIOClazz(){
+		return this.io.ioClass;
+	}
+
 	private void invokeIO(String desc, String name) {
 		this.visitMethodInsn(INVOKEVIRTUAL, io.internalName, name, desc, false);
 	}

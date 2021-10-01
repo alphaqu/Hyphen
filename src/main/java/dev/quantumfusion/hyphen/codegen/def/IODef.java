@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.io.UnsafeIO;
 
 import java.util.Locale;
 
@@ -27,11 +26,11 @@ public class IODef implements SerializerDef {
 
 	@Override
 	public void doPut(MethodHandler mh) {
-		mh.callInstanceMethod(UnsafeIO.class, "put" + this.name(), null, this.clazz);
+		mh.callInstanceMethod(mh.getIOClazz(), "put" + this.name(), null, this.clazz);
 	}
 
 	@Override
 	public void doGet(MethodHandler mh) {
-		mh.callInstanceMethod(UnsafeIO.class, "get" + this.name(), this.clazz);
+		mh.callInstanceMethod(mh.getIOClazz(), "get" + this.name(), this.clazz);
 	}
 }
