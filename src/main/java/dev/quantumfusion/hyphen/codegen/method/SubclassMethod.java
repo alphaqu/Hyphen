@@ -68,6 +68,8 @@ public class SubclassMethod extends MethodMetadata {
 			// io | data | io | i
 			mh.callIOPut(int.class);
 			// io | data
+			mh.cast(clz);
+			// io | data as clz
 			def.doPut(mh);
 			// --
 			mh.returnOp();
