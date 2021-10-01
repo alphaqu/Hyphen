@@ -19,7 +19,6 @@ public final class UnsafeIO implements IOInterface {
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private static final long STRING_FIELD_OFFSET;
 	private static final long STRING_ENCODING_OFFSET;
-
 	static {
 		try {
 			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
@@ -32,16 +31,31 @@ public final class UnsafeIO implements IOInterface {
 	private final long address;
 	private long currentAddress;
 
-	private UnsafeIO(long address) {
+	private UnsafeIO(final long address) {
 		this.address = address;
 		this.currentAddress = address;
 	}
 
-	public static UnsafeIO create(int size) {
+	@SuppressWarnings("FinalStaticMethod")
+	public static final UnsafeIO create(final int size) {
 		return new UnsafeIO(UNSAFE.allocateMemory(size));
 	}
 
+	// ======================================= FUNC ======================================= //
+	public final void rewind() {
+		currentAddress = address;
+	}
 
+	public final int pos() {
+		return (int) ((int) currentAddress - address);
+	}
+
+	public final void close() {
+		UNSAFE.freeMemory(address);
+	}
+
+
+	// ======================================== GET ======================================== //
 	public final boolean getBoolean() {
 		return UNSAFE.getBoolean(null, currentAddress++ + BOOLEAN_OFFSET);
 	}
@@ -104,6 +118,8 @@ public final class UnsafeIO implements IOInterface {
 		}
 	}
 
+
+	// ======================================== PUT ======================================== //
 	public final void putBoolean(final boolean value) {
 		UNSAFE.putBoolean(null, currentAddress++ + BOOLEAN_OFFSET, value);
 	}
@@ -150,6 +166,8 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += length + 4;
 	}
 
+
+	// ====================================== GET_ARR ======================================== //
 	public final boolean[] getBooleanArray(final int bytes) {
 		final boolean[] array = new boolean[bytes];
 		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
@@ -219,6 +237,7 @@ public final class UnsafeIO implements IOInterface {
 		return out;
 	}
 
+	// ====================================== PUT_ARR ======================================== //
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
 		UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -269,17 +288,5 @@ public final class UnsafeIO implements IOInterface {
 
 	public final void putStringArray(final String[] value) {
 		for (final String s : value) putString(s);
-	}
-
-	public final void rewind() {
-		currentAddress = address;
-	}
-
-	public final int pos() {
-		return (int) ((int) currentAddress - address);
-	}
-
-	public final void close() {
-		UNSAFE.freeMemory(address);
 	}
 }
