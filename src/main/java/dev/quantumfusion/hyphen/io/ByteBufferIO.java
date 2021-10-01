@@ -7,257 +7,239 @@ import java.nio.charset.StandardCharsets;
 /**
  * <h2>Useful for debug and when UnsafeIO is unavailable.</h2>
  */
-public final class ByteBufferIO implements IOInterface {
+@SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod"})
+public final class ByteBufferIO {
 	private final ByteBuffer byteBuffer;
 
-	private ByteBufferIO(ByteBuffer buffer) {
+	private ByteBufferIO(final ByteBuffer buffer) {
 		this.byteBuffer = buffer;
 	}
 
-	public static ByteBufferIO create(int size) {
+	public static final ByteBufferIO create(final int size) {
 		return new ByteBufferIO(ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN));
 	}
 
-	public static ByteBufferIO createDirect(int size) {
+	public static final ByteBufferIO createDirect(final int size) {
 		return new ByteBufferIO(ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN));
 	}
 
-	@Override
-	public boolean getBoolean() {
+	// ======================================= FUNC ======================================= //
+	public final void rewind() {
+		byteBuffer.rewind();
+	}
+
+
+	public final int pos() {
+		return byteBuffer.position();
+	}
+
+	public final void close() {
+		byteBuffer.clear();
+	}
+
+
+	// ======================================== GET ======================================== //
+	public final boolean getBoolean() {
 		return byteBuffer.get() == 1;
 	}
 
-	@Override
-	public byte getByte() {
+
+	public final byte getByte() {
 		return byteBuffer.get();
 	}
 
-	@Override
-	public char getChar() {
+
+	public final char getChar() {
 		return byteBuffer.getChar();
 	}
 
-	@Override
-	public short getShort() {
+
+	public final short getShort() {
 		return byteBuffer.getShort();
 	}
 
-	@Override
-	public int getInt() {
+
+	public final int getInt() {
 		return byteBuffer.getInt();
 	}
 
-	@Override
-	public long getLong() {
+
+	public final long getLong() {
 		return byteBuffer.getLong();
 	}
 
-	@Override
-	public float getFloat() {
+
+	public final float getFloat() {
 		return byteBuffer.getFloat();
 	}
 
-	@Override
-	public double getDouble() {
+
+	public final double getDouble() {
 		return byteBuffer.getDouble();
 	}
 
-	@Override
-	public String getString() {
+
+	public final String getString() {
 		final byte[] byteArray = getByteArray(byteBuffer.getInt());
 		return new String(byteArray, 0, byteArray.length, StandardCharsets.UTF_8);
 	}
 
-	@Override
-	public boolean[] getBooleanArray(int length) {
+
+	// ======================================== PUT ======================================== //
+	public final void putBoolean(final boolean value) {
+		byteBuffer.put((byte) (value ? 1 : 0));
+	}
+
+
+	public final void putByte(final byte value) {
+		byteBuffer.put(value);
+	}
+
+
+	public final void putChar(final char value) {
+		byteBuffer.putChar(value);
+	}
+
+
+	public final void putShort(final short value) {
+		byteBuffer.putShort(value);
+	}
+
+	public final void putInt(final int value) {
+		byteBuffer.putInt(value);
+	}
+
+
+	public final void putLong(final long value) {
+		byteBuffer.putLong(value);
+	}
+
+
+	public final void putFloat(final float value) {
+		byteBuffer.putFloat(value);
+	}
+
+
+	public final void putDouble(final double value) {
+		byteBuffer.putDouble(value);
+	}
+
+
+	public final void putString(final String value) {
+		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+		putInt(bytes.length);
+		putByteArray(bytes);
+	}
+
+
+	// ====================================== GET_ARR ======================================== //
+	public final boolean[] getBooleanArray(final int length) {
 		final boolean[] out = new boolean[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.get() == 1;
 		return out;
 	}
 
-	@Override
-	public byte[] getByteArray(int length) {
-		byte[] out = new byte[length];
+
+	public final byte[] getByteArray(final int length) {
+		final byte[] out = new byte[length];
 		byteBuffer.get(out, 0, length);
 		return out;
 	}
 
-	@Override
-	public char[] getCharArray(int length) {
+
+	public final char[] getCharArray(final int length) {
 		final char[] out = new char[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getChar();
 		return out;
 	}
 
-	@Override
-	public short[] getShortArray(int length) {
+	public final short[] getShortArray(final int length) {
 		final short[] out = new short[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getShort();
 		return out;
 	}
 
-	@Override
-	public int[] getIntArray(int length) {
+	public final int[] getIntArray(final int length) {
 		final int[] out = new int[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getInt();
 		return out;
 	}
 
-	@Override
-	public long[] getLongArray(int length) {
+	public final long[] getLongArray(final int length) {
 		final long[] out = new long[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getLong();
 		return out;
 	}
 
-	@Override
-	public float[] getFloatArray(int length) {
+	public final float[] getFloatArray(final int length) {
 		final float[] out = new float[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getFloat();
 		return out;
 	}
 
-	@Override
-	public double[] getDoubleArray(int length) {
+	public final double[] getDoubleArray(final int length) {
 		final double[] out = new double[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getDouble();
 		return out;
 	}
 
-	@Override
-	public String[] getStringArray(int length) {
+	public final String[] getStringArray(final int length) {
 		final String[] out = new String[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getString();
 		return out;
 	}
 
-	@Override
-	public void putBoolean(boolean value) {
-		byteBuffer.put((byte) (value ? 1 : 0));
 
+	// ====================================== PUT_ARR ======================================== //
+	public final void putBooleanArray(final boolean[] value) {
+		for (final boolean b : value) byteBuffer.put((byte) (b ? 1 : 0));
 	}
 
-	@Override
-	public void putByte(byte value) {
-		byteBuffer.put(value);
 
+	public final void putByteArray(final byte[] value) {
+		for (final byte b : value) byteBuffer.put(b);
 	}
 
-	@Override
-	public void putChar(char value) {
-		byteBuffer.putChar(value);
 
+	public final void putCharArray(final char[] value) {
+		for (final char c : value) byteBuffer.putChar(c);
 	}
 
-	@Override
-	public void putShort(short value) {
-		byteBuffer.putShort(value);
 
+	public final void putShortArray(final short[] value) {
+		for (final short s : value) byteBuffer.putShort(s);
 	}
 
-	@Override
-	public void putInt(int value) {
-		byteBuffer.putInt(value);
 
+	public final void putIntArray(final int[] value) {
+		for (final int i : value) byteBuffer.putInt(i);
 	}
 
-	@Override
-	public void putLong(long value) {
-		byteBuffer.putLong(value);
 
+	public final void putLongArray(final long[] value) {
+		for (final long l : value) byteBuffer.putLong(l);
 	}
 
-	@Override
-	public void putFloat(float value) {
-		byteBuffer.putFloat(value);
 
+	public final void putFloatArray(final float[] value) {
+		for (final float f : value) byteBuffer.putFloat(f);
 	}
 
-	@Override
-	public void putDouble(double value) {
-		byteBuffer.putDouble(value);
 
+	public final void putDoubleArray(final double[] value) {
+		for (final double d : value) byteBuffer.putDouble(d);
 	}
 
-	@Override
-	public void putString(String value) {
-		byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-		putInt(bytes.length);
-		putByteArray(bytes);
-	}
 
-	@Override
-	public void putBooleanArray(boolean[] value) {
-		for (boolean b : value) byteBuffer.put((byte) (b ? 1 : 0));
-
-	}
-
-	@Override
-	public void putByteArray(byte[] value) {
-		for (byte b : value) byteBuffer.put(b);
-
-	}
-
-	@Override
-	public void putCharArray(char[] value) {
-		for (char c : value) byteBuffer.putChar(c);
-
-	}
-
-	@Override
-	public void putShortArray(short[] value) {
-		for (short s : value) byteBuffer.putShort(s);
-
-	}
-
-	@Override
-	public void putIntArray(int[] value) {
-		for (int i : value) byteBuffer.putInt(i);
-
-	}
-
-	@Override
-	public void putLongArray(long[] value) {
-		for (long l : value) byteBuffer.putLong(l);
-
-	}
-
-	@Override
-	public void putFloatArray(float[] value) {
-		for (float f : value) byteBuffer.putFloat(f);
-
-	}
-
-	@Override
-	public void putDoubleArray(double[] value) {
-		for (double d : value) byteBuffer.putDouble(d);
-
-	}
-
-	@Override
-	public void putStringArray(String[] value) {
-		for (String s : value) putString(s);
-	}
-
-	@Override
-	public void rewind() {
-		byteBuffer.rewind();
-	}
-
-	@Override
-	public int pos() {
-		return byteBuffer.position();
-	}
-
-	public void close() {
-		byteBuffer.clear();
+	public final void putStringArray(final String[] value) {
+		for (final String s : value) putString(s);
 	}
 }

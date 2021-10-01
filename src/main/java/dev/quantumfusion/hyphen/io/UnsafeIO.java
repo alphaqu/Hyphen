@@ -1,14 +1,14 @@
 package dev.quantumfusion.hyphen.io;
 
-import dev.quantumfusion.hyphen.util.UnsafeUtil;
+import dev.quantumfusion.hyphen.util.IOUtil;
 
 /**
  * <h2>This is the créme de créme of all IO. Highly unsafe but really fast.</h2>
  */
 @SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
-public final class UnsafeIO implements IOInterface {
-	private static final sun.misc.Unsafe UNSAFE = UnsafeUtil.getUnsafeInstance();
+public final class UnsafeIO {
+	private static final sun.misc.Unsafe UNSAFE = IOUtil.getUnsafeInstance();
 	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
 	private static final int CHAR_OFFSET = UNSAFE.ARRAY_CHAR_BASE_OFFSET;
@@ -19,6 +19,9 @@ public final class UnsafeIO implements IOInterface {
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private static final long STRING_FIELD_OFFSET;
 	private static final long STRING_ENCODING_OFFSET;
+
+	//If an array is below this value it will just use the regular methods. Else it will use memcpy
+	private static final int COPY_MEMORY_THRESHOLD = 10;
 
 	static {
 		try {
@@ -32,16 +35,31 @@ public final class UnsafeIO implements IOInterface {
 	private final long address;
 	private long currentAddress;
 
-	private UnsafeIO(long address) {
+	private UnsafeIO(final long address) {
 		this.address = address;
 		this.currentAddress = address;
 	}
 
-	public static UnsafeIO create(int size) {
+	@SuppressWarnings("FinalStaticMethod")
+	public static final UnsafeIO create(final int size) {
 		return new UnsafeIO(UNSAFE.allocateMemory(size));
 	}
 
+	// ======================================= FUNC ======================================= //
+	public final void rewind() {
+		currentAddress = address;
+	}
 
+	public final int pos() {
+		return (int) ((int) currentAddress - address);
+	}
+
+	public final void close() {
+		UNSAFE.freeMemory(address);
+	}
+
+
+	// ======================================== GET ======================================== //
 	public final boolean getBoolean() {
 		return UNSAFE.getBoolean(null, currentAddress++ + BOOLEAN_OFFSET);
 	}
@@ -104,6 +122,8 @@ public final class UnsafeIO implements IOInterface {
 		}
 	}
 
+
+	// ======================================== PUT ======================================== //
 	public final void putBoolean(final boolean value) {
 		UNSAFE.putBoolean(null, currentAddress++ + BOOLEAN_OFFSET, value);
 	}
@@ -112,12 +132,10 @@ public final class UnsafeIO implements IOInterface {
 		UNSAFE.putByte(null, currentAddress++ + BYTE_OFFSET, value);
 	}
 
-
 	public final void putChar(final char value) {
 		UNSAFE.putChar(null, currentAddress + CHAR_OFFSET, value);
 		currentAddress += 2;
 	}
-
 
 	public final void putShort(final short value) {
 		UNSAFE.putShort(null, currentAddress + SHORT_OFFSET, value);
@@ -129,25 +147,22 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += 4;
 	}
 
-
 	public final void putLong(final long value) {
 		UNSAFE.putLong(null, currentAddress + LONG_OFFSET, value);
 		currentAddress += 8;
 	}
-
 
 	public final void putFloat(final float value) {
 		UNSAFE.putFloat(null, currentAddress + FLOAT_OFFSET, value);
 		currentAddress += 4;
 	}
 
-
 	public final void putDouble(final double value) {
 		UNSAFE.putDouble(null, currentAddress + DOUBLE_OFFSET, value);
 		currentAddress += 8;
 	}
 
-	public void putString(String value) {
+	public final void putString(final String value) {
 		final byte[] bytes = (byte[]) UNSAFE.getObject(value, STRING_FIELD_OFFSET);
 		final int length = bytes.length;
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, UNSAFE.getByte(value, STRING_ENCODING_OFFSET) == 0 ? length : -length);
@@ -156,229 +171,164 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 
+	// ====================================== GET_ARR ======================================== //
 	public final boolean[] getBooleanArray(final int bytes) {
 		final boolean[] array = new boolean[bytes];
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BOOLEAN_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < bytes; i++) array[i] = getBoolean();
 		return array;
 	}
-
 
 	public final byte[] getByteArray(final int bytes) {
 		final byte[] array = new byte[bytes];
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < bytes; i++) array[i] = getByte();
 		return array;
 	}
-
 
 	public final char[] getCharArray(final int length) {
 		final char[] array = new char[length];
-		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, CHAR_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, CHAR_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getChar();
 		return array;
 	}
-
 
 	public final short[] getShortArray(final int length) {
 		final short[] array = new short[length];
-		final int bytes = length * 2;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, SHORT_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, SHORT_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getShort();
 		return array;
 	}
-
 
 	public final int[] getIntArray(final int length) {
 		final int[] array = new int[length];
-		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, INT__OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, INT__OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getInt();
 		return array;
 	}
-
 
 	public final long[] getLongArray(final int length) {
 		final long[] array = new long[length];
-		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, LONG_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, LONG_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getLong();
 		return array;
 	}
 
-
 	public final float[] getFloatArray(final int length) {
 		final float[] array = new float[length];
-		final int bytes = length * 4;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, FLOAT_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, FLOAT_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getFloat();
 		return array;
 	}
 
 
 	public final double[] getDoubleArray(final int length) {
 		final double[] array = new double[length];
-		final int bytes = length * 8;
-		UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, DOUBLE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(null, currentAddress + BYTE_OFFSET, array, DOUBLE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (int i = 0; i < length; i++) array[i] = getDouble();
 		return array;
 	}
 
-	public String[] getStringArray(int length) {
-		final String[] out = new String[length];
-		for (int i = 0; i < length; i++)
-			out[i] = getString();
-		return out;
+	public final String[] getStringArray(final int length) {
+		final String[] array = new String[length];
+		for (int i = 0; i < length; i++) array[i] = getString();
+		return array;
 	}
 
-
+	// ====================================== PUT_ARR ======================================== //
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
-		UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putBoolean(v);
 	}
-
 
 	public final void putByteArray(final byte[] value) {
 		final int bytes = value.length;
-		UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		if (bytes > COPY_MEMORY_THRESHOLD) {
+			UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putByte(v);
 	}
-
 
 	public final void putCharArray(final char[] value) {
-		final int bytes = value.length * 2;
-		UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putChar(v);
 	}
-
 
 	public final void putShortArray(final short[] value) {
-		final int bytes = value.length * 2;
-		UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 2;
+			UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putShort(v);
 	}
-
 
 	public final void putIntArray(final int[] value) {
-		final int bytes = value.length * 4;
-		UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putInt(v);
 	}
-
 
 	public final void putLongArray(final long[] value) {
-		final int bytes = value.length * 8;
-		UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putLong(v);
 	}
-
 
 	public final void putFloatArray(final float[] value) {
-		final int bytes = value.length * 4;
-		UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 4;
+			UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putFloat(v);
 	}
-
 
 	public final void putDoubleArray(final double[] value) {
-		final int bytes = value.length * 8;
-		UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
-		currentAddress += bytes;
+		final int length = value.length;
+		if (length > COPY_MEMORY_THRESHOLD) {
+			final int bytes = length * 8;
+			UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
+			currentAddress += bytes;
+		} else for (var v : value) putDouble(v);
 	}
 
-	public void putStringArray(String[] value) {
-		for (String s : value) putString(s);
-	}
-
-	public final void rewind() {
-		currentAddress = address;
-	}
-
-
-	public final int pos() {
-		return (int) ((int) currentAddress - address);
-	}
-
-
-	public final void close() {
-		UNSAFE.freeMemory(address);
-	}
-
-
-	public static void main(String[] args) throws NoSuchFieldException {
-		Test test = new Test(69, 420, 69420);
-		Test[] tests = {test};
-		W w = new W(test);
-		WW w2 = new WW(w);
-		UnsafeIO unsafeIO = UnsafeIO.create(64);
-		long testAddress = UNSAFE.getLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")));
-		long testAddress2 = UNSAFE.getLong(tests, LONG_OFFSET);
-
-		System.out.println(testAddress);
-		System.out.println(testAddress2);
-		System.out.println(unsafeIO.currentAddress);
-
-		System.out.println(Long.toHexString(testAddress));
-		System.out.println(Long.toHexString(testAddress2));
-		System.out.println(Long.toHexString(unsafeIO.currentAddress));
-
-		long wAddress = UNSAFE.getLong(w2, UNSAFE.objectFieldOffset(WW.class.getDeclaredField("test")));
-		UNSAFE.putLong(w, UNSAFE.objectFieldOffset(W.class.getDeclaredField("test")), wAddress);
-
-
-		/*
-		UNSAFE.copyMemory(
-				testAddress2 + UNSAFE.objectFieldOffset(Test.class.getDeclaredField("t0")),
-				unsafeIO.currentAddress,
-				16);*/
-		//System.out.println(Arrays.toString(unsafeIO.getByteArray(64)));
-		System.out.println(w.success());
-		w.debug();
-	}
-
-	static private class WW{
-		W test;
-
-		public WW(W test) {
-			this.test = test;
-		}
-
-		@Override
-		public String toString() {
-			return "WW{" +
-					"test=" + test +
-					'}';
-		}
-	}
-
-	static private class W{
-		final Test test;
-
-		public W(Test test) {
-			this.test = test;
-		}
-
-		public boolean success(){
-			return (Object)this.test == this;
-		}
-
-		public void debug() {
-			System.out.println(this);
-			System.out.println(this.test);
-		}
-	}
-
-	static private class Test{
-		int t0;
-		int t1;
-		int t2;
-
-		public Test(int t0, int t1, int t2) {
-			this.t0 = t0;
-			this.t1 = t1;
-			this.t2 = t2;
-		}
+	public final void putStringArray(final String[] value) {
+		for (final String s : value) putString(s);
 	}
 }

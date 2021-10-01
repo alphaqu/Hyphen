@@ -5,22 +5,20 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.io.ArrayIO;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
-import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class CodegenHandler {
-	private final IOHandler io;
+	private final IOMode io;
 	final String name;
 	final ClassWriter cw;
 
-	public CodegenHandler(IOHandler io, String name) {
-		this.io = io;
+	public CodegenHandler(Class<?> ioClazz, String name) {
+		this.io = IOMode.create(ioClazz);
 		this.name = name;
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		this.cw.visit(V16, ACC_PUBLIC + ACC_FINAL, name, null, Type.getInternalName(Object.class), null);
@@ -39,7 +37,7 @@ public class CodegenHandler {
 				this,
 				this.io,
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
-				"encode_" + info.getMethodName(false),
+				Constants.PUT_FUNC + info.getMethodName(false),
 				this.io.ioClass,
 				info.clazz)) {
 
@@ -55,7 +53,7 @@ public class CodegenHandler {
 				this,
 				this.io,
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
-				"decode_" + info.getMethodName(false),
+				Constants.GET_FUNC + info.getMethodName(false),
 				info.clazz,
 				this.io.ioClass)) {
 			var io = mh.createVar("io", this.io.ioClass);
@@ -117,74 +115,31 @@ public class CodegenHandler {
 		}
 	}
 
-	private static final boolean CRY = false;
-
-	private void createCry(int count) {
-		try (MethodHandler mh = MethodHandler.create(this, this.io, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "cry", int.class, int.class)) {
-			var input = mh.createVar("input", int.class);
+	private void createIntCombine() {
+		try (MethodHandler mh = MethodHandler.create(this, this.io, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "combine", Void.TYPE, ArrayIO.class)) {
+			var io = mh.createVar("io", this.io.ioClass);
 
 
-			Label LSwitch = new Label();
-			Label LA = new Label();
-			Label LDef = new Label();
-
-
-			Label[] labels = new Label[count];
-			for (int i = 0; i < count; i++) {
-				labels[i] = new Label();
-			}
-
-
-			input.load();
-			mh.visitJumpInsn(IFGE, LSwitch);
-			input.load();
-			mh.visitInsn(INEG);
-			mh.callInternalStaticMethod("cry", int.class, int.class);
-			mh.visitJumpInsn(IFGE, LA);
-			input.load();
-			mh.visitInsn(INEG);
-			mh.visitLdcInsn(20);
-			mh.visitInsn(IADD);
-			mh.callInternalStaticMethod("cry", int.class, int.class);
-			mh.visitInsn(POP);
-
-			mh.visitJumpInsn(GOTO, CRY ? labels[count - 1] : LSwitch);
-
-			mh.visitLabel(LA);
-			input.load();
-			mh.callStaticMethod(Integer.class, "valueOf", Integer.class, int.class);
-			mh.visitInsn(POP);
-
-			mh.visitLabel(LSwitch);
-			input.load();
-			mh.visitTableSwitchInsn(0, count - 1, LDef, labels);
-
-			for (int i = count - 1; i >= 0; i--) {
-				mh.visitLabel(labels[i]);
-				mh.visitFieldInsn(GETSTATIC, Type.getInternalName(System.class), "out", Type.getDescriptor(System.out.getClass()));
-				mh.visitLdcInsn("" + i);
-				mh.callInstanceMethod(PrintStream.class, "println", null, String.class);
-			}
-
-			mh.visitLabel(LDef);
-			mh.visitLdcInsn(69_420);
+			io.load();
+			mh.visitLdcInsn(69);
+			mh.visitLdcInsn(420);
+			mh.callIOPut(long.class);
 			mh.returnOp();
 		}
 	}
 
-
-	public static void otherMain(String[] args) throws Exception {
-		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "UwU");
+	public static void main(String[] args) throws Exception {
+		CodegenHandler uwu = new CodegenHandler(ArrayIO.class, "UwU");
 
 		uwu.createConstructor();
-		uwu.createEncode(null, null);
-		uwu.createDecode(null, null);
-		uwu.createTest();
-		uwu.createTest2();
+
+		uwu.createIntCombine();
 
 		byte[] bytes = uwu.cw.toByteArray();
 
-		Files.write(Path.of("./uwu.class"), bytes);
+		Files.write(Path.of("./UwU.class"), bytes);
+		PrintWriter pw = new PrintWriter(System.out);
+		CheckClassAdapter.verify(new ClassReader(bytes), null, true, pw);
 
 		Loader loader = new Loader(Thread.currentThread().getContextClassLoader());
 		Class<?> clazz = loader.define("UwU", bytes);
@@ -200,17 +155,6 @@ public class CodegenHandler {
 		arrayIO.rewind();
 		System.out.println(arrayIO.getInt());
 		System.out.println(arrayIO.getInt());
-	}
-
-
-	public static void main(String[] args) throws Exception {
-		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "CRY");
-
-		uwu.createCry(100);
-
-		byte[] bytes = uwu.cw.toByteArray();
-
-		Files.write(Path.of("./cry.class"), bytes);
 	}
 
 	public byte[] byteArray() {

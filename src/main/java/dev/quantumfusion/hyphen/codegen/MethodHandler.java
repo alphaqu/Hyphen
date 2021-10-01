@@ -18,12 +18,12 @@ import static org.objectweb.asm.Opcodes.*;
 
 @SuppressWarnings("WeakerAccess")
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
-	private final IOHandler io;
+	private final IOMode io;
 	public final Class<?> returnClazz;
 	private final CodegenHandler codegenHandler;
 
 	// ================================== CREATE ==================================
-	public MethodHandler(MethodVisitor mv, IOHandler io, Class<?> returnClazz, CodegenHandler codegenHandler) {
+	public MethodHandler(MethodVisitor mv, IOMode io, Class<?> returnClazz, CodegenHandler codegenHandler) {
 		super(Opcodes.ASM9, mv);
 		this.io = io;
 		this.returnClazz = returnClazz;
@@ -31,12 +31,12 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		this.pushScope();
 	}
 
-	public static MethodHandler createVoid(CodegenHandler codegenHandler, IOHandler io, int tag, String name, Class<?>... param) {
+	public static MethodHandler createVoid(CodegenHandler codegenHandler, IOMode io, int tag, String name, Class<?>... param) {
 		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getVoidMethodDesc(param), null, null);
 		return new MethodHandler(mv, io, Void.TYPE, codegenHandler);
 	}
 
-	public static MethodHandler create(CodegenHandler codegenHandler, IOHandler io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
+	public static MethodHandler create(CodegenHandler codegenHandler, IOMode io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
 		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
 		return new MethodHandler(mv, io, returnClazz, codegenHandler);
 	}
@@ -101,7 +101,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	private void invokeIO(String desc, String name) {
-		this.visitMethodInsn(INVOKEVIRTUAL, io.internalName, name, desc, io.isInterface);
+		this.visitMethodInsn(INVOKEVIRTUAL, io.internalName, name, desc, false);
 	}
 
 	private String getSuffix(Class<?> clazz) {

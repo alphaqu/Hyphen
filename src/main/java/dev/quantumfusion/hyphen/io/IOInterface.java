@@ -20,24 +20,6 @@ public interface IOInterface {
 
 	String getString();
 
-	boolean[] getBooleanArray(int length);
-
-	byte[] getByteArray(int length);
-
-	char[] getCharArray(int length);
-
-	short[] getShortArray(int length);
-
-	int[] getIntArray(int length);
-
-	long[] getLongArray(int length);
-
-	float[] getFloatArray(int length);
-
-	double[] getDoubleArray(int length);
-
-	String[] getStringArray(int length);
-
 	void putBoolean(boolean value);
 
 	void putByte(byte value);
@@ -55,6 +37,24 @@ public interface IOInterface {
 	void putDouble(double value);
 
 	void putString(String value);
+
+	boolean[] getBooleanArray(int length);
+
+	byte[] getByteArray(int length);
+
+	char[] getCharArray(int length);
+
+	short[] getShortArray(int length);
+
+	int[] getIntArray(int length);
+
+	long[] getLongArray(int length);
+
+	float[] getFloatArray(int length);
+
+	double[] getDoubleArray(int length);
+
+	String[] getStringArray(int length);
 
 	void putBooleanArray(boolean[] value);
 
