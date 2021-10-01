@@ -142,7 +142,7 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += 8;
 	}
 
-	public void putString(String value) {
+	public final void putString(final String value) {
 		final byte[] bytes = (byte[]) UNSAFE.getObject(value, STRING_FIELD_OFFSET);
 		final int length = bytes.length;
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, UNSAFE.getByte(value, STRING_ENCODING_OFFSET) == 0 ? length : -length);
@@ -212,7 +212,7 @@ public final class UnsafeIO implements IOInterface {
 		return array;
 	}
 
-	public String[] getStringArray(int length) {
+	public final String[] getStringArray(final int length) {
 		final String[] out = new String[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getString();
@@ -267,8 +267,8 @@ public final class UnsafeIO implements IOInterface {
 		currentAddress += bytes;
 	}
 
-	public void putStringArray(String[] value) {
-		for (String s : value) putString(s);
+	public final void putStringArray(final String[] value) {
+		for (final String s : value) putString(s);
 	}
 
 	public final void rewind() {
@@ -281,49 +281,5 @@ public final class UnsafeIO implements IOInterface {
 
 	public final void close() {
 		UNSAFE.freeMemory(address);
-	}
-
-	static private class WW {
-		W test;
-
-		public WW(W test) {
-			this.test = test;
-		}
-
-		@Override
-		public String toString() {
-			return "WW{" +
-					"test=" + test +
-					'}';
-		}
-	}
-
-	static private class W {
-		final Test test;
-
-		public W(Test test) {
-			this.test = test;
-		}
-
-		public boolean success() {
-			return (Object) this.test == this;
-		}
-
-		public void debug() {
-			System.out.println(this);
-			System.out.println(this.test);
-		}
-	}
-
-	static private class Test {
-		int t0;
-		int t1;
-		int t2;
-
-		public Test(int t0, int t1, int t2) {
-			this.t0 = t0;
-			this.t1 = t1;
-			this.t2 = t2;
-		}
 	}
 }
