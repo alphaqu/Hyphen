@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
-import dev.quantumfusion.hyphen.codegen.IOHandler;
 import dev.quantumfusion.hyphen.codegen.def.IODef;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.codegen.def.StaleDef;
@@ -18,6 +17,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public class SerializerFactory {
+	private static final boolean EXPORT = true;
+	private static final String uwuSerializer = "UWUSerializer";
 	private final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations = new HashMap<>();
 	private final Map<TypeInfo, MethodMetadata> methods = new LinkedHashMap<>();
 	private final Map<Object, List<Class<?>>> subclasses = new HashMap<>();
@@ -63,6 +64,14 @@ public class SerializerFactory {
 	 */
 	public static SerializerFactory createDebug(Class<?> clazz) {
 		return createInternal(true, clazz);
+	}
+
+	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
+		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
+		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
+		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
+		sh.addImpl(new StaleDef(List.class));
+		return sh;
 	}
 
 	/**
@@ -117,15 +126,13 @@ public class SerializerFactory {
 			this.implementations.put(def.getType(), (f) -> def);
 		}
 	}
-	private static final boolean EXPORT = true;
-	private static final String uwuSerializer = "UWUSerializer";
 
 	/**
 	 * Builds the Serializer Class
 	 *
 	 * @return The Serializer Class.
 	 */
-	public <IO> HyphenSerializer<?, IO> build(IOHandler ioMode) {
+	public <IO> HyphenSerializer<?, IO> build(Class<?> io) {
 		if (clazz.getTypeParameters().length > 0) {
 			throw ThrowHandler.fatal(IllegalClassException::new, "The Input class has Parameters,");
 		}
@@ -133,13 +140,12 @@ public class SerializerFactory {
 		scanner.scan(clazz);
 
 
-
-		CodegenHandler handler = new CodegenHandler(ioMode, uwuSerializer);
+		CodegenHandler handler = new CodegenHandler(io, uwuSerializer);
 		handler.createConstructor();
 		methods.forEach(handler::createEncode);
 		methods.forEach(handler::createDecode);
 		final Class<?> export = handler.export();
-		if(EXPORT){
+		if (EXPORT) {
 			try {
 				Files.write(Path.of("./" + uwuSerializer + ".class"), handler.byteArray());
 			} catch (IOException e) {
@@ -147,14 +153,6 @@ public class SerializerFactory {
 			}
 		}
 		return null;
-	}
-
-	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
-		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
-		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
-		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
-		sh.addImpl(new StaleDef(List.class));
-		return sh;
 	}
 
 

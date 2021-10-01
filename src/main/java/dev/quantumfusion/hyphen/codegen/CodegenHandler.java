@@ -16,12 +16,12 @@ import java.nio.file.Path;
 import static org.objectweb.asm.Opcodes.*;
 
 public class CodegenHandler {
-	private final IOHandler io;
+	private final IOMode io;
 	final String name;
 	final ClassWriter cw;
 
-	public CodegenHandler(IOHandler io, String name) {
-		this.io = io;
+	public CodegenHandler(Class<?> ioClazz, String name) {
+		this.io = IOMode.create(ioClazz);
 		this.name = name;
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		this.cw.visit(V16, ACC_PUBLIC + ACC_FINAL, name, null, Type.getInternalName(Object.class), null);
@@ -132,7 +132,7 @@ public class CodegenHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
-		CodegenHandler uwu = new CodegenHandler(IOHandler.ARRAY, "UwU");
+		CodegenHandler uwu = new CodegenHandler(ArrayIO.class, "UwU");
 
 		uwu.createConstructor();
 

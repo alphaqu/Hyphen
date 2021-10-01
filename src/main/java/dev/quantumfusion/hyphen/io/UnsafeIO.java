@@ -1,14 +1,14 @@
 package dev.quantumfusion.hyphen.io;
 
-import dev.quantumfusion.hyphen.util.UnsafeUtil;
+import dev.quantumfusion.hyphen.util.IOUtil;
 
 /**
  * <h2>This is the créme de créme of all IO. Highly unsafe but really fast.</h2>
  */
 @SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
-public final class UnsafeIO implements IOInterface {
-	private static final sun.misc.Unsafe UNSAFE = UnsafeUtil.getUnsafeInstance();
+public final class UnsafeIO {
+	private static final sun.misc.Unsafe UNSAFE = IOUtil.getUnsafeInstance();
 	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
 	private static final int CHAR_OFFSET = UNSAFE.ARRAY_CHAR_BASE_OFFSET;

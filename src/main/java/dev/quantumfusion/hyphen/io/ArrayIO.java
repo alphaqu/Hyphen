@@ -3,7 +3,7 @@ package dev.quantumfusion.hyphen.io;
 import java.nio.charset.StandardCharsets;
 
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod"})
-public final class ArrayIO implements IOInterface {
+public final class ArrayIO {
 	private final byte[] bytes;
 	private int pos;
 

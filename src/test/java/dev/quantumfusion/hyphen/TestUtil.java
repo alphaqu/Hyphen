@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.codegen.IOHandler;
+import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
@@ -84,7 +84,7 @@ public class TestUtil {
 			executable = () -> {
 				Class<? extends Throwable> value = failTest.value();
 				try {
-					SerializerFactory.createDebug(clazz).build(IOHandler.BYTEBUFFER);
+					SerializerFactory.createDebug(clazz).build(ByteBufferIO.class);
 				} catch (Throwable throwable) {
 					if (throwable.getClass().equals(value)) {
 						System.err.println("Got expected error: ");
@@ -102,7 +102,7 @@ public class TestUtil {
 				}
 			};
 		} else {
-			executable = () -> SerializerFactory.createDebug(clazz).build(IOHandler.BYTEBUFFER);
+			executable = () -> SerializerFactory.createDebug(clazz).build(ByteBufferIO.class);
 		}
 
 		return DynamicTest.dynamicTest(clazz.getSimpleName(), URI.create("class:" + clazz.getName()), executable);
