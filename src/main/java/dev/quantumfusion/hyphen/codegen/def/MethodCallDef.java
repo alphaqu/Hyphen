@@ -14,16 +14,16 @@ public class MethodCallDef extends SerializerDef {
 
 	@Override
 	public Class<?> getType() {
-		return this.info.clazz;
+		return this.info.getClazz();
 	}
 
 	@Override
 	public void doPut(MethodHandler mh) {
-		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.info.getMethodName(false), null, UnsafeIO.class, this.info.clazz);
+		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.info.getMethodName(false), null, UnsafeIO.class, this.info.getClazz());
 	}
 
 	@Override
 	public void doGet(MethodHandler mh) {
-		mh.callInternalStaticMethod(Constants.GET_FUNC + this.info.getMethodName(false), this.info.clazz, UnsafeIO.class);
+		mh.callInternalStaticMethod(Constants.GET_FUNC + this.info.getMethodName(false), this.info.getClazz(), UnsafeIO.class);
 	}
 }

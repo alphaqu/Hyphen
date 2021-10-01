@@ -65,7 +65,7 @@ public class ArrayMethod extends MethodMetadata {
 		mh.visitInsn(AALOAD);
 		// io | data | io | data[i]
 		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, UnsafeIO.class, this.values.clazz);
+		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, UnsafeIO.class, this.values.getClazz());
 		// io | data
 		i.iinc(1); // i++
 		mh.visitJumpInsn(GOTO, start);
@@ -94,7 +94,7 @@ public class ArrayMethod extends MethodMetadata {
 		// length | length
 		length.store();
 		// length
-		mh.visitTypeInsn(ANEWARRAY, Type.getInternalName(this.values.clazz));
+		mh.visitTypeInsn(ANEWARRAY, Type.getInternalName(this.values.getClazz()));
 		// array
 		mh.visitInsn(ICONST_0);
 		i.store(); // int i = 0
@@ -117,7 +117,7 @@ public class ArrayMethod extends MethodMetadata {
 		io.load();
 		// array | array | i | io
 		// FIXME: NEED TO GET IO HERE
-		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.clazz, UnsafeIO.class);
+		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.getClazz(), UnsafeIO.class);
 		// array | array | i | component
 		mh.visitInsn(AASTORE);
 		// array

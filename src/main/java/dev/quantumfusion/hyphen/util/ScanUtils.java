@@ -70,7 +70,7 @@ public class ScanUtils {
 		options.putAll(source.classAnnotations);
 
 		// find @Serialize on packages
-		String packageName = source.clazz.getPackageName();
+		String packageName = source.getClazz().getPackageName();
 		int i = packageName.length();
 		do {
 			Package p = ClassLoader
@@ -107,7 +107,7 @@ public class ScanUtils {
 			classes[i] = allFields.get(i).clazz().getClazz();
 		}
 		try {
-			Constructor<?> constructor = source.clazz.getDeclaredConstructor(classes);
+			Constructor<?> constructor = source.getClazz().getDeclaredConstructor(classes);
 			checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, source));
 		} catch (NoSuchMethodException e) {
 			throw ThrowHandler.constructorNotFoundFail(allFields, source);

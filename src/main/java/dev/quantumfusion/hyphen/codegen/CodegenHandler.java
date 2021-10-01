@@ -42,10 +42,10 @@ public class CodegenHandler {
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
 				Constants.PUT_FUNC + info.getMethodName(false),
 				this.io.ioClass,
-				info.clazz)) {
+				info.getClazz())) {
 
 			var io = mh.createVar("io", this.io.ioClass);
-			var data = mh.createVar("data", info.clazz);
+			var data = mh.createVar("data", info.getClazz());
 
 			methodMetadata.writePut(mh, io, data);
 		}
@@ -57,7 +57,7 @@ public class CodegenHandler {
 				this.io,
 				ACC_PUBLIC | ACC_STATIC | ACC_FINAL,
 				Constants.GET_FUNC + info.getMethodName(false),
-				info.clazz,
+				info.getClazz(),
 				this.io.ioClass)) {
 			var io = mh.createVar("io", this.io.ioClass);
 

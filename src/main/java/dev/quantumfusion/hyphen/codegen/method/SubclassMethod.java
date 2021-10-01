@@ -24,12 +24,12 @@ public class SubclassMethod extends MethodMetadata {
 		var methodMetadata = new SubclassMethod(info);
 		final Map<Class<?>, SerializerDef> subtypes = methodMetadata.subtypes;
 		for (TypeInfo subTypeInfo : info.classInfos) {
-			if (subtypes.containsKey(subTypeInfo.clazz)) {
+			if (subtypes.containsKey(subTypeInfo.getClazz())) {
 				// TODO: throw error, cause there is a duplicated class
 				//		 or should this be done earlier
 			}
 
-			subtypes.put(subTypeInfo.clazz, handler.getDefinition(null, subTypeInfo, null));
+			subtypes.put(subTypeInfo.getClazz(), handler.getDefinition(null, subTypeInfo, null));
 		}
 		return methodMetadata;
 	}

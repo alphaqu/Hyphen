@@ -105,7 +105,7 @@ public class TypeUtil {
 			} else if (typeParameter instanceof ParameterizedType superParameterizedType) {
 				if (typeInfo instanceof ParameterizedInfo selfParameterizedType) {
 					Class<?> clazz = ScanUtils.getClazz(superParameterizedType);
-					if (clazz == typeInfo.clazz) {
+					if (clazz == typeInfo.getClazz()) {
 						var superTypeArguments = superParameterizedType.getActualTypeArguments();
 						var selfTypeArguments = selfParameterizedType.types;
 
@@ -117,7 +117,7 @@ public class TypeUtil {
 
 							unifyType(resolved, selfType, superType, UnificationType.EXACT);
 						}
-					} else if (clazz.isAssignableFrom(typeInfo.clazz)) {
+					} else if (clazz.isAssignableFrom(typeInfo.getClazz())) {
 						throw ThrowHandler.fatal(
 								NotYetImplementedException::new, "parameterized type unification through supertypes",
 								ThrowEntry.of("TypeParameter", typeParameter)
@@ -253,7 +253,7 @@ public class TypeUtil {
 				for (TypeInfo subInfo : subclassInfo.classInfos) if (this.canAssign2(subInfo, clazz)) return true;
 				return false;
 			} else {
-				return this.canAssign(typeInfo.clazz, clazz);
+				return this.canAssign(typeInfo.getClazz(), clazz);
 			}
 		}
 	}

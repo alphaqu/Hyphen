@@ -22,7 +22,7 @@ public class ThrowHandler {
 	// some methods to shorten code
 	public static RuntimeException typeFail(String reason, TypeInfo source, Class<?> clazz, Type type) {
 		return fatal(ClassScanException::new, reason, new ThrowEntry[]{
-				of("Source Class", source.clazz.getName()),
+				of("Source Class", source.getClazz().getName()),
 				of("Error Class", clazz.getName()),
 				of("Type Name", type.getTypeName()),
 				of("Type Class", type.getClass().getSimpleName())
@@ -31,7 +31,7 @@ public class ThrowHandler {
 
 	public static RuntimeException typeFail(String reason, TypeInfo source, Field field) {
 		return fatal(ClassScanException::new, reason, new ThrowEntry[]{
-				of("Source Class", source.clazz.getName()),
+				of("Source Class", source.getClazz().getName()),
 				of("Field Class", field.getType()),
 				of("Field Name", field.getName()),
 				of("Type", field.getGenericType())
@@ -41,14 +41,14 @@ public class ThrowHandler {
 	public static RuntimeException fieldAccessFail(FieldEntry field, TypeInfo source) {
 		return fatal(AccessException::new, "Field is inaccessible as it's " + getModifierName(field.modifier()), new ThrowEntry[]{
 				of("Field Name", field.name()),
-				of("Field Class", field.clazz().clazz.getSimpleName()),
-				of("Source Class", source.clazz.getName())
+				of("Field Class", field.clazz().getClazz().getSimpleName()),
+				of("Source Class", source.getClazz().getName())
 		});
 	}
 
 	public static RuntimeException constructorAccessFail(Constructor<?> constructor, TypeInfo source) {
 		return fatal(AccessException::new, "Constructor is inaccessible as it's " + getModifierName(constructor.getModifiers()), new ThrowEntry[]{
-				of("Class", source.clazz.getName())
+				of("Class", source.getClazz().getName())
 		});
 	}
 
@@ -67,7 +67,7 @@ public class ThrowHandler {
 
 	public static RuntimeException constructorNotFoundFail(List<FieldEntry> fields, ClassInfo info) {
 		ThrowHandler.Throwable[] throwable = new ThrowHandler.Throwable[2 + fields.size()];
-		throwable[0] = ThrowEntry.of("Source Class", info.clazz.getSimpleName());
+		throwable[0] = ThrowEntry.of("Source Class", info.getClazz().getSimpleName());
 		throwable[1] = ThrowEntry.of("Expected Constructor Parameters", "");
 		for (int i = 0; i < fields.size(); i++) {
 			FieldEntry fieldInfo = fields.get(i);

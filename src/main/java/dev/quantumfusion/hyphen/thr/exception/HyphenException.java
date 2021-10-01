@@ -40,7 +40,7 @@ public class HyphenException extends RuntimeException {
 				else {
 					builder.append(typeInfo.name);
 					builder.append("\" in class \"");
-					builder.append(typeInfo.parent.clazz.getSimpleName());
+					builder.append(typeInfo.parent.getClazz().getSimpleName());
 					builder.append('\"');
 				}
 			}

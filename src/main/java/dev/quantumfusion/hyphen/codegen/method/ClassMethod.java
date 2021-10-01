@@ -34,8 +34,8 @@ public class ClassMethod extends MethodMetadata {
 		var methodMetadata = new ClassMethod(info, new LinkedHashMap<>());
 		handler.methods.put(info, methodMetadata);
 
-		if (handler.implementations.containsKey(info.clazz)) {
-			methodMetadata.addField(null, handler.implementations.get(info.clazz).apply(info));
+		if (handler.implementations.containsKey(info.getClazz())) {
+			methodMetadata.addField(null, handler.implementations.get(info.getClazz()).apply(info));
 			methodMetadata.compile();
 			return methodMetadata;
 		}
@@ -96,7 +96,7 @@ public class ClassMethod extends MethodMetadata {
 					var def = entry.getValue();
 
 					if (field != null)
-						mh.getField(GETFIELD, this.info.clazz, field.name(), field.clazz().getClazz());
+						mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getClazz());
 					// io | field
 					def.doPut(mh);
 				}

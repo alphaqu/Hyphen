@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class TypeInfo {
-	public final Class<?> clazz;
-	public final Type type;
+	protected final Class<?> clazz;
+	protected final Type type;
 
 	@Nullable
 	public final AnnotatedType annotatedType;
