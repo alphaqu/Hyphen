@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.io.UnsafeIO;
 
 import java.util.Locale;
 
-public class IODef extends SerializerDef {
+public class IODef implements SerializerDef {
 	private final Class<?> clazz;
 
 	public IODef(Class<?> clazz) {

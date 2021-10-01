@@ -56,12 +56,14 @@ public class ClassMethod extends MethodMetadata {
 
 	public void compile() {
 		final List<PrimEntry> primitives = new ArrayList<>();
-		this.objects = new LinkedHashMap<>();
+		this.objects =  this.fields;//new LinkedHashMap<>();
+		/*
 		fields.forEach((field, def) -> {
 			if (field != null && isPackable(field.clazz())) primitives.add(PrimEntry.create(field));
 			else this.objects.put(field, def);
 		});
-		this.primitives = PrimGroup.createGroups(primitives, METHODS, 8);
+		this.primitives = PrimGroup.createGroups(primitives, METHODS, 8);*/
+		this.primitives = List.of();
 	}
 
 	public boolean isPackable(TypeInfo typeInfo) {

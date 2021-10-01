@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class StaleDef extends SerializerDef {
+public class StaleDef implements SerializerDef {
 
 	public final Class<?> clazz;
 

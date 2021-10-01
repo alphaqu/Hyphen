@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
+import dev.quantumfusion.hyphen.codegen.def.BoxedDef;
 import dev.quantumfusion.hyphen.codegen.def.IODef;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.codegen.def.StaleDef;
@@ -69,6 +70,7 @@ public class SerializerFactory {
 	private static SerializerFactory createInternal(boolean debugMode, Class<?> clazz) {
 		final SerializerFactory sh = new SerializerFactory(debugMode, clazz);
 		sh.addImpl(IODef::new, boolean.class, byte.class, char.class, short.class, int.class, long.class, float.class, double.class, String.class);
+		sh.addImpl(new BoxedDef(Boolean.class, new IODef(boolean.class)), new BoxedDef(Byte.class, new IODef(byte.class)), new BoxedDef(Character.class, new IODef(char.class)), new BoxedDef(Short.class, new IODef(short.class)), new BoxedDef(Integer.class, new IODef(int.class)), new BoxedDef(Long.class, new IODef(long.class)), new BoxedDef(Float.class, new IODef(float.class)), new BoxedDef(Double.class, new IODef(double.class)));
 		sh.addImpl(IODef::new, boolean[].class, byte[].class, char[].class, short[].class, int[].class, float[].class, long[].class, double[].class, String[].class);
 		sh.addImpl(new StaleDef(List.class));
 		return sh;

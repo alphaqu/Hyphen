@@ -2,11 +2,11 @@ package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
-public abstract class SerializerDef {
+public interface SerializerDef {
 
-	public abstract Class<?> getType();
+	Class<?> getType();
 
-	public abstract void doPut(MethodHandler mh);
+	void doPut(MethodHandler mh);
 
-	public abstract void doGet(MethodHandler mh);
+	void doGet(MethodHandler mh);
 }

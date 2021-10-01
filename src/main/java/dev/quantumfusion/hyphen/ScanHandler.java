@@ -94,7 +94,7 @@ public class ScanHandler {
 
 
 	public void scan(Class<?> clazz) {
-		this.createSerializeMetadata(new ClassInfo(clazz, Map.of()));
+		this.createSerializeMethod(new ClassInfo(clazz, Map.of()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
@@ -134,7 +134,7 @@ public class ScanHandler {
 			ScanUtils.checkAccess(field.modifier(), () -> ThrowHandler.fieldAccessFail(field, source));
 		}
 
-		this.createSerializeMetadata(classInfo);
+		this.createSerializeMethod(classInfo);
 		return new MethodCallDef(classInfo);
 	}
 }

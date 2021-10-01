@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.io.UnsafeIO;
 
-public class MethodCallDef extends SerializerDef {
+public class MethodCallDef implements SerializerDef {
 	private final TypeInfo info;
 
 	public MethodCallDef(TypeInfo info) {
