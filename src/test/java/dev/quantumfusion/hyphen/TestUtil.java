@@ -119,8 +119,6 @@ public class TestUtil {
 
 	public static void main(String[] args) {
 		final SerializerFactory<Recursive> debug = SerializerFactory.createDebug(Recursive.class);
-		debug.setOption(Options.COMPACT_METHODS, false);
-		debug.setOption(Options.COMPACT_VARIABLES, false);
 		final HyphenSerializer<Recursive, ByteBufferIO> build = debug.build(ByteBufferIO.class);
 		final Recursive encode = new Recursive(new RecursiveC<>("hello", new C1<>("420"), new Recursive(new C1<>("69"))));
 		// final Recursive encode = new Recursive(new C1<>(""));

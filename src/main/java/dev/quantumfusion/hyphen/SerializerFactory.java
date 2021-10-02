@@ -64,7 +64,10 @@ public class SerializerFactory<K> {
 	 * @return The {@code SerializerFactory}.
 	 */
 	public static <K> SerializerFactory<K> createDebug(Class<K> clazz) {
-		return createInternal(true, clazz);
+		final SerializerFactory<K> internal = createInternal(true, clazz);
+		internal.setOption(Options.COMPACT_METHODS, false);
+		internal.setOption(Options.COMPACT_VARIABLES, false);
+		return internal;
 	}
 
 	private static <K> SerializerFactory<K> createInternal(boolean debugMode, Class<K> clazz) {
