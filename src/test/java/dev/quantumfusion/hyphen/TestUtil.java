@@ -1,13 +1,13 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
+import dev.quantumfusion.hyphen.scan.poly.DoubleC1Pain;
+import dev.quantumfusion.hyphen.scan.poly.RecursiveInteger;
+import dev.quantumfusion.hyphen.scan.poly.RecursiveString;
 import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.DynamicContainer;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
 
 import java.io.IOException;
@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.IntFunction;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -116,7 +118,7 @@ public class TestUtil {
 		return build;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {/*
 		final SerializerFactory<C1OfC1> debug = SerializerFactory.createDebug(C1OfC1.class);
 
 		final HyphenSerializer<C1OfC1, ByteBufferIO> build = debug.build(ByteBufferIO.class);
@@ -131,7 +133,41 @@ public class TestUtil {
 		System.out.println("Measured: " + measure);
 		System.out.println("Actual: " + direct.pos());
 		System.out.println(decode.equals(encode));
+*/
+	}
 
+	@TestFactory
+	Stream<DynamicNode> name() {
+		return createGeneratedTests(RecursiveString.class, ByteBufferIO.class, ByteBufferIO::createDirect, RecursiveString.generate(3));
+	}
+	@TestFactory
+	Stream<DynamicNode> name2() {
+		return createGeneratedTests(RecursiveInteger.class, ByteBufferIO.class, ByteBufferIO::createDirect, RecursiveInteger.generate(3));
+	}
+
+	@TestFactory
+	Stream<DynamicNode> name3() {
+		return createGeneratedTests(DoubleC1Pain.class, ByteBufferIO.class, ByteBufferIO::createDirect, DoubleC1Pain.generate()).limit(100);
+	}
+
+	private static <DATA, IO extends ByteBufferIO> Stream<DynamicNode> createGeneratedTests(Class<DATA> testClass, Class<IO> io, IntFunction<IO> ioCreator, Stream<? extends DATA> objects) {
+		final SerializerFactory<DATA> debug = SerializerFactory.createDebug(testClass);
+		final HyphenSerializer<DATA, IO> build = debug.build(io);
+		return objects.map(encode -> DynamicTest.dynamicTest( "" + encode, () -> {
+			final int measure = (int) build.measure(encode);
+			// make oversized
+			final IO direct = ioCreator.apply((measure + 16) * 4);
+			build.encode(direct, encode);
+			direct.rewind();
+			final DATA decode = build.decode(direct);
+
+			// System.out.println("Measured: " + measure);
+			// System.out.println("Actual: " + direct.pos());
+			// System.out.println(decode.equals(encode));
+			Assertions.assertEquals(measure, direct.pos(), "Expected the read sizes to match");
+			Assertions.assertEquals(encode, decode, "Expected the return to equal the input");
+
+		}));
 	}
 
 	private static Class<?> getClass(Path className, String packageName) {

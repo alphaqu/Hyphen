@@ -5,9 +5,9 @@ import dev.quantumfusion.hyphen.annotation.SerSubclasses;
 import dev.quantumfusion.hyphen.annotation.Serialize;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.IntC1;
-import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 
-@FailTest(NotYetImplementedException.class)
+@FailTest(NullPointerException.class)
+//@FailTest(NotYetImplementedException.class)
 public class IntC1PartialError {
 	@Serialize
 	@SerSubclasses({C1.class, IntC1.class})
