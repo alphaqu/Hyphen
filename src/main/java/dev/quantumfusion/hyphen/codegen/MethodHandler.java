@@ -270,6 +270,39 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		return this.createVarInternal(name, type);
 	}
 
+	// =================================== FOR ===================================
+	public final class ForI implements AutoCloseable {
+		private final Label start = new Label();
+		private final Label end = new Label();
+		public final MethodHandler.Var length = MethodHandler.this.createVar("length", int.class);
+		public final MethodHandler.Var i = MethodHandler.this.createVar("i", int.class);
+
+		public ForI() {
+			length.store();
+		}
+
+		public ForI start() {
+			MethodHandler.this.visitInsn(ICONST_0);
+			i.store();
+			MethodHandler.this.visitLabel(start);
+			i.load();
+			length.load();
+			MethodHandler.this.visitJumpInsn(IF_ICMPGE, end);
+			return this;
+		}
+
+		@Override
+		public void close() {
+			i.iinc(1); // i++
+			MethodHandler.this.visitJumpInsn(GOTO, start);
+			MethodHandler.this.visitLabel(end);
+		}
+	}
+
+	public ForI createForWithLength() {
+		return new ForI();
+	}
+
 	// ================================ VARHANDLER ================================
 	public final class Var {
 		private final String name;

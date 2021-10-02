@@ -8,7 +8,7 @@ import java.util.function.BiFunction;
 public enum MethodMode {
 	GET("get", null, (info, ch) -> new Class[]{ch.getIOMode().ioClass}),
 	PUT("put", Void.TYPE, (info, ch) -> new Class[]{ch.getIOMode().ioClass, info.getClazz()}),
-	MEASURE("calcSub", long.class, (info, ch) -> new Class[]{info.getClazz()});
+	MEASURE("measure", long.class, (info, ch) -> new Class[]{info.getClazz()});
 
 	public final String prefix;
 	@Nullable // null if data

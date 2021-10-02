@@ -10,9 +10,9 @@ public interface SerializerDef {
 
 	void doGet(MethodHandler mh);
 
-	long getSize();
+	boolean needsField();
 
-	default void calcSubSize(MethodHandler mh){
+	default void doMeasure(MethodHandler mh) {
 		throw new IllegalStateException("Shouldn't be called");
 	}
 }

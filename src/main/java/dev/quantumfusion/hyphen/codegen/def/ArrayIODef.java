@@ -40,13 +40,13 @@ public class ArrayIODef implements SerializerDef {
 	}
 
 	@Override
-	public long getSize() {
-		return ~4;
+	public boolean needsField() {
+		return true;
 	}
 
 	@Override
-	public void calcSubSize(MethodHandler mh) {
-		if(this.clazz == String[].class){
+	public void doMeasure(MethodHandler mh) {
+		if (this.clazz == String[].class) {
 
 		} else {
 			int size;

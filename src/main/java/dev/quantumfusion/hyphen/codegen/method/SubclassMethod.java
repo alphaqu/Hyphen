@@ -10,7 +10,6 @@ import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +17,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class SubclassMethod extends MethodMetadata {
 	private final Map<Class<?>, SerializerDef> subtypes = new LinkedHashMap<>();
+	public boolean dynamic = false;
 
 	public SubclassMethod(SubclassInfo info) {
 		super(info);
@@ -39,6 +39,16 @@ public class SubclassMethod extends MethodMetadata {
 
 	public void addSubclass(Class<?> clazz, SerializerDef def) {
 		subtypes.put(clazz, def);
+	}
+
+	@Override
+	public long getSize() {
+		return 1;
+	}
+
+	@Override
+	public boolean dynamicSize() {
+		return true;
 	}
 
 	@Override
@@ -126,63 +136,34 @@ public class SubclassMethod extends MethodMetadata {
 	}
 
 	@Override
-	public long getSize() {
-		Iterator<SerializerDef> iterator = this.subtypes.values().iterator();
-
-		if (!iterator.hasNext()) throw new IllegalStateException("no subclasses");
-
-		var size = iterator.next().getSize();
-
-		if (size < 0)
-			// dynamic sized subclass
-			return ~1;
-
-		while (iterator.hasNext()) {
-			var otherSize = iterator.next().getSize();
-			if (otherSize != size)
-				// differently sized subsizes
-				return ~1;
-		}
-
-		return 1 + size;
-	}
-
-	@Override
 	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
 		data.load();
 		// data
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);
-		// clazz
+
+		var clazz = mh.createVar("clazz", Class.class);
+		clazz.store();
 
 		for (Map.Entry<Class<?>, SerializerDef> entry : this.subtypes.entrySet()) {
 			Class<?> clz = entry.getKey();
 			SerializerDef def = entry.getValue();
 			Label skip = new Label();
 
-			mh.visitInsn(DUP);
-			// clazz | clazz
+			clazz.load();
+			// clazz
 			mh.visitLdcInsn(Type.getType(clz));
-			// clazz | clazz | clz
+			// clazz | clz
 			mh.visitJumpInsn(IF_ACMPNE, skip);
-			// clazz == clz
-			mh.visitInsn(POP);
-			// --
 
-			var size = def.getSize();
-			if (size >= 0) {
-				mh.visitLdcInsn(size);
-			} else {
-				data.load();
-				// data
-				mh.cast(clz);
-				// data as clz
-				def.calcSubSize(mh);
-				// size
-				if (size < -1) {
-					mh.visitLdcInsn(~size);
-					mh.visitInsn(LADD);
-				}
-			}
+			data.load();
+			// data
+			mh.cast(clz);
+			// data as clz
+			def.doMeasure(mh);
+
+			mh.visitLdcInsn(1L);
+			mh.visitInsn(LADD);
+
 			mh.returnOp();
 			mh.visitLabel(skip);
 		}
@@ -197,7 +178,5 @@ public class SubclassMethod extends MethodMetadata {
 					mh.visitLdcInsn("dumb");
 					return "Feelings";
 				});
-		mh.visitInsn(LCONST_0);
-		mh.returnOp();
 	}
 }

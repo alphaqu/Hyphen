@@ -37,14 +37,15 @@ public abstract class WrappedDef implements SerializerDef {
 		// data
 	}
 
+
 	@Override
-	public long getSize() {
-		return this.inner.getSize();
+	public boolean needsField() {
+		return true;
 	}
 
 	@Override
-	public void calcSubSize(MethodHandler mh) {
+	public void doMeasure(MethodHandler mh) {
 		this.unwrap(mh);
-		this.inner.calcSubSize(mh);
+		this.inner.doMeasure(mh);
 	}
 }

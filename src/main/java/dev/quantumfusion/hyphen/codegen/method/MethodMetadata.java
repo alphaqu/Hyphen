@@ -16,13 +16,16 @@ public abstract class MethodMetadata {
 		return this.info;
 	}
 
+	public abstract long getSize();
+
+	public abstract boolean dynamicSize();
+
 	public abstract void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data);
 
 	public abstract void writeGet(MethodHandler mh, MethodHandler.Var io);
 
 	public abstract void writeMeasure(MethodHandler mh, MethodHandler.Var data);
 
-	public abstract long getSize();
 
 	public void createPut(CodegenHandler ch) {
 		try (MethodHandler mh = ch.createHyphenMethod(MethodMode.PUT, this)) {
@@ -38,19 +41,18 @@ public abstract class MethodMetadata {
 		try (MethodHandler mh = ch.createHyphenMethod(MethodMode.GET, this)) {
 			MethodHandler.Var io;
 			io = mh.createVar("io", ch.getIOMode().ioClass);
-
 			this.writeGet(mh, io);
 		}
 	}
 
 	public void createMeasure(CodegenHandler ch) {
-		if (this.getSize() >= 0) return; // skip
-
-		try (MethodHandler mh = ch.createHyphenMethod(MethodMode.MEASURE, this)) {
-			MethodHandler.Var data;
-			data = mh.createVar("data", this.getInfo().getClazz());
-			this.writeMeasure(mh, data);
-			mh.returnOp();
+		if (this.dynamicSize()) {
+			try (MethodHandler mh = ch.createHyphenMethod(MethodMode.MEASURE, this)) {
+				MethodHandler.Var data;
+				data = mh.createVar("data", this.getInfo().getClazz());
+				this.writeMeasure(mh, data);
+			}
 		}
 	}
+
 }

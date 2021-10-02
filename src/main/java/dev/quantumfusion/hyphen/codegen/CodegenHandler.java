@@ -99,7 +99,7 @@ public class CodegenHandler {
 	public void createMainMethods(MethodMetadata mainSerializeMethod) {
 		this.createMainEncode(mainSerializeMethod);
 		this.createMainDecode(mainSerializeMethod);
-		this.createMeasure(mainSerializeMethod);
+		this.createMainMeasure(mainSerializeMethod);
 	}
 
 	private void createMainEncode(MethodMetadata methodMetadata) {
@@ -163,7 +163,7 @@ public class CodegenHandler {
 		}
 	}
 
-	private void createMeasure(MethodMetadata methodMetadata) {
+	private void createMainMeasure(MethodMetadata methodMetadata) {
 		TypeInfo info = methodMetadata.getInfo();
 		try (MethodHandler mh = MethodHandler.create(
 				this,
@@ -174,9 +174,8 @@ public class CodegenHandler {
 		) {
 			if (!options.get(Options.DISABLE_MEASURE)) {
 				long size = methodMetadata.getSize();
-				if (size >= 0) {
+				if (!methodMetadata.dynamicSize()) {
 					mh.visitLdcInsn(size);
-					mh.returnOp();
 				} else {
 					mh.createVar("this", Object.class);
 					var dataRaw = mh.createVar("dataRaw", Object.class);
@@ -185,15 +184,6 @@ public class CodegenHandler {
 					mh.cast(info.getClazz());
 					data.store();
 					methodMetadata.writeMeasure(mh, data);
-
-					size = ~size;
-
-					if (size != 0) {
-						mh.visitLdcInsn(size);
-						mh.visitInsn(LADD);
-					}
-
-					mh.returnOp();
 				}
 			} else {
 				//TODO throw exception

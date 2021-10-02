@@ -29,12 +29,12 @@ public class StaleDef implements SerializerDef {
 	}
 
 	@Override
-	public long getSize() {
-		return 0;
+	public boolean needsField() {
+		return false;
 	}
 
 	@Override
-	public void calcSubSize(MethodHandler mh) {
+	public void doMeasure(MethodHandler mh) {
 
 	}
 }
