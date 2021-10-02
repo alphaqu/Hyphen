@@ -65,6 +65,9 @@ public class ArrayMethod extends MethodMetadata {
 		// io | data | io | data | i
 		mh.visitInsn(AALOAD);
 		// io | data | io | data[i]
+		if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
+			mh.cast(this.values.getClazz());
+		}
 		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, mh.getIOClazz(), this.values.getClazz());
 		// io | data
 		i.iinc(1); // i++
@@ -198,6 +201,9 @@ public class ArrayMethod extends MethodMetadata {
 			// size | data | i
 			mh.visitInsn(AALOAD);
 			// size | data[i]
+			if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
+				mh.cast(this.values.getClazz());
+			}
 			this.elementSerializer.callSubCalcSize(mh);
 			// size | elementSize
 			mh.visitInsn(LADD);

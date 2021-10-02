@@ -100,10 +100,10 @@ public class ClassMethod extends MethodMetadata {
 
 					if (field != null) {
 
-						mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getRawType());
-						if (field.clazz() instanceof TypeClassInfo typeClassInfo
-								&& !typeClassInfo.getClazz().isAssignableFrom(typeClassInfo.getRawType())) {
-							mh.cast(typeClassInfo.getClazz());
+						TypeInfo fieldType = field.clazz();
+						mh.getField(GETFIELD, this.info.getClazz(), field.name(), fieldType.getRawType());
+						if (!fieldType.getClazz().isAssignableFrom(fieldType.getRawType())) {
+							mh.cast(fieldType.getClazz());
 						}
 					}
 					// io | field
@@ -233,10 +233,10 @@ public class ClassMethod extends MethodMetadata {
 
 
 			if (field != null) {
-				mh.getField(GETFIELD, this.info.getClazz(), field.name(), field.clazz().getRawType());
-				if (field.clazz() instanceof TypeClassInfo typeClassInfo
-						&& !typeClassInfo.getClazz().isAssignableFrom(typeClassInfo.getRawType())) {
-					mh.cast(typeClassInfo.getClazz());
+				TypeInfo fieldType = field.clazz();
+				mh.getField(GETFIELD, this.info.getClazz(), field.name(), fieldType.getRawType());
+				if (!fieldType.getClazz().isAssignableFrom(fieldType.getRawType())) {
+					mh.cast(fieldType.getClazz());
 				}
 			}
 
