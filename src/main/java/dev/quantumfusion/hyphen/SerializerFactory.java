@@ -143,7 +143,7 @@ public class SerializerFactory<K> {
 		CodegenHandler handler = new CodegenHandler(io, uwuSerializer);
 		handler.createConstructor();
 		handler.createMainMethods(scanner.mainSerializeMethod);
-		methods.forEach((methodMetadata, methodMetadata2) -> handler.createMethods(methodMetadata2));
+		handler.createMethods(methods);
 		final Class<?> export = handler.export();
 		if (EXPORT) {
 			try {

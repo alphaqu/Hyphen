@@ -6,6 +6,8 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
+import java.util.Map;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class CodegenHandler {
@@ -28,10 +30,10 @@ public class CodegenHandler {
 		}
 	}
 
-	public void createMethods(MethodMetadata methodMetadata) {
-		methodMetadata.createPut(this);
-		methodMetadata.createGet(this);
-		methodMetadata.createSubCalc(this);
+	public void createMethods(Map<TypeInfo, MethodMetadata> methods) {
+		methods.values().forEach(methodMetadata -> methodMetadata.createPut(this));
+		methods.values().forEach(methodMetadata -> methodMetadata.createGet(this));
+		methods.values().forEach(methodMetadata -> methodMetadata.createSubCalc(this));
 	}
 
 	public void createMainMethods(MethodMetadata mainSerializeMethod) {
@@ -91,13 +93,12 @@ public class CodegenHandler {
 
 	private void createMainSize(MethodMetadata methodMetadata) {
 		TypeInfo info = methodMetadata.getInfo();
-
 		try (MethodHandler mh = MethodHandler.create(
 				this,
-				ACC_STATIC | ACC_PUBLIC | ACC_FINAL,
-				Constants.CALC_FUNC + info.getMethodName(false),
+				ACC_PUBLIC | ACC_FINAL,
+				"measure",
 				long.class,
-				info.getClazz())
+				Object.class)
 		) {
 
 			long size = methodMetadata.getSize();
@@ -106,7 +107,12 @@ public class CodegenHandler {
 				mh.returnOp();
 			} else {
 				MethodHandler.Var data;
+				mh.createVar("this", Object.class);
+				var dataRaw = mh.createVar("dataRaw", Object.class);
 				data = mh.createVar("data", info.getClazz());
+				dataRaw.load();
+				mh.cast(info.getClazz());
+				data.store();
 				methodMetadata.writeSubCalcSize(mh, data);
 
 				size = ~size;

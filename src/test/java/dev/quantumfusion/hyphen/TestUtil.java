@@ -119,11 +119,15 @@ public class TestUtil {
 
 	public static void main(String[] args) {
 		final HyphenSerializer<Recursive, ByteBufferIO> build = SerializerFactory.createDebug(Recursive.class).build(ByteBufferIO.class);
-		final ByteBufferIO direct = ByteBufferIO.createDirect(500);
 		final Recursive encode = new Recursive(new RecursiveC<>("420", new C1<>("69"), new Recursive(new C1<>("uwu"))));
+		final int measure = (int) build.measure(encode);
+		final ByteBufferIO direct = ByteBufferIO.createDirect(measure);
 		build.encode(direct, encode);
 		direct.rewind();
 		final Recursive decode = build.decode(direct);
+
+		System.out.println("Measured: " + measure);
+		System.out.println("Actual: " + direct.pos());
 		System.out.println(decode.equals(encode));
 
 	}

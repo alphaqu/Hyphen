@@ -46,13 +46,15 @@ public class IODef implements SerializerDef {
 
 	@Override
 	public void calcSubSize(MethodHandler mh) {
-		if(this.getSize() >= 0)
+		if (this.getSize() >= 0)
 			throw new IllegalStateException();
 		// String
 		// FIXME: size depends on io type
 		mh.callInstanceMethod(String.class, "length", int.class);
-		mh.visitInsn(I2L);
 		mh.visitInsn(ICONST_2);
-		mh.visitInsn(LSHL);
+		mh.visitInsn(IMUL);
+		mh.visitInsn(ICONST_4);
+		mh.visitInsn(IADD);
+		mh.visitInsn(I2L);
 	}
 }
