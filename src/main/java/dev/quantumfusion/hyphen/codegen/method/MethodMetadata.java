@@ -55,4 +55,6 @@ public abstract class MethodMetadata {
 		}
 	}
 
+	public abstract StringBuilder toFancyString(StringBuilder sb);
+
 }

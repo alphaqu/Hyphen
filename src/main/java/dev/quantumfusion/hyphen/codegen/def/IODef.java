@@ -62,4 +62,9 @@ public class IODef implements SerializerDef {
 			mh.visitLdcInsn(this.getSize());
 		}
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		return sb.append("IO{").append(this.clazz.getSimpleName()).append("}");
+	}
 }

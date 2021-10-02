@@ -124,4 +124,11 @@ public class ArrayMethod extends MethodMetadata {
 		mh.popScope();
 		mh.returnOp();
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		sb.append(this.getInfo().toFancyString()).append("\n");
+		sb.append(" >-> ").append(this.values.toFancyString()).append("\n");
+		return sb.append('\n');
+	}
 }

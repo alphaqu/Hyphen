@@ -15,4 +15,6 @@ public interface SerializerDef {
 	default void doMeasure(MethodHandler mh) {
 		throw new IllegalStateException("Shouldn't be called");
 	}
+
+	StringBuilder toFancyString(StringBuilder sb);
 }

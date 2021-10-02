@@ -132,4 +132,14 @@ public class ClassMethod extends MethodMetadata {
 		}
 		mh.returnOp();
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		sb.append(this.getInfo().toFancyString()).append("\n");
+		this.fields.forEach(((fieldEntry, serializerDef) -> {
+			sb.append(" >-> ").append(fieldEntry.name()).append(": ");
+			serializerDef.toFancyString(sb).append("\n");
+		}));
+		return sb.append('\n');
+	}
 }

@@ -37,4 +37,9 @@ public class StaleDef implements SerializerDef {
 	public void doMeasure(MethodHandler mh) {
 
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		return sb.append("$$ STALE $$");
+	}
 }

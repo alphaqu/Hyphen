@@ -16,4 +16,9 @@ public class BoxedDef extends WrappedDef {
 	protected void unwrap(MethodHandler mh) {
 		mh.callInstanceMethod(this.getType(), this.inner.getType().getSimpleName() + "Value", this.inner.getType());
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		return sb.append("IO{").append(this.getType().getSimpleName()).append("}");
+	}
 }

@@ -53,7 +53,7 @@ public class TypeClassInfo extends TypeInfo {
 
 	@Override
 	public String toFancyString() {
-		return this.actual.toFancyString();
+		return "(" + this.typeName + " = " + this.actual.toFancyString() + ")";
 	}
 
 	@Override

@@ -39,4 +39,9 @@ public class MethodCallDef implements SerializerDef {
 	public void doMeasure(MethodHandler mh) {
 		mh.callHyphenMethod(MethodMode.MEASURE, serializeMethod);
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		return sb.append("CALL{").append(this.info.toFancyString()).append("}");
+	}
 }

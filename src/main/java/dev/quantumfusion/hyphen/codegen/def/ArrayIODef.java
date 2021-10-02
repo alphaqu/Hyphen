@@ -64,4 +64,9 @@ public class ArrayIODef implements SerializerDef {
 			}
 		}
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		return sb.append("IO{").append(this.clazz.getSimpleName()).append("}");
+	}
 }

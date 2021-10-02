@@ -25,7 +25,6 @@ public class DebugHandler {
 	}
 
 	private void printMethod(StringBuilder sb, MethodMetadata serializerMetadata) {
-		sb.append(serializerMetadata);
-		sb.append('\n');
+		serializerMetadata.toFancyString(sb);
 	}
 }

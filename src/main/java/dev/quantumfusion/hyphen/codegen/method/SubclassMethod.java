@@ -180,4 +180,14 @@ public class SubclassMethod extends MethodMetadata {
 					return "Feelings";
 				});
 	}
+
+	@Override
+	public StringBuilder toFancyString(StringBuilder sb) {
+		sb.append(this.getInfo().toFancyString()).append("\n");
+		this.subtypes.forEach(((cls, serializerDef) -> {
+			sb.append(" >-> ").append(cls.getSimpleName()).append(": ");
+			serializerDef.toFancyString(sb).append("\n");
+		}));
+		return sb.append('\n');
+	}
 }
