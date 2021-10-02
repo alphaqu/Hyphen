@@ -11,17 +11,17 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ArrayMethod extends MethodMetadata {
 	private final TypeInfo values;
-	private final MethodMetadata elementSerializer;
 
-	private ArrayMethod(ArrayInfo info, MethodMetadata elementSerializer) {
+	private ArrayMethod(ArrayInfo info) {
 		super(info);
 		this.values = info.values;
-		this.elementSerializer = elementSerializer;
 	}
 
 	public static ArrayMethod create(ArrayInfo info, ScanHandler scanHandler) {
-		MethodMetadata serializeMethod = scanHandler.createSerializeMethod(info.values);
-		return new ArrayMethod(info, serializeMethod);
+		final ArrayMethod arrayMethod = new ArrayMethod(info);
+		scanHandler.methods.put(info, arrayMethod);
+		scanHandler.createSerializeMethod(info.values);
+		return arrayMethod;
 	}
 
 	@Override
