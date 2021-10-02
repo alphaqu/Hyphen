@@ -1,9 +1,8 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.simple.ObjectArrayTest;
-import dev.quantumfusion.hyphen.scan.simple.ObjectTest;
-import dev.quantumfusion.hyphen.scan.simple.PrimitiveTest;
+import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
+import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
@@ -118,15 +117,15 @@ public class TestUtil {
 	}
 
 	public static void main(String[] args) {
-		final SerializerFactory<ObjectArrayTest> debug = SerializerFactory.createDebug(ObjectArrayTest.class);
-		final HyphenSerializer<ObjectArrayTest, ByteBufferIO> build = debug.build(ByteBufferIO.class);
-		final ObjectArrayTest encode = new ObjectArrayTest(new ObjectTest[]{new ObjectTest(342, new PrimitiveTest(432))});
+		final SerializerFactory<C1OfC1> debug = SerializerFactory.create(C1OfC1.class);
+		final HyphenSerializer<C1OfC1, ByteBufferIO> build = debug.build(ByteBufferIO.class);
+		final C1OfC1 encode = new C1OfC1(new C1<>(new C1<>(3)));
 		// final Recursive encode = new Recursive(new C1<>(""));
 		final int measure = (int) build.measure(encode);
 		final ByteBufferIO direct = ByteBufferIO.createDirect(measure * 100);
 		build.encode(direct, encode);
 		direct.rewind();
-		final ObjectArrayTest decode = build.decode(direct);
+		final C1OfC1 decode = build.decode(direct);
 
 		System.out.println("Measured: " + measure);
 		System.out.println("Actual: " + direct.pos());

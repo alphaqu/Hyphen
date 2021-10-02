@@ -7,10 +7,7 @@ import dev.quantumfusion.hyphen.info.TypeInfo;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -49,11 +46,17 @@ public class CodegenHandler {
 				final Class<?>[] param = mode.paramFunc.apply(info, this);
 
 				if (options.get(Options.COMPACT_METHODS)) {
-					List<Class<?>> paramList = List.of(param);
-					if (dedup.containsKey(paramList)) dedup.get(paramList).incrementAndGet();
-					else dedup.put(paramList, new AtomicInteger());
+					List<Class<?>> paramList = new ArrayList<>(List.of(param));
+					paramList.add(returnClass);
+					assert dedup != null;
+					if (dedup.containsKey(paramList)) {
+						dedup.get(paramList).incrementAndGet();
+						name = String.valueOf(dedup.get(paramList).get());
+					} else {
+						dedup.put(paramList, new AtomicInteger());
+						name = "_";
+					}
 
-					name = String.valueOf(dedup.get(paramList).get());
 				} else {
 					name = mode.prefix + info.getMethodName(false);
 				}

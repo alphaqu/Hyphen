@@ -233,7 +233,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		String internalName;
 		if (NAME_DEDUP) {
 			if (compactVariables) {
-				internalName = "*";
+				internalName = "_";
 			} else {
 				if (this.nameDedup.containsKey(name)) {
 					internalName = name + this.nameDedup.merge(name, 1, Integer::sum);
