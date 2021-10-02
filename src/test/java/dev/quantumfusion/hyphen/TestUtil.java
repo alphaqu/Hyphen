@@ -118,11 +118,14 @@ public class TestUtil {
 	}
 
 	public static void main(String[] args) {
-		final HyphenSerializer<Recursive, ByteBufferIO> build = SerializerFactory.createDebug(Recursive.class).build(ByteBufferIO.class);
+		final SerializerFactory<Recursive> debug = SerializerFactory.createDebug(Recursive.class);
+		debug.setOption(Options.COMPACT_METHODS, false);
+		debug.setOption(Options.COMPACT_VARIABLES, false);
+		final HyphenSerializer<Recursive, ByteBufferIO> build = debug.build(ByteBufferIO.class);
 		final Recursive encode = new Recursive(new RecursiveC<>("hello", new C1<>("420"), new Recursive(new C1<>("69"))));
 		// final Recursive encode = new Recursive(new C1<>(""));
 		final int measure = (int) build.measure(encode);
-		final ByteBufferIO direct = ByteBufferIO.createDirect((measure + 16) * 16);
+		final ByteBufferIO direct = ByteBufferIO.createDirect(measure + 1);
 		build.encode(direct, encode);
 		direct.rewind();
 		final Recursive decode = build.decode(direct);

@@ -146,7 +146,7 @@ public class SubclassMethod extends MethodMetadata {
 	}
 
 	@Override
-	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
 		data.load();
 		// data
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);

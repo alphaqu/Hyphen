@@ -21,12 +21,14 @@ public class SerializerFactory<K> {
 	private final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations = new HashMap<>();
 	private final Map<TypeInfo, MethodMetadata> methods = new LinkedHashMap<>();
 	private final Map<Object, List<Class<?>>> subclasses = new HashMap<>();
+	private final EnumMap<Options, Boolean> options = new EnumMap<>(Options.class);
 	private final boolean debug;
 	private final Class<?> clazz;
 
 	protected SerializerFactory(boolean debug, Class<K> clazz) {
 		this.debug = debug;
 		this.clazz = clazz;
+		for (Options value : Options.values()) this.options.put(value, value.defaultValue);
 	}
 
 	/**
@@ -127,6 +129,10 @@ public class SerializerFactory<K> {
 		}
 	}
 
+	public void setOption(Options option, boolean value) {
+		this.options.put(option, value);
+	}
+
 	/**
 	 * Builds the Serializer Class
 	 *
@@ -140,11 +146,10 @@ public class SerializerFactory<K> {
 		scanner.scan(clazz);
 
 
-		CodegenHandler handler = new CodegenHandler(io, uwuSerializer);
+		CodegenHandler handler = new CodegenHandler(options, methods, io, uwuSerializer);
 		handler.createConstructor();
 		handler.createMainMethods(scanner.mainSerializeMethod);
-		handler.createMethods(methods);
-		final Class<?> export = handler.export();
+		handler.createMethods();
 		if (EXPORT) {
 			try {
 				Files.write(Path.of("./" + uwuSerializer + ".class"), handler.byteArray());
@@ -152,6 +157,7 @@ public class SerializerFactory<K> {
 				throw new UncheckedIOException(e);
 			}
 		}
+		final Class<?> export = handler.export();
 		try {
 			return (HyphenSerializer<K, IO>) export.getDeclaredConstructor().newInstance();
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {

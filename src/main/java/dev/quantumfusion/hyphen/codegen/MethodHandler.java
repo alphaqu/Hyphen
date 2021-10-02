@@ -1,5 +1,8 @@
 package dev.quantumfusion.hyphen.codegen;
 
+import dev.quantumfusion.hyphen.Options;
+import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
+import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
@@ -18,15 +21,23 @@ import static org.objectweb.asm.Opcodes.*;
 
 @SuppressWarnings("WeakerAccess")
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
+	// just for visual decompilation
+	private static final boolean NAME_DEDUP = true;
 	public final Class<?> returnClazz;
 	private final CodegenHandler codegenHandler;
+	private final Map<String, Integer> nameDedup = NAME_DEDUP ? new HashMap<>() : null;
+	private final List<@Nullable Var> vars = new ArrayList<>();
+	private final List<Label> scopeStarts = new ArrayList<>();
+	private final boolean compactVariables;
+	private int currentIndex = 0;
 
 	// ================================== CREATE ==================================
 	public MethodHandler(MethodVisitor mv, Class<?> returnClazz, CodegenHandler codegenHandler) {
 		super(Opcodes.ASM9, mv);
-		this.returnClazz = returnClazz;
+		this.returnClazz = returnClazz == null ? Void.TYPE : returnClazz;
 		this.codegenHandler = codegenHandler;
 		this.pushScope();
+		this.compactVariables = codegenHandler.options.get(Options.COMPACT_VARIABLES);
 	}
 
 	public static MethodHandler createVoid(CodegenHandler codegenHandler, int tag, String name, Class<?>... param) {
@@ -34,7 +45,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		return new MethodHandler(mv, Void.TYPE, codegenHandler);
 	}
 
-	public static MethodHandler create(CodegenHandler codegenHandler, int tag, String name, Class<?> returnClazz, Class<?>... param) {
+	public static MethodHandler create(CodegenHandler codegenHandler, int tag, String name, @Nullable Class<?> returnClazz, Class<?>... param) {
 		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
 		return new MethodHandler(mv, returnClazz, codegenHandler);
 	}
@@ -70,6 +81,15 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public void callInternalStaticMethod(String name, @Nullable Class<?> returnClass, Class<?>... parameters) {
 		this.visitMethodInsn(INVOKESTATIC, this.codegenHandler.name, name, GenUtil.getMethodDesc(returnClass, parameters), false);
+	}
+
+	public void callHyphenMethod(MethodMode mode, TypeInfo typeInfo) {
+		final CodegenHandler.MethodInfo methodData = codegenHandler.getMethodData(mode, typeInfo);
+		this.callInternalStaticMethod(methodData.name(), methodData.returnClass(), methodData.param());
+	}
+
+	public void callHyphenMethod(MethodMode mode, MethodMetadata methodMetadata) {
+		this.callHyphenMethod(mode, methodMetadata.getInfo());
 	}
 
 	public void createMultiArray(Class<?> descriptor, int numDimensions) {
@@ -123,54 +143,6 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		this.mv.visitMaxs(0, 0);
 		this.mv.visitEnd();
 	}
-
-	// ================================ VARHANDLER ================================
-	public final class Var {
-		private final String name;
-		private final int index;
-		private final Type type;
-		private final String internalName;
-
-		private Var(String name, int index, Type type, String internalName) {
-			this.name = name;
-			this.index = index;
-			this.type = type;
-			this.internalName = internalName;
-		}
-
-		public void load() {
-			this.inst(ILOAD);
-		}
-
-		public void store() {
-			this.inst(ISTORE);
-		}
-
-		public void loadFromArray() {
-			this.inst(IALOAD);
-		}
-
-		public void storeToArray() {
-			this.inst(IASTORE);
-		}
-
-		public void inst(int op) {
-			MethodHandler.this.visitIntInsn(this.type.getOpcode(op), this.index);
-		}
-
-		public void iinc(int value) {
-			MethodHandler.this.visitIincInsn(this.index, value);
-		}
-	}
-
-	// just for visual decompilation
-	private static final boolean NAME_DEDUP = true;
-	private final Map<String, Integer> nameDedup = NAME_DEDUP ? new HashMap<>() : null;
-
-	private int currentIndex = 0;
-
-	private final List<@Nullable Var> vars = new ArrayList<>();
-	private final List<Label> scopeStarts = new ArrayList<>();
 
 	public Var getVarOrNull(String name) {
 		for (Var var : this.vars) {
@@ -227,11 +199,15 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private Var createVarInternal(String name, Type type) {
 		String internalName;
 		if (NAME_DEDUP) {
-			if (this.nameDedup.containsKey(name)) {
-				internalName = name + this.nameDedup.merge(name, 1, Integer::sum);
+			if (compactVariables) {
+				internalName = "*";
 			} else {
-				this.nameDedup.put(name, 0);
-				internalName = name;
+				if (this.nameDedup.containsKey(name)) {
+					internalName = name + this.nameDedup.merge(name, 1, Integer::sum);
+				} else {
+					this.nameDedup.put(name, 0);
+					internalName = name;
+				}
 			}
 
 		} else internalName = name;
@@ -260,4 +236,44 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			throw new RuntimeException("Variable " + name + " already exists in scope\n " + this.vars);
 		return this.createVarInternal(name, type);
 	}
+
+	// ================================ VARHANDLER ================================
+	public final class Var {
+		private final String name;
+		private final int index;
+		private final Type type;
+		private final String internalName;
+
+		private Var(String name, int index, Type type, String internalName) {
+			this.name = name;
+			this.index = index;
+			this.type = type;
+			this.internalName = internalName;
+		}
+
+		public void load() {
+			this.inst(ILOAD);
+		}
+
+		public void store() {
+			this.inst(ISTORE);
+		}
+
+		public void loadFromArray() {
+			this.inst(IALOAD);
+		}
+
+		public void storeToArray() {
+			this.inst(IASTORE);
+		}
+
+		public void inst(int op) {
+			MethodHandler.this.visitIntInsn(this.type.getOpcode(op), this.index);
+		}
+
+		public void iinc(int value) {
+			MethodHandler.this.visitIincInsn(this.index, value);
+		}
+	}
+
 }

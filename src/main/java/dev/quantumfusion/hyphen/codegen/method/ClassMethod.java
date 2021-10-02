@@ -6,7 +6,6 @@ import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
-import dev.quantumfusion.hyphen.info.TypeClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.ScanUtils;
@@ -219,7 +218,7 @@ public class ClassMethod extends MethodMetadata {
 	}
 
 	@Override
-	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
 		var dynamicFields = this.fields.entrySet().stream().filter(i -> i.getValue().getSize() < 0).toList();
 
 		int i = 0;
@@ -250,5 +249,6 @@ public class ClassMethod extends MethodMetadata {
 				// size
 			}
 		}
+		mh.returnOp();
 	}
 }

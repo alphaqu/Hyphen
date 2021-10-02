@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.codegen.method;
 
 import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.codegen.Constants;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodMode;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import org.objectweb.asm.Label;
@@ -68,7 +68,7 @@ public class ArrayMethod extends MethodMetadata {
 		if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
 			mh.cast(this.values.getClazz());
 		}
-		mh.callInternalStaticMethod(Constants.PUT_FUNC + this.values.getMethodName(false), null, mh.getIOClazz(), this.values.getClazz());
+		mh.callHyphenMethod(MethodMode.PUT, values);
 		// io | data
 		i.iinc(1); // i++
 		mh.visitJumpInsn(GOTO, start);
@@ -119,7 +119,7 @@ public class ArrayMethod extends MethodMetadata {
 		// array | array | i
 		io.load();
 		// array | array | i | io
-		mh.callInternalStaticMethod(Constants.GET_FUNC + this.values.getMethodName(false), this.values.getClazz(), mh.getIOClazz());
+		mh.callHyphenMethod(MethodMode.GET, values);
 		// array | array | i | component
 		mh.visitInsn(AASTORE);
 		// array
@@ -139,13 +139,13 @@ public class ArrayMethod extends MethodMetadata {
 	}
 
 	@Override
-	public void writeSubCalcSize(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
 		long elementSize = this.elementSerializer.getSize();
 
 		boolean dynamic = elementSize >= 0;
 		if (dynamic) elementSize = ~elementSize;
 
-		if(elementSize > 0){
+		if (elementSize > 0) {
 			// fixed size part
 
 			data.load();
@@ -204,7 +204,7 @@ public class ArrayMethod extends MethodMetadata {
 			if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
 				mh.cast(this.values.getClazz());
 			}
-			this.elementSerializer.callSubCalcSize(mh);
+			mh.callHyphenMethod(MethodMode.MEASURE, elementSerializer);
 			// size | elementSize
 			mh.visitInsn(LADD);
 			i.iinc(1); // i++
