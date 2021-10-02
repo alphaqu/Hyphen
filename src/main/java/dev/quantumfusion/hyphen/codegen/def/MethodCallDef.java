@@ -29,15 +29,14 @@ public class MethodCallDef implements SerializerDef {
 		mh.callHyphenMethod(MethodMode.GET, serializeMethod);
 	}
 
+	@Override
+	public void doMeasure(MethodHandler mh) {
+		mh.callHyphenMethod(MethodMode.MEASURE, serializeMethod);
+	}
 
 	@Override
 	public boolean needsField() {
 		return this.serializeMethod.dynamicSize();
-	}
-
-	@Override
-	public void doMeasure(MethodHandler mh) {
-		mh.callHyphenMethod(MethodMode.MEASURE, serializeMethod);
 	}
 
 	@Override

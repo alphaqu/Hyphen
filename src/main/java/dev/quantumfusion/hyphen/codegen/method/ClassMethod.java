@@ -5,18 +5,19 @@ import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
-import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
+import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.DUP2;
+import static org.objectweb.asm.Opcodes.LADD;
 
-public class ClassMethod extends MethodMetadata {
+public class ClassMethod extends MethodMetadata<ClassInfo> {
 	private final Map<FieldEntry, SerializerDef> fields;
 
-	private ClassMethod(TypeInfo info, Map<FieldEntry, SerializerDef> fields) {
+	private ClassMethod(ClassInfo info, Map<FieldEntry, SerializerDef> fields) {
 		super(info);
 		this.fields = fields;
 	}
@@ -59,9 +60,7 @@ public class ClassMethod extends MethodMetadata {
 
 	@Override
 	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
-		io.load();
-		data.load();
-		// io data
+		GenUtil.load(io, data);
 		int i = 0;
 
 		for (var entry : this.fields.entrySet()) {
@@ -71,43 +70,12 @@ public class ClassMethod extends MethodMetadata {
 			}
 
 			var field = entry.getKey();
-			if (field != null) {
-				TypeInfo fieldType = field.clazz();
-				mh.getField(GETFIELD, this.info.getClazz(), field.name(), fieldType.getRawType());
-				if (!fieldType.getClazz().isAssignableFrom(fieldType.getRawType())) {
-					mh.cast(fieldType.getClazz());
-				}
-			}
+			if (field != null) GenUtil.getFieldFromClass(mh, this.info, field);
+
 			// io | field
 			entry.getValue().doPut(mh);
 		}
 
-		mh.returnOp();
-	}
-
-	@Override
-	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
-		if (this.fields.containsKey(null)) {
-			SerializerDef serializerDef = this.fields.get(null);
-			io.load();
-			serializerDef.doGet(mh);
-		} else {
-			mh.typeInsn(NEW, this.info.getClazz());
-			mh.visitInsn(DUP);
-			// OBJECT | OBJECT
-
-			for (var def : this.fields.values()) {
-				io.load();
-				def.doGet(mh);
-			}
-
-			// OBJECT | OBJECT | ... fields
-			// FIXME: better constructor lookup
-			mh.callSpecialMethod(this.info.getClazz(),
-					"<init>",
-					null,
-					((ClassInfo) this.info).constructorParameters);
-		}
 		mh.returnOp();
 	}
 
@@ -120,15 +88,29 @@ public class ClassMethod extends MethodMetadata {
 			final SerializerDef value = entry.getValue();
 			if (field != null && value.needsField()) {
 				data.load();
-				TypeInfo fieldType = field.clazz();
-				mh.getField(GETFIELD, this.info.getClazz(), field.name(), fieldType.getRawType());
-				if (!fieldType.getClazz().isAssignableFrom(fieldType.getRawType())) {
-					mh.cast(fieldType.getClazz());
-				}
+				GenUtil.getFieldFromClass(mh, this.info, field);
 			}
 			value.doMeasure(mh);
 			if (!first) mh.visitInsn(LADD);
 			else first = false;
+		}
+		mh.returnOp();
+	}
+
+	@Override
+	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
+		if (this.fields.containsKey(null)) {
+			io.load();
+			this.fields.get(null).doGet(mh);
+		} else {
+			GenUtil.newDup(mh, this.info);
+			for (var def : this.fields.values()) {
+				io.load();
+				def.doGet(mh);
+			}
+
+			// OBJECT | OBJECT | ... fields
+			mh.callSpecialMethod(this.info.getClazz(), "<init>", null, this.info.constructorParameters);
 		}
 		mh.returnOp();
 	}

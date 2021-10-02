@@ -5,11 +5,11 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodMode;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import org.objectweb.asm.Type;
+import dev.quantumfusion.hyphen.util.GenUtil;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ArrayMethod extends MethodMetadata {
+public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 	private final TypeInfo values;
 
 	private ArrayMethod(ArrayInfo info) {
@@ -37,26 +37,13 @@ public class ArrayMethod extends MethodMetadata {
 	@Override
 	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
 		mh.pushScope();
-		io.load();
-		data.load();
-		// io | data
-		mh.visitInsn(ARRAYLENGTH);
-		// io | length
-		mh.visitInsn(DUP);
-		// io | length | length
-		var aFor = mh.createForWithLength();
-		// io | length
-		mh.callIOPut(int.class);
-		try (var forLoop = aFor.start()) {
-			io.load();
-			data.load();
+		GenUtil.load(io, data);
+		try (var forLoop = mh.iterateThroughArrayAndSaveSize().start()) {
+			GenUtil.load(io, data);
 			// io | data
-			forLoop.i.load();
-			mh.visitInsn(AALOAD);
+			forLoop.getFromArray();
 			// io | data[i]
-			if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
-				mh.cast(this.values.getClazz());
-			}
+			GenUtil.castIfNotAssignable(mh, values);
 			mh.callHyphenMethod(MethodMode.PUT, values);
 		}
 
@@ -76,15 +63,11 @@ public class ArrayMethod extends MethodMetadata {
 		// length | length
 		var aFor = mh.createForWithLength();
 		// length
-		mh.visitTypeInsn(ANEWARRAY, Type.getInternalName(this.values.getClazz()));
+		mh.typeInsn(ANEWARRAY, this.values.getClazz());
 		// arr
 		array.store();
 		try (var forLoop = aFor.start()) {
-			array.load();
-			// array
-			forLoop.i.load();
-			// array | i
-			io.load();
+			GenUtil.load(array, forLoop.i, io);
 			// array | i | io
 			mh.callHyphenMethod(MethodMode.GET, values);
 			// array | i | component
@@ -109,18 +92,14 @@ public class ArrayMethod extends MethodMetadata {
 		try (var forLoop = aFor.start()) {
 			data.load();
 			// size | data
-			forLoop.i.load();
-			mh.visitInsn(AALOAD);
+			forLoop.getFromArray();
 			// size | data[i]
-			if (!this.values.getClazz().isAssignableFrom(this.values.getRawType())) {
-				mh.cast(this.values.getClazz());
-			}
+			GenUtil.castIfNotAssignable(mh, values);
 			mh.callHyphenMethod(MethodMode.MEASURE, values);
 			// size | elementSize
 			mh.visitInsn(LADD);
 			// size
 		}
-
 		mh.popScope();
 		mh.returnOp();
 	}

@@ -7,17 +7,16 @@ import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Type;
+import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 	private final Map<Class<?>, SerializerDef> subtypes = new LinkedHashMap<>();
-	public boolean dynamic = false;
 
 	public SubclassMethod(SubclassInfo info) {
 		super(info);
@@ -38,10 +37,6 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 		return methodMetadata;
 	}
 
-	public void addSubclass(Class<?> clazz, SerializerDef def) {
-		subtypes.put(clazz, def);
-	}
-
 	@Override
 	public long getSize() {
 		return 1;
@@ -54,58 +49,31 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 
 	@Override
 	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
-		int i = 0;
-
-		io.load();
-		// io
-		data.load();
-		// io | data
-
-		if(this.info.supportsNull()){
-			Label nonNull = new Label();
-			mh.visitJumpInsn(IFNONNULL, nonNull);
-			// io
+		AtomicInteger i = new AtomicInteger(0);
+		if (this.info.supportsNull()) GenUtil.nullCheckReturn(mh, data, () -> {
+			io.load();
 			mh.visitInsn(ICONST_M1);
 			mh.callIOPut(byte.class);
-			mh.returnOp();
-			mh.visitLabel(nonNull);
-			data.load();
-		}
+		});
 
-		mh.visitInsn(DUP2);
-		// io | data | io | data
+		// store data
+		data.load();
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);
-		// io | data | io | clazz
-
-		for (Map.Entry<Class<?>, SerializerDef> entry : this.subtypes.entrySet()) {
+		var clazz = mh.createVar("clazz", Class.class);
+		clazz.store();
+		for (var entry : this.subtypes.entrySet()) {
 			Class<?> clz = entry.getKey();
-			SerializerDef def = entry.getValue();
-			Label skip = new Label();
-
-			mh.visitInsn(DUP);
-			// io | data | io | clazz | clazz
-			mh.visitLdcInsn(Type.getType(clz));
-			// io | data | io | clazz | clazz | clz
-			mh.visitJumpInsn(IF_ACMPNE, skip);
-			// io | data | io | clazz == clz
-			mh.visitInsn(POP);
-			// io | data | io
-			mh.visitLdcInsn(i++);
-			// io | data | io | i
-			mh.callIOPut(byte.class);
-			// io | data
-			mh.cast(clz);
-			// io | data as clz
-			def.doPut(mh);
-			// --
-			mh.returnOp();
-			mh.visitLabel(skip);
+			GenUtil.ifElseClass(mh, clz, clazz, () -> {
+				GenUtil.load(io, data, io);
+				mh.visitLdcInsn(i.getAndIncrement());
+				mh.callIOPut(byte.class);
+				mh.cast(clz);
+				entry.getValue().doPut(mh);
+				mh.returnOp();
+			});
 		}
 
-		// io | data | io | clazz
 		// TODO: throw error
-		mh.visitInsn(POP2);
-		mh.visitInsn(POP2);
 		mh.returnOp();
 	}
 
@@ -117,88 +85,39 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 		// io | io
 		mh.callIOGet(byte.class);
 		// io | int
+		int nullable = this.info.supportsNull() ? 1 : 0;
+		int count = this.subtypes.size() + nullable;
+		try (var switchVar = mh.createSwitch(-nullable, count - 1 - nullable, count)) {
+			if (nullable > 0)
+				switchVar.nextLabel(() -> mh.visitInsn(ACONST_NULL));
 
-		int offset = this.info.supportsNull() ? 1 : 0;
-		int count = this.subtypes.size() + offset;
+			for (var entry : this.subtypes.values())
+				switchVar.nextLabel(() -> entry.doGet(mh));
 
-		var def = new Label();
-		var labels = new Label[count];
-
-		for (int x = 0; x < count; x++) {
-			labels[x] = new Label();
+			switchVar.defaultLabel(() -> {
+				mh.visitInsn(POP);
+				mh.visitInsn(ACONST_NULL);
+			});
 		}
-
-		mh.visitTableSwitchInsn(-offset, count - 1 - offset, def, labels);
-		// io
-
-		if(offset > 0){
-			mh.visitLabel(labels[0]);
-			// io
-			mh.visitInsn(ACONST_NULL);
-			// null
-			mh.returnOp();
-		}
-
-		int i = offset;
-		for (var entry : this.subtypes.values()) {
-			mh.visitLabel(labels[i++]);
-			// io
-			entry.doGet(mh);
-			// data
-			mh.returnOp();
-		}
-
-		mh.visitLabel(def);
-		// io
-		// TODO: throw error
-		mh.visitInsn(POP);
-		mh.visitInsn(ACONST_NULL);
-		mh.returnOp();
 	}
 
 	@Override
 	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
-		if(this.info.supportsNull()){
-			Label nonNull = new Label();
-
-			data.load();
-			mh.visitJumpInsn(IFNONNULL, nonNull);
-
-			mh.visitInsn(LCONST_1);
-			mh.returnOp();
-			mh.visitLabel(nonNull);
-		}
-
+		if (this.info.supportsNull()) GenUtil.nullCheckReturn(mh, data, () -> mh.visitInsn(LCONST_1));
 
 		data.load();
-		// data
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);
-
 		var clazz = mh.createVar("clazz", Class.class);
 		clazz.store();
 
 		for (Map.Entry<Class<?>, SerializerDef> entry : this.subtypes.entrySet()) {
 			Class<?> clz = entry.getKey();
-			SerializerDef def = entry.getValue();
-			Label skip = new Label();
-
-			clazz.load();
-			// clazz
-			mh.visitLdcInsn(Type.getType(clz));
-			// clazz | clz
-			mh.visitJumpInsn(IF_ACMPNE, skip);
-
-			data.load();
-			// data
-			mh.cast(clz);
-			// data as clz
-			def.doMeasure(mh);
-
-			mh.visitLdcInsn(1L);
-			mh.visitInsn(LADD);
-
-			mh.returnOp();
-			mh.visitLabel(skip);
+			GenUtil.ifElseClass(mh, clz, clazz, () -> {
+				data.loadCast(clz);
+				entry.getValue().doMeasure(mh);
+				GenUtil.addL(mh, 1L);
+				mh.returnOp();
+			});
 		}
 
 		ThrowHandler.fatalGen(mh, HyphenException.class, "Subclass Unsupported",

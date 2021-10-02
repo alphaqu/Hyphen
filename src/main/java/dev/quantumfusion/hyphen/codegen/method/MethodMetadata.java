@@ -29,18 +29,15 @@ public abstract class MethodMetadata<T extends TypeInfo> {
 
 	public void createPut(CodegenHandler ch) {
 		try (MethodHandler mh = ch.createHyphenMethod(MethodMode.PUT, this)) {
-			MethodHandler.Var io;
-			MethodHandler.Var data;
-			io = mh.createVar("io", ch.getIOMode().ioClass);
-			data = mh.createVar("data", this.getInfo().getClazz());
+			MethodHandler.Var io = mh.createVar("io", ch.getIOMode().ioClass);
+			MethodHandler.Var data = mh.createVar("data", this.getInfo().getClazz());
 			this.writePut(mh, io, data);
 		}
 	}
 
 	public void createGet(CodegenHandler ch) {
 		try (MethodHandler mh = ch.createHyphenMethod(MethodMode.GET, this)) {
-			MethodHandler.Var io;
-			io = mh.createVar("io", ch.getIOMode().ioClass);
+			MethodHandler.Var io = mh.createVar("io", ch.getIOMode().ioClass);
 			this.writeGet(mh, io);
 		}
 	}
@@ -48,8 +45,7 @@ public abstract class MethodMetadata<T extends TypeInfo> {
 	public void createMeasure(CodegenHandler ch) {
 		if (this.dynamicSize()) {
 			try (MethodHandler mh = ch.createHyphenMethod(MethodMode.MEASURE, this)) {
-				MethodHandler.Var data;
-				data = mh.createVar("data", this.getInfo().getClazz());
+				MethodHandler.Var data = mh.createVar("data", this.getInfo().getClazz());
 				this.writeMeasure(mh, data);
 			}
 		}

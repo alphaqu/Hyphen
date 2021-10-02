@@ -270,15 +270,36 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		return this.createVarInternal(name, type);
 	}
 
+	public ForI createForWithLength() {
+		return new ForI();
+	}
+
+	public ForI iterateThroughArrayAndSaveSize() {
+		this.visitInsn(ARRAYLENGTH);
+		this.visitInsn(DUP);
+		final ForI forI = new ForI();
+		this.callIOPut(int.class);
+		return forI;
+	}
+
+	public Switch createSwitch(int min, int max, int labels) {
+		return new Switch(min, max, labels);
+	}
+
 	// =================================== FOR ===================================
 	public final class ForI implements AutoCloseable {
-		private final Label start = new Label();
-		private final Label end = new Label();
 		public final MethodHandler.Var length = MethodHandler.this.createVar("length", int.class);
 		public final MethodHandler.Var i = MethodHandler.this.createVar("i", int.class);
+		private final Label start = new Label();
+		private final Label end = new Label();
 
 		public ForI() {
 			length.store();
+		}
+
+		public void getFromArray() {
+			i.load();
+			MethodHandler.this.visitInsn(AALOAD);
 		}
 
 		public ForI start() {
@@ -299,8 +320,41 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		}
 	}
 
-	public ForI createForWithLength() {
-		return new ForI();
+	// ================================= SWITCH =================================
+	public final class Switch implements AutoCloseable {
+		public final int min;
+		public final int max;
+		private final Label[] labels;
+		private final Label defaultLabel;
+		private int currentLabel = 0;
+
+		public Switch(int min, int max, int labels) {
+			this.min = min;
+			this.max = max;
+			this.defaultLabel = new Label();
+			this.labels = new Label[labels];
+			for (int i = 0; i < this.labels.length; i++) {
+				this.labels[i] = new Label();
+			}
+			MethodHandler.this.visitTableSwitchInsn(min, max, this.defaultLabel, this.labels);
+		}
+
+		public void nextLabel(Runnable runnable) {
+			MethodHandler.this.visitLabel(labels[currentLabel++]);
+			runnable.run();
+			MethodHandler.this.returnOp();
+		}
+
+		public void defaultLabel(Runnable runnable) {
+			MethodHandler.this.visitLabel(defaultLabel);
+			runnable.run();
+			MethodHandler.this.returnOp();
+		}
+
+		@Override
+		public void close() {
+
+		}
 	}
 
 	// ================================ VARHANDLER ================================
@@ -320,6 +374,12 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		public void load() {
 			this.inst(ILOAD);
 		}
+
+		public void loadCast(Class<?> clazz) {
+			this.inst(ILOAD);
+			MethodHandler.this.cast(clazz);
+		}
+
 
 		public void store() {
 			this.inst(ISTORE);
