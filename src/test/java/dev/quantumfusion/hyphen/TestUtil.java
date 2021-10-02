@@ -117,7 +117,8 @@ public class TestUtil {
 	}
 
 	public static void main(String[] args) {
-		final SerializerFactory<C1OfC1> debug = SerializerFactory.create(C1OfC1.class);
+		final SerializerFactory<C1OfC1> debug = SerializerFactory.createDebug(C1OfC1.class);
+
 		final HyphenSerializer<C1OfC1, ByteBufferIO> build = debug.build(ByteBufferIO.class);
 		final C1OfC1 encode = new C1OfC1(new C1<>(new C1<>(3)));
 		// final Recursive encode = new Recursive(new C1<>(""));

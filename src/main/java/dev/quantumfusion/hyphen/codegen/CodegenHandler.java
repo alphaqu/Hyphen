@@ -4,6 +4,8 @@ import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
@@ -131,10 +133,7 @@ public class CodegenHandler {
 				//  methodMetadata.callPut(mh);
 				methodMetadata.writePut(mh, io, data);
 			} else {
-				//TODO throw exception
-				mh.visitInsn(ICONST_0);
-				mh.visitInsn(I2L);
-				mh.returnOp();
+				ThrowHandler.fatalGen(mh, HyphenException.class, "Encode is disabled");
 			}
 		}
 	}
@@ -158,10 +157,7 @@ public class CodegenHandler {
 				//  methodMetadata.callPut(mh);
 				methodMetadata.writeGet(mh, io);
 			} else {
-				//TODO throw exception
-				mh.visitInsn(ICONST_0);
-				mh.visitInsn(I2L);
-				mh.returnOp();
+				ThrowHandler.fatalGen(mh, HyphenException.class, "Decode is disabled");
 			}
 		}
 	}
@@ -189,10 +185,7 @@ public class CodegenHandler {
 					methodMetadata.writeMeasure(mh, data);
 				}
 			} else {
-				//TODO throw exception
-				mh.visitInsn(ICONST_0);
-				mh.visitInsn(I2L);
-				mh.returnOp();
+				ThrowHandler.fatalGen(mh, HyphenException.class, "Measure is disabled");
 			}
 		}
 	}
