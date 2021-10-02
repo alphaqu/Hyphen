@@ -5,6 +5,8 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
@@ -167,16 +169,16 @@ public class SubclassMethod extends MethodMetadata {
 			// --
 
 			var size = def.getSize();
-			if(size >= 0){
+			if (size >= 0) {
 				mh.visitLdcInsn(size);
-			} else{
+			} else {
 				data.load();
 				// data
 				mh.cast(clz);
 				// data as clz
 				def.calcSubSize(mh);
 				// size
-				if (size < -1){
+				if (size < -1) {
 					mh.visitLdcInsn(~size);
 					mh.visitInsn(LADD);
 				}
@@ -185,9 +187,16 @@ public class SubclassMethod extends MethodMetadata {
 			mh.visitLabel(skip);
 		}
 
-		// clazz
-		// TODO: throw error
-		mh.visitInsn(POP);
+		ThrowHandler.fatalGen(mh, HyphenException.class, "Subclass Unsupported",
+				() -> {
+					data.load();
+					mh.callInstanceMethod(Object.class, "getClass", Class.class);
+					return "Clazz";
+				},
+				() -> {
+					mh.visitLdcInsn("dumb");
+					return "Feelings";
+				});
 		mh.visitInsn(LCONST_0);
 		mh.returnOp();
 	}

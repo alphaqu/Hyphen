@@ -3,6 +3,9 @@ package dev.quantumfusion.hyphen.codegen;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
+import dev.quantumfusion.hyphen.thr.ThrowEntry;
+import dev.quantumfusion.hyphen.thr.ThrowHandler;
+import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Label;
@@ -94,6 +97,36 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public void createMultiArray(Class<?> descriptor, int numDimensions) {
 		super.visitMultiANewArrayInsn(Type.getDescriptor(descriptor), numDimensions);
+	}
+
+	// ================================== THROW ===================================
+
+	public void fatalStart(int entries) {
+		this.visitLdcInsn(entries);
+		this.typeInsn(ANEWARRAY, ThrowEntry.class);
+		this.visitInsn(DUP);
+	}
+
+	public void fatalEntry(String name, int pos) {
+		this.visitLdcInsn(name);
+		this.visitInsn(SWAP);
+		this.callStaticMethod(ThrowEntry.class, "of", ThrowEntry.class, String.class, Object.class);
+		this.visitLdcInsn(pos);
+		this.visitInsn(SWAP);
+		this.visitInsn(AASTORE);
+		this.visitInsn(DUP);
+	}
+
+	public void fatalInvoke(Class<? extends Throwable> exception, String reason) {
+		this.visitInsn(POP);
+		this.cast(ThrowHandler.Throwable[].class);
+		this.typeInsn(NEW, exception);
+		this.visitInsn(DUP);
+		this.visitLdcInsn(reason);
+		callSpecialMethod(exception, "<init>", null, String.class);
+		this.visitInsn(SWAP);
+		this.callStaticMethod(ThrowHandler.class, "fatal", HyphenException.class, Throwable.class, ThrowHandler.Throwable[].class);
+		this.visitInsn(ATHROW);
 	}
 
 	// =================================== UTIL ===================================

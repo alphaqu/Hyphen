@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.thr;
 
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.AccessException;
@@ -14,10 +15,39 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static dev.quantumfusion.hyphen.thr.ThrowEntry.of;
+import static org.objectweb.asm.Opcodes.*;
 
 public class ThrowHandler {
+	@SafeVarargs
+	public static void fatalGen(MethodHandler mh, Class<? extends java.lang.Throwable> exception, String reason, Supplier<String>... entries) {
+		mh.visitLdcInsn(entries.length);
+		mh.typeInsn(ANEWARRAY, ThrowEntry.class);
+		mh.visitInsn(DUP);
+
+		for (int i = 0; i < entries.length; i++) {
+			mh.visitLdcInsn(entries[i].get());
+			mh.visitInsn(SWAP);
+			mh.callStaticMethod(ThrowEntry.class, "of", ThrowEntry.class, String.class, Object.class);
+			mh.visitLdcInsn(i);
+			mh.visitInsn(SWAP);
+			mh.visitInsn(AASTORE);
+			mh.visitInsn(DUP);
+		}
+
+		mh.visitInsn(POP);
+		mh.cast(ThrowHandler.Throwable[].class);
+		mh.typeInsn(NEW, exception);
+		mh.visitInsn(DUP);
+		mh.visitLdcInsn(reason);
+		mh.callSpecialMethod(exception, "<init>", null, String.class);
+		mh.visitInsn(SWAP);
+		mh.callStaticMethod(ThrowHandler.class, "fatal", HyphenException.class, java.lang.Throwable.class, ThrowHandler.Throwable[].class);
+		mh.visitInsn(ATHROW);
+
+	}
 
 	// some methods to shorten code
 	public static RuntimeException typeFail(String reason, TypeInfo source, Class<?> clazz, Type type) {
@@ -80,7 +110,10 @@ public class ThrowHandler {
 	//returns just for javac to stfu in some spots
 	@Contract("_, _, _ -> fail")
 	public static HyphenException fatal(Function<? super String, ? extends java.lang.Throwable> ex, String reason, Throwable... throwable) {
-		java.lang.Throwable error = ex.apply(reason);
+		return fatal(ex.apply(reason), throwable);
+	}
+
+	public static HyphenException fatal(java.lang.Throwable error, Throwable... throwable) {
 		if (error instanceof HyphenException hyphenException)
 			throw hyphenException.addEntries(throwable);
 		else
