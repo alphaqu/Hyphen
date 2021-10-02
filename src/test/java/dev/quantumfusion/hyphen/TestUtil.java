@@ -105,7 +105,7 @@ public class TestUtil {
 				}
 			};
 		} else {
-			executable = () -> run(ByteBufferIO.class);
+			executable = () -> run(clazz);
 		}
 
 		return DynamicTest.dynamicTest(clazz.getSimpleName(), URI.create("class:" + clazz.getName()), executable);
@@ -119,9 +119,10 @@ public class TestUtil {
 
 	public static void main(String[] args) {
 		final HyphenSerializer<Recursive, ByteBufferIO> build = SerializerFactory.createDebug(Recursive.class).build(ByteBufferIO.class);
-		final Recursive encode = new Recursive(new RecursiveC<>("420", new C1<>("69"), new Recursive(new C1<>("uwu"))));
+		final Recursive encode = new Recursive(new RecursiveC<>("hello", new C1<>("420"), new Recursive(new C1<>("69"))));
+		// final Recursive encode = new Recursive(new C1<>(""));
 		final int measure = (int) build.measure(encode);
-		final ByteBufferIO direct = ByteBufferIO.createDirect(measure);
+		final ByteBufferIO direct = ByteBufferIO.createDirect((measure + 16) * 16);
 		build.encode(direct, encode);
 		direct.rewind();
 		final Recursive decode = build.decode(direct);
