@@ -249,6 +249,5 @@ public class ClassMethod extends MethodMetadata {
 				// size
 			}
 		}
-		mh.returnOp();
 	}
 }

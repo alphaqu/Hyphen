@@ -50,6 +50,7 @@ public abstract class MethodMetadata {
 			MethodHandler.Var data;
 			data = mh.createVar("data", this.getInfo().getClazz());
 			this.writeMeasure(mh, data);
+			mh.returnOp();
 		}
 	}
 }
