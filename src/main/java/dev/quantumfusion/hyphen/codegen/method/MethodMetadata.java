@@ -5,14 +5,14 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodMode;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 
-public abstract class MethodMetadata {
-	protected final TypeInfo info;
+public abstract class MethodMetadata<T extends TypeInfo> {
+	protected final T info;
 
-	public MethodMetadata(TypeInfo info) {
+	public MethodMetadata(T info) {
 		this.info = info;
 	}
 
-	public TypeInfo getInfo() {
+	public T getInfo() {
 		return this.info;
 	}
 

@@ -100,6 +100,15 @@ public class SubclassInfo extends TypeInfo {
 	}
 
 	@Override
+	public boolean isNullable() {
+		return false;
+	}
+
+	public boolean supportsNull() {
+		return super.isNullable();
+	}
+
+	@Override
 	public String toFancyString() {
 		StringJoiner parameterJoiner = new StringJoiner(
 				Color.WHITE + ", ",
@@ -114,21 +123,28 @@ public class SubclassInfo extends TypeInfo {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (!(o instanceof SubclassInfo that)) return false;
-		return Objects.equals(this.classInfos, that.classInfos);
+		return this == o
+				|| o instanceof SubclassInfo that
+				&& super.equals(o)
+				&& this.classInfos.equals(that.classInfos)
+				&& this.field.equals(that.field);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(classInfos);
+		int result = super.hashCode();
+		result = 31 * result + this.classInfos.hashCode();
+		result = 31 * result + this.field.hashCode();
+		return result;
 	}
 
 	@Override
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Sub_E_");
-		for (TypeInfo classInfo : classInfos) {
+		if (this.supportsNull())
+			builder.append("null_");
+		for (TypeInfo classInfo : this.classInfos) {
 			builder.append(classInfo.getMethodName(absolute));
 		}
 		return builder.append("_3_").toString();
@@ -136,7 +152,7 @@ public class SubclassInfo extends TypeInfo {
 
 	@Override
 	public Class<?> getClazz() {
-		return field.getClazz();
+		return this.field.getClazz();
 	}
 
 	@Override

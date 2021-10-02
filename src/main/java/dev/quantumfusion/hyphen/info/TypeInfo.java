@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.info;
 
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotation.SerNull;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Contract;
@@ -40,11 +41,21 @@ public abstract class TypeInfo {
 	@Nullable
 	@Contract(pure = true)
 	public Annotation getAnnotation(Class<? extends Annotation> annotation) {
-		if (annotations.containsKey(annotation)) {
-			return annotations.get(annotation);
+		if (this.annotations.containsKey(annotation)) {
+			return this.annotations.get(annotation);
 		} else {
-			return classAnnotations.get(annotation);
+			return this.classAnnotations.get(annotation);
 		}
+	}
+
+	@Contract(pure = true)
+	public boolean hasAnnotation(Class<? extends Annotation> annotation) {
+		return this.annotations.containsKey(annotation)
+				|| this.classAnnotations.containsKey(annotation);
+	}
+
+	public boolean isNullable() {
+		return this.hasAnnotation(SerNull.class);
 	}
 
 	@Override
@@ -63,7 +74,7 @@ public abstract class TypeInfo {
 		return this.clazz;
 	}
 
-	public Class<?> getRawType(){
+	public Class<?> getRawType() {
 		return this.getClazz();
 	}
 }

@@ -2,10 +2,9 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.poly.DoubleC1Pain;
+import dev.quantumfusion.hyphen.scan.poly.NullableC1OfC1;
 import dev.quantumfusion.hyphen.scan.poly.RecursiveInteger;
 import dev.quantumfusion.hyphen.scan.poly.RecursiveString;
-import dev.quantumfusion.hyphen.scan.poly.C1OfC1;
-import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
@@ -118,22 +117,22 @@ public class TestUtil {
 		return build;
 	}
 
-	public static void main(String[] args) {/*
-		final SerializerFactory<C1OfC1> debug = SerializerFactory.createDebug(C1OfC1.class);
+	public static void main(String[] args) {
+		final SerializerFactory<NullableC1OfC1> debug = SerializerFactory.createDebug(NullableC1OfC1.class);
 
-		final HyphenSerializer<C1OfC1, ByteBufferIO> build = debug.build(ByteBufferIO.class);
-		final C1OfC1 encode = new C1OfC1(new C1<>(new C1<>(3)));
+		final HyphenSerializer<NullableC1OfC1, ByteBufferIO> build = debug.build(ByteBufferIO.class);
+		//final NullableC1OfC1 encode = new NullableC1OfC1(new C1<>(new C1<>(3)));
+		final NullableC1OfC1 encode = new NullableC1OfC1(null);
 		// final Recursive encode = new Recursive(new C1<>(""));
 		final int measure = (int) build.measure(encode);
 		final ByteBufferIO direct = ByteBufferIO.createDirect(measure * 100);
 		build.encode(direct, encode);
 		direct.rewind();
-		final C1OfC1 decode = build.decode(direct);
+		final NullableC1OfC1 decode = build.decode(direct);
 
 		System.out.println("Measured: " + measure);
 		System.out.println("Actual: " + direct.pos());
 		System.out.println(decode.equals(encode));
-*/
 	}
 
 	@TestFactory
@@ -147,7 +146,12 @@ public class TestUtil {
 
 	@TestFactory
 	Stream<DynamicNode> name3() {
-		return createGeneratedTests(DoubleC1Pain.class, ByteBufferIO.class, ByteBufferIO::createDirect, DoubleC1Pain.generate()).limit(100);
+		return createGeneratedTests(DoubleC1Pain.class, ByteBufferIO.class, ByteBufferIO::createDirect, DoubleC1Pain.generate());
+	}
+
+	@TestFactory
+	Stream<DynamicNode> name4() {
+		return createGeneratedTests(NullableC1OfC1.class, ByteBufferIO.class, ByteBufferIO::createDirect, NullableC1OfC1.generate());
 	}
 
 	private static <DATA, IO extends ByteBufferIO> Stream<DynamicNode> createGeneratedTests(Class<DATA> testClass, Class<IO> io, IntFunction<IO> ioCreator, Stream<? extends DATA> objects) {

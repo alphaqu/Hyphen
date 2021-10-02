@@ -30,7 +30,12 @@ public final class TestSupplierUtil {
 
 
 	@SafeVarargs
-	public static <T> Supplier<? extends Stream<? extends T>> subClasses(Supplier<? extends Stream<? extends T>>... subclasses){
+	public static <T> Supplier<? extends Stream<? extends T>> subClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
 		return () -> Arrays.stream(subclasses).flatMap(Supplier::get);
+	}
+
+	@SafeVarargs
+	public static <T> Supplier<? extends Stream<? extends T>> nullableSubClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
+		return () -> Stream.concat(Stream.of((T) null), Arrays.stream(subclasses).flatMap(Supplier::get));
 	}
 }

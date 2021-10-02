@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class SubclassMethod extends MethodMetadata {
+public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 	private final Map<Class<?>, SerializerDef> subtypes = new LinkedHashMap<>();
 	public boolean dynamic = false;
 
@@ -60,6 +60,18 @@ public class SubclassMethod extends MethodMetadata {
 		// io
 		data.load();
 		// io | data
+
+		if(this.info.supportsNull()){
+			Label nonNull = new Label();
+			mh.visitJumpInsn(IFNONNULL, nonNull);
+			// io
+			mh.visitInsn(ICONST_M1);
+			mh.callIOPut(byte.class);
+			mh.returnOp();
+			mh.visitLabel(nonNull);
+			data.load();
+		}
+
 		mh.visitInsn(DUP2);
 		// io | data | io | data
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);
@@ -99,8 +111,6 @@ public class SubclassMethod extends MethodMetadata {
 
 	@Override
 	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
-		int i = 0;
-
 		io.load();
 		// io
 		mh.visitInsn(DUP);
@@ -108,7 +118,8 @@ public class SubclassMethod extends MethodMetadata {
 		mh.callIOGet(byte.class);
 		// io | int
 
-		int count = this.subtypes.size();
+		int offset = this.info.supportsNull() ? 1 : 0;
+		int count = this.subtypes.size() + offset;
 
 		var def = new Label();
 		var labels = new Label[count];
@@ -117,9 +128,18 @@ public class SubclassMethod extends MethodMetadata {
 			labels[x] = new Label();
 		}
 
-		mh.visitTableSwitchInsn(0, count - 1, def, labels);
+		mh.visitTableSwitchInsn(-offset, count - 1 - offset, def, labels);
 		// io
 
+		if(offset > 0){
+			mh.visitLabel(labels[0]);
+			// io
+			mh.visitInsn(ACONST_NULL);
+			// null
+			mh.returnOp();
+		}
+
+		int i = offset;
 		for (var entry : this.subtypes.values()) {
 			mh.visitLabel(labels[i++]);
 			// io
@@ -138,6 +158,18 @@ public class SubclassMethod extends MethodMetadata {
 
 	@Override
 	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
+		if(this.info.supportsNull()){
+			Label nonNull = new Label();
+
+			data.load();
+			mh.visitJumpInsn(IFNONNULL, nonNull);
+
+			mh.visitInsn(LCONST_1);
+			mh.returnOp();
+			mh.visitLabel(nonNull);
+		}
+
+
 		data.load();
 		// data
 		mh.callInstanceMethod(Object.class, "getClass", Class.class);
