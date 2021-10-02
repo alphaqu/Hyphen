@@ -25,6 +25,7 @@ public class SubclassMethod extends MethodMetadata {
 
 	public static SubclassMethod create(SubclassInfo info, ScanHandler handler) {
 		var methodMetadata = new SubclassMethod(info);
+		handler.methods.put(info, methodMetadata);
 		final Map<Class<?>, SerializerDef> subtypes = methodMetadata.subtypes;
 		for (TypeInfo subTypeInfo : info.classInfos) {
 			if (subtypes.containsKey(subTypeInfo.getClazz())) {

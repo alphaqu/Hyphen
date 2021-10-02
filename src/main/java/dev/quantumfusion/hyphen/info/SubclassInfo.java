@@ -116,7 +116,7 @@ public class SubclassInfo extends TypeInfo {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof SubclassInfo that)) return false;
-		return Objects.equals(classInfos, that.classInfos);
+		return Objects.equals(this.classInfos, that.classInfos);
 	}
 
 	@Override
@@ -127,11 +127,11 @@ public class SubclassInfo extends TypeInfo {
 	@Override
 	public String getMethodName(boolean absolute) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Sub");
+		builder.append("Sub_E_");
 		for (TypeInfo classInfo : classInfos) {
 			builder.append(classInfo.getMethodName(absolute));
 		}
-		return builder.toString();
+		return builder.append("_3_").toString();
 	}
 
 	@Override

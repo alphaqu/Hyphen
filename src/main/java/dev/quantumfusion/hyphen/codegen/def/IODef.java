@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
 import java.util.Locale;
 
-import static org.objectweb.asm.Opcodes.I2L;
+import static org.objectweb.asm.Opcodes.*;
 
 public class IODef implements SerializerDef {
 	private final Class<?> clazz;
@@ -46,18 +46,20 @@ public class IODef implements SerializerDef {
 
 	@Override
 	public boolean needsField() {
-		return clazz == String.class;
+		return this.clazz == String.class;
 	}
 
 	@Override
 	public void doMeasure(MethodHandler mh) {
-		if (clazz.isPrimitive()) {
-			mh.visitLdcInsn(getSize());
-		} else {
+		if (this.clazz == String.class) {
 			mh.callInstanceMethod(String.class, "length", int.class);
 			// mh.visitInsn(ICONST_2);
 			// mh.visitInsn(IMUL);
 			mh.visitInsn(I2L);
+			mh.visitLdcInsn(this.getSize());
+			mh.visitInsn(LADD);
+		}else {
+			mh.visitLdcInsn(this.getSize());
 		}
 	}
 }

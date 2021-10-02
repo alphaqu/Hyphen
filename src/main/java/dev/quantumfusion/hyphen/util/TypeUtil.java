@@ -14,7 +14,6 @@ import dev.quantumfusion.hyphen.thr.exception.NotYetImplementedException;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,7 +92,6 @@ public class TypeUtil {
 					resolved.put(typeVariable.getName(), typeInfo);
 
 					Type[] bounds = typeVariable.getBounds();
-					System.out.println(Arrays.toString(bounds));
 
 					for (Type bound : bounds) {
 						// eg Foo<A, B extends List<A>> extends Bar<B> with Bar<List<Int>>

@@ -40,12 +40,13 @@ public abstract class WrappedDef implements SerializerDef {
 
 	@Override
 	public boolean needsField() {
-		return true;
+		return this.inner.needsField();
 	}
 
 	@Override
 	public void doMeasure(MethodHandler mh) {
-		this.unwrap(mh);
+		if(this.needsField())
+			this.unwrap(mh);
 		this.inner.doMeasure(mh);
 	}
 }

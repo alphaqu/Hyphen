@@ -39,12 +39,16 @@ public class TypeClassInfo extends TypeInfo {
 				annotations.putAll(classInfo.annotations);
 				// @Subclasses(SuperString.class, WaitThisExampleSucksBecauseStringIsFinal.class) String thing
 				if (SubclassInfo.check(annotations))
-					return SubclassInfo.create(handler, source, classInfo.clazz, classInfo.type, classInfo.annotatedType, annotations);
+					// update actual?
+					assert true;
+					// classInfo = SubclassInfo.create(handler, source, classInfo.clazz, classInfo.type, classInfo.annotatedType, annotations);
 
 				return new TypeClassInfo(classInfo.clazz, typeVariable, annotatedType, annotations, typeName, ScanUtils.getClazz(typeVariable.getBounds()[0]), classInfo);
 			}
 		}
-		return ScanHandler.UNKNOWN_INFO;
+		throw ThrowHandler.fatal(UnknownTypeException::new, "Type could not be identified",
+				of("Source Class", source.clazz.getName()),
+				of("Error Class", clazz));
 	}
 
 	@Override

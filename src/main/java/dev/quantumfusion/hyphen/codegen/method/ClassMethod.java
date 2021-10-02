@@ -102,14 +102,11 @@ public class ClassMethod extends MethodMetadata {
 			}
 
 			// OBJECT | OBJECT | ... fields
+			// FIXME: better constructor lookup
 			mh.callSpecialMethod(this.info.getClazz(),
 					"<init>",
 					null,
-					this.fields.keySet()
-							.stream()
-							.map(FieldEntry::clazz)
-							.map(TypeInfo::getRawType)
-							.toArray(Class[]::new));
+					((ClassInfo) this.info).constructorParameters);
 		}
 		mh.returnOp();
 	}
@@ -118,12 +115,11 @@ public class ClassMethod extends MethodMetadata {
 	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
 		boolean first = true;
 		for (var entry : this.fields.entrySet()) {
-			data.load();
-			// (size |) data
 
 			var field = entry.getKey();
 			final SerializerDef value = entry.getValue();
 			if (field != null && value.needsField()) {
+				data.load();
 				TypeInfo fieldType = field.clazz();
 				mh.getField(GETFIELD, this.info.getClazz(), field.name(), fieldType.getRawType());
 				if (!fieldType.getClazz().isAssignableFrom(fieldType.getRawType())) {
