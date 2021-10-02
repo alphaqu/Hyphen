@@ -7,7 +7,6 @@ import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
-import dev.quantumfusion.hyphen.util.ScanUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class ClassMethod extends MethodMetadata {
 		}
 
 		//check if it exists / if its accessible
-		ScanUtils.checkConstructor(handler, info);
+		info.findConstructor(handler);
 		for (FieldEntry fieldInfo : info.getAllFields(handler)) {
 			try {
 				methodMetadata.addField(fieldInfo, handler.getDefinition(fieldInfo, info));

@@ -49,8 +49,7 @@ public abstract class TypeInfo {
 
 	@Override
 	public boolean equals(Object o) {
-		return this == o
-				|| o instanceof TypeInfo typeInfo
+		return this == o || o instanceof TypeInfo typeInfo
 				&& Objects.equals(this.clazz, typeInfo.clazz)
 				&& Objects.equals(this.annotations, typeInfo.annotations);
 	}

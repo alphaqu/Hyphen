@@ -7,10 +7,12 @@ import dev.quantumfusion.hyphen.codegen.method.ClassMethod;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.thr.ThrowHandler;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
+import dev.quantumfusion.hyphen.util.ScanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import java.util.Map;
 
 public class ClassInfo extends TypeInfo implements Type {
 	private MethodMetadata metadata;
+	public Class<?>[] constructorParameters = null;
 
 	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, type, annotatedType, annotations);
@@ -52,6 +55,25 @@ public class ClassInfo extends TypeInfo implements Type {
 		}
 
 		return info;
+	}
+
+	public void findConstructor(ScanHandler handler) {
+		ClassInfo parent = this;
+		if (this instanceof ParameterizedInfo classInfo) {
+			parent = classInfo.copyWithoutTypeKnowledge();
+		}
+		List<FieldEntry> allFields = parent.getAllFields(handler);
+		Class<?>[] classes = new Class[allFields.size()];
+		for (int i = 0; i < allFields.size(); i++) {
+			classes[i] = allFields.get(i).clazz().getClazz();
+		}
+		try {
+			Constructor<?> constructor = this.getClazz().getDeclaredConstructor(classes);
+			ScanUtils.checkAccess(constructor.getModifiers(), () -> ThrowHandler.constructorAccessFail(constructor, this));
+			this.constructorParameters = classes;
+		} catch (NoSuchMethodException e) {
+			throw ThrowHandler.constructorNotFoundFail(allFields, this);
+		}
 	}
 
 	public List<FieldEntry> getAllFields(ScanHandler factory) {
