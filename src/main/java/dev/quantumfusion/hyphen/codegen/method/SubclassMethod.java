@@ -67,7 +67,7 @@ public class SubclassMethod extends MethodMetadata {
 			// io | data | io
 			mh.visitLdcInsn(i++);
 			// io | data | io | i
-			mh.callIOPut(int.class);
+			mh.callIOPut(byte.class);
 			// io | data
 			mh.cast(clz);
 			// io | data as clz
@@ -92,7 +92,7 @@ public class SubclassMethod extends MethodMetadata {
 		// io
 		mh.visitInsn(DUP);
 		// io | io
-		mh.callIOGet(int.class);
+		mh.callIOGet(byte.class);
 		// io | int
 
 		int count = this.subtypes.size();

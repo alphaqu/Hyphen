@@ -51,10 +51,8 @@ public class IODef implements SerializerDef {
 		// String
 		// FIXME: size depends on io type
 		mh.callInstanceMethod(String.class, "length", int.class);
-		mh.visitInsn(ICONST_2);
-		mh.visitInsn(IMUL);
-		mh.visitInsn(ICONST_4);
-		mh.visitInsn(IADD);
+		// mh.visitInsn(ICONST_2);
+		// mh.visitInsn(IMUL);
 		mh.visitInsn(I2L);
 	}
 }

@@ -5,5 +5,5 @@ public interface HyphenSerializer<D, IO> {
 
 	void encode(IO io, D data);
 
-	long measure(D io);
+	long measure(D data);
 }

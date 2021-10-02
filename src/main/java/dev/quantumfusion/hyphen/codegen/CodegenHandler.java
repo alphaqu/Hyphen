@@ -100,16 +100,14 @@ public class CodegenHandler {
 				long.class,
 				Object.class)
 		) {
-
 			long size = methodMetadata.getSize();
 			if (size >= 0) {
 				mh.visitLdcInsn(size);
 				mh.returnOp();
 			} else {
-				MethodHandler.Var data;
 				mh.createVar("this", Object.class);
 				var dataRaw = mh.createVar("dataRaw", Object.class);
-				data = mh.createVar("data", info.getClazz());
+				var data = mh.createVar("data", info.getClazz());
 				dataRaw.load();
 				mh.cast(info.getClazz());
 				data.store();
