@@ -2,9 +2,7 @@ package dev.quantumfusion.hyphen.codegen;
 
 import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
-import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
-import dev.quantumfusion.hyphen.io.ArrayIO;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
@@ -23,110 +21,103 @@ public class CodegenHandler {
 	}
 
 	public void createConstructor() {
-		try (MethodHandler mh = MethodHandler.createVoid(this, this.io, ACC_PUBLIC, "<init>")) {
+		try (MethodHandler mh = MethodHandler.createVoid(this, ACC_PUBLIC, "<init>")) {
 			mh.visitIntInsn(ALOAD, 0);
 			mh.callSpecialMethod(Object.class, "<init>", Void.TYPE);
 			mh.returnOp();
 		}
 	}
 
-	public void createMethods(TypeInfo info, MethodMetadata methodMetadata) {
-		this.createEncode(info, methodMetadata);
-		this.createDecode(info, methodMetadata);
-		this.createSubCalc(info, methodMetadata);
+	public void createMethods(MethodMetadata methodMetadata) {
+		methodMetadata.createPut(this);
+		methodMetadata.createGet(this);
+		methodMetadata.createSubCalc(this);
 	}
 
-	public void createEncode(TypeInfo info, MethodMetadata methodMetadata) {
-		final boolean main = isMain(info);
+	public void createMainMethods(MethodMetadata mainSerializeMethod) {
+		this.createMainEncode(mainSerializeMethod);
+		this.createMainDecode(mainSerializeMethod);
+		this.createMainSize(mainSerializeMethod);
+	}
+
+	private void createMainEncode(MethodMetadata methodMetadata) {
 		try (MethodHandler mh = MethodHandler.createVoid(
 				this,
-				this.io,
-				(main ? 0 : ACC_STATIC) | ACC_PUBLIC | ACC_FINAL,
-				main ? "encode" : Constants.PUT_FUNC + info.getMethodName(false),
-				main ? Object.class : this.io.ioClass,
-				main ? Object.class : info.getClazz())
+				ACC_PUBLIC | ACC_FINAL,
+				"encode",
+				Object.class,
+				Object.class)
 		) {
 
-			MethodHandler.Var io;
-			MethodHandler.Var data;
-			if (main) {
-				mh.createVar("this", Object.class);
-				var ioRaw = mh.createVar("ioRaw", Object.class);
-				var dataRaw = mh.createVar("dataRaw", Object.class);
-				io = mh.createVar("io", this.io.ioClass);
-				data = mh.createVar("data", info.getClazz());
+			mh.createVar("this", Object.class);
+			var ioRaw = mh.createVar("ioRaw", Object.class);
+			var dataRaw = mh.createVar("dataRaw", Object.class);
+			var io = mh.createVar("io", this.io.ioClass);
+			var data = mh.createVar("data", methodMetadata.getInfo().getClazz());
 
-				ioRaw.load();
-				mh.cast(this.io.ioClass);
-				io.store();
+			ioRaw.load();
+			mh.cast(this.io.ioClass);
+			io.store();
 
-				dataRaw.load();
-				mh.cast(info.getClazz());
-				data.store();
-			} else {
-				io = mh.createVar("io", this.io.ioClass);
-				data = mh.createVar("data", info.getClazz());
-			}
+			dataRaw.load();
+			mh.cast(methodMetadata.getInfo().getClazz());
+			data.store();
+			// TODO should this call the static put instead?
+			//  methodMetadata.callPut(mh);
 			methodMetadata.writePut(mh, io, data);
 		}
 	}
 
-	public void createDecode(TypeInfo info, MethodMetadata methodMetadata) {
-		final boolean main = isMain(info);
+	private void createMainDecode(MethodMetadata methodMetadata) {
 		try (MethodHandler mh = MethodHandler.create(
 				this,
-				this.io,
-				(main ? 0 : ACC_STATIC) | ACC_PUBLIC | ACC_FINAL,
-				main ? "decode" : Constants.GET_FUNC + info.getMethodName(false),
-				main ? Object.class : info.getClazz(),
-				main ? Object.class : this.io.ioClass)) {
-			MethodHandler.Var io;
-			if (main) {
-				mh.createVar("this", Object.class);
-				var ioRaw = mh.createVar("ioRaw", Object.class);
-				io = mh.createVar("io", this.io.ioClass);
-				ioRaw.load();
-				mh.cast(this.io.ioClass);
-				io.store();
-			} else io = mh.createVar("io", this.io.ioClass);
+				ACC_PUBLIC | ACC_FINAL,
+				"decode",
+				Object.class,
+				Object.class)) {
 
+			mh.createVar("this", Object.class);
+			var ioRaw = mh.createVar("ioRaw", Object.class);
+			var io = mh.createVar("io", this.io.ioClass);
+			ioRaw.load();
+			mh.cast(this.io.ioClass);
+			io.store();
+
+			// TODO should this call the static get instead?
+			//  methodMetadata.callPut(mh);
 			methodMetadata.writeGet(mh, io);
 		}
 	}
 
-	public void createSubCalc(TypeInfo info, MethodMetadata methodMetadata) {
-		if(methodMetadata.getSize() >= 0) return; // skip
+	private void createMainSize(MethodMetadata methodMetadata) {
+		TypeInfo info = methodMetadata.getInfo();
 
 		try (MethodHandler mh = MethodHandler.create(
 				this,
-				this.io,
 				ACC_STATIC | ACC_PUBLIC | ACC_FINAL,
-				Constants.SUB_CALC_FUNC + info.getMethodName(false),
+				Constants.CALC_FUNC + info.getMethodName(false),
 				long.class,
 				info.getClazz())
 		) {
-			MethodHandler.Var data;
-			data = mh.createVar("data", info.getClazz());
-			methodMetadata.writeSubCalcSize(mh, data);
-		}
-	}
 
-	private boolean isMain(TypeInfo info) {
-		if (info instanceof ClassInfo classInfo)
-			return classInfo.main;
-		return false;
-	}
+			long size = methodMetadata.getSize();
+			if (size >= 0) {
+				mh.visitLdcInsn(size);
+				mh.returnOp();
+			} else {
+				MethodHandler.Var data;
+				data = mh.createVar("data", info.getClazz());
+				methodMetadata.writeSubCalcSize(mh, data);
 
-	private void createIntCombine() {
-		try (MethodHandler mh = MethodHandler.create(this, this.io, ACC_PUBLIC | ACC_STATIC | ACC_FINAL, "combine", Void.TYPE, ArrayIO.class)) {
-			var io = mh.createVar("io", this.io.ioClass);
+				size = ~size;
 
+				if (size != 0) {
+					mh.visitLdcInsn(size);
+					mh.visitInsn(LADD);
+				}
 
-			io.load();
-			mh.visitLdcInsn(69);
-			mh.visitLdcInsn(420);
-			mh.callIOPut(long.class);
-			mh.returnOp();
+				mh.returnOp();
+			}
 		}
 	}
 
@@ -136,29 +127,13 @@ public class CodegenHandler {
 
 	public Class<?> export() {
 		return new ClassLoader() {
-			public Class<?> define(byte[] bytes, String name) {
+			Class<?> define(byte[] bytes, String name) {
 				return super.defineClass(name, bytes, 0, bytes.length);
 			}
-		}.define(cw.toByteArray(), name);
+		}.define(this.cw.toByteArray(), this.name);
 	}
 
-	@FunctionalInterface
-	public interface UWUWU {
-		void uwu(ArrayIO io, Integer i);
-	}
-
-	@FunctionalInterface
-	public interface UWUWU2 {
-		void uwu(Integer i);
-	}
-
-	private static class Loader extends ClassLoader {
-		public Loader(ClassLoader parent) {
-			super(parent);
-		}
-
-		public Class<?> define(String name, byte[] bytes) {
-			return super.defineClass(name, bytes, 0, bytes.length);
-		}
+	public IOMode getIOMode() {
+		return this.io;
 	}
 }

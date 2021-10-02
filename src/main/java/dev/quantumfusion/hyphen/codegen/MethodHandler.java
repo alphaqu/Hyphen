@@ -18,27 +18,25 @@ import static org.objectweb.asm.Opcodes.*;
 
 @SuppressWarnings("WeakerAccess")
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
-	private final IOMode io;
 	public final Class<?> returnClazz;
 	private final CodegenHandler codegenHandler;
 
 	// ================================== CREATE ==================================
-	public MethodHandler(MethodVisitor mv, IOMode io, Class<?> returnClazz, CodegenHandler codegenHandler) {
+	public MethodHandler(MethodVisitor mv, Class<?> returnClazz, CodegenHandler codegenHandler) {
 		super(Opcodes.ASM9, mv);
-		this.io = io;
 		this.returnClazz = returnClazz;
 		this.codegenHandler = codegenHandler;
 		this.pushScope();
 	}
 
-	public static MethodHandler createVoid(CodegenHandler codegenHandler, IOMode io, int tag, String name, Class<?>... param) {
+	public static MethodHandler createVoid(CodegenHandler codegenHandler, int tag, String name, Class<?>... param) {
 		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getVoidMethodDesc(param), null, null);
-		return new MethodHandler(mv, io, Void.TYPE, codegenHandler);
+		return new MethodHandler(mv, Void.TYPE, codegenHandler);
 	}
 
-	public static MethodHandler create(CodegenHandler codegenHandler, IOMode io, int tag, String name, Class<?> returnClazz, Class<?>... param) {
+	public static MethodHandler create(CodegenHandler codegenHandler, int tag, String name, Class<?> returnClazz, Class<?>... param) {
 		final MethodVisitor mv = codegenHandler.cw.visitMethod(tag, name, getMethodDesc(returnClazz, param), null, null);
-		return new MethodHandler(mv, io, returnClazz, codegenHandler);
+		return new MethodHandler(mv, returnClazz, codegenHandler);
 	}
 
 	// ================================== CLAZZY ====================================
@@ -96,21 +94,16 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		invokeIO(desc, "get" + getSuffix(clazz));
 	}
 
-	public Class<?> getIOClass() {
-		return io.ioClass;
-	}
-
-
 	public void callIOPut(Class<?> clazz) {
 		invokeIO(getVoidMethodDesc(clazz), "put" + getSuffix(clazz));
 	}
 
 	public Class<?> getIOClazz() {
-		return this.io.ioClass;
+		return this.codegenHandler.getIOMode().ioClass;
 	}
 
 	private void invokeIO(String desc, String name) {
-		this.visitMethodInsn(INVOKEVIRTUAL, io.internalName, name, desc, false);
+		this.visitMethodInsn(INVOKEVIRTUAL, this.codegenHandler.getIOMode().internalName, name, desc, false);
 	}
 
 	private String getSuffix(Class<?> clazz) {

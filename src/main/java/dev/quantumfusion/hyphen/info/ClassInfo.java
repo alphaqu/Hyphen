@@ -19,21 +19,13 @@ import java.util.Map;
 
 public class ClassInfo extends TypeInfo implements Type {
 	private MethodMetadata metadata;
-	public final boolean main;
-
-	public ClassInfo(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, boolean main) {
-		super(clazz, clazz, null, annotations);
-		this.main = main;
-	}
 
 	public ClassInfo(Class<?> clazz, Type type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, type, annotatedType, annotations);
-		this.main = false;
 	}
 
 	public ClassInfo(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations) {
 		super(clazz, clazz, null, annotations);
-		this.main = false;
 	}
 
 	public static TypeInfo createType(ScanHandler handler, TypeInfo source, Class<?> type, @Nullable AnnotatedType annotatedType, Map<Class<? extends Annotation>, Annotation> annotations) {

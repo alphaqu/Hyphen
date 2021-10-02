@@ -26,6 +26,7 @@ public class ScanHandler {
 	public final Map<Object, List<Class<?>>> subclasses;
 	@Nullable
 	private final DebugHandler debugHandler;
+	MethodMetadata mainSerializeMethod;
 
 	protected ScanHandler(Map<TypeInfo, MethodMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
 		this.implementations = implementations;
@@ -94,7 +95,7 @@ public class ScanHandler {
 
 
 	public void scan(Class<?> clazz) {
-		this.createSerializeMethod(new ClassInfo(clazz, Map.of(), true));
+		this.mainSerializeMethod = this.createSerializeMethod(new ClassInfo(clazz, Map.of()));
 
 		if (debugHandler != null) {
 			debugHandler.printMethods(methods);
