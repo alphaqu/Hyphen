@@ -44,6 +44,7 @@ public class TypeUtil {
 		return out;
 	}
 
+
 	public static Map<String, TypeInfo> mapSubclassTypes(Map<String, TypeInfo> typeInfos, ParameterizedType superType) {
 		try {
 			var out = new HashMap<String, TypeInfo>();

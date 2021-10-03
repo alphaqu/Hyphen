@@ -126,11 +126,15 @@ public class ScanHandler {
 	public SerializerDef getDefinition(@Nullable FieldEntry field, TypeInfo classInfo, ClassInfo source) {
 		if (!(classInfo instanceof SubclassInfo)) {
 			final Class<?> clazz = classInfo.getClazz();
-			final Class<?>[] classes = ScanUtils.pathTo(clazz, implementations::containsKey, TypeUtil::getInheritedClasses, 0);
+			final Type[] classes = ScanUtils.pathTo(clazz, implementations::containsKey, 0);
 			if (classes != null) {
-				return implementations.get(classes.length > 0 ? classes[classes.length - 1] : clazz).apply(classInfo);
+				for (Type aClass : classes)
+					classInfo = create(classInfo, null, aClass, null);
+
+				return implementations.get(classes.length > 0 ? ScanUtils.getClazz(classes[classes.length - 1]) : clazz).apply(classInfo);
 			}
 		}
+
 		if (field != null) {
 			//check if field is legal
 			//we don't do this on the serializerDef because they might do some grandpa 360 no-scopes on fields and access them another way

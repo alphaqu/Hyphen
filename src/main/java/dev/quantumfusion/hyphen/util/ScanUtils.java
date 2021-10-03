@@ -34,12 +34,27 @@ public class ScanUtils {
 		return null;
 	}
 
-	public static Type[] pathTo(Class<?> clazz, Class<?> targetParent, int depth) {
-		if (clazz == targetParent)
+	public static Type[] pathTo(Class<?> clazz, Predicate<? super Class<?>> matcher, int depth) {
+		if (matcher.test(clazz))
 			return new Type[depth];
 
 		for (Type aClass : TypeUtil.getInheritedTypes(clazz)) {
-			Type[] classes = pathTo(getClazz(aClass), targetParent, depth + 1);
+			Type[] classes = pathTo(getClazz(aClass), matcher, depth + 1);
+			if (classes != null) {
+				classes[depth] = aClass;
+				return classes;
+			}
+		}
+
+		return null;
+	}
+
+	public static Type[] pathTo(Class<?> clazz, Class<?> target, int depth) {
+		if (clazz == target)
+			return new Type[depth];
+
+		for (Type aClass : TypeUtil.getInheritedTypes(clazz)) {
+			Type[] classes = pathTo(getClazz(aClass), target, depth + 1);
 			if (classes != null) {
 				classes[depth] = aClass;
 				return classes;

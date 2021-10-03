@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.thr.exception.ClassScanException;
 import dev.quantumfusion.hyphen.util.ArrayType;
 import dev.quantumfusion.hyphen.util.Color;
 import dev.quantumfusion.hyphen.util.ScanUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedArrayType;
@@ -27,7 +28,7 @@ public class ArrayInfo extends TypeInfo {
 		this.values = values;
 	}
 
-	public static ArrayInfo createType(ScanHandler handler, TypeInfo source, ArrayType arrayType, AnnotatedType annotatedType) {
+	public static ArrayInfo createType(ScanHandler handler, TypeInfo source, ArrayType arrayType, @Nullable AnnotatedType annotatedType) {
 		var annotations = ScanUtils.getAnnotations(source, annotatedType);
 		Class<?> type = arrayType.getType();
 		TypeInfo values;
