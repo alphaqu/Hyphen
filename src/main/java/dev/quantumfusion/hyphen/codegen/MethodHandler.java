@@ -86,13 +86,13 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		this.visitMethodInsn(INVOKESTATIC, this.codegenHandler.name, name, GenUtil.getMethodDesc(returnClass, parameters), false);
 	}
 
-	public void callHyphenMethod(MethodMode mode, TypeInfo typeInfo) {
-		final CodegenHandler.MethodInfo methodData = codegenHandler.getMethodData(mode, typeInfo);
-		this.callInternalStaticMethod(methodData.name(), methodData.returnClass(), methodData.param());
+	public void callHyphenMethod(MethodType type, TypeInfo typeInfo) {
+		final CodegenHandler.MethodInfo methodInfo = codegenHandler.getMethodData(type, typeInfo);
+		this.callInternalStaticMethod(methodInfo.name(), methodInfo.returnClass(), methodInfo.parameters());
 	}
 
-	public void callHyphenMethod(MethodMode mode, MethodMetadata methodMetadata) {
-		this.callHyphenMethod(mode, methodMetadata.getInfo());
+	public void callHyphenMethod(MethodType type, MethodMetadata methodMetadata) {
+		this.callHyphenMethod(type, methodMetadata.getInfo());
 	}
 
 	public void createMultiArray(Class<?> descriptor, int numDimensions) {

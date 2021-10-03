@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.codegen.method;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.Vars;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.SubclassInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
@@ -48,7 +49,9 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
+	public void writePut(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
+		var data = Vars.DATA.get(mh);
 		AtomicInteger i = new AtomicInteger(0);
 		if (this.info.supportsNull()) GenUtil.nullCheckReturn(mh, data, () -> {
 			io.load();
@@ -68,7 +71,7 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 				mh.visitLdcInsn(i.getAndIncrement());
 				mh.callIOPut(byte.class);
 				mh.cast(clz);
-				entry.getValue().doPut(mh);
+				entry.getValue().writePut(mh);
 				mh.returnOp();
 			});
 		}
@@ -78,7 +81,8 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
+	public void writeGet(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
 		io.load();
 		// io
 		mh.visitInsn(DUP);
@@ -92,7 +96,7 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 				switchVar.nextLabel(() -> mh.visitInsn(ACONST_NULL));
 
 			for (var entry : this.subtypes.values())
-				switchVar.nextLabel(() -> entry.doGet(mh));
+				switchVar.nextLabel(() -> entry.writeGet(mh));
 
 			switchVar.defaultLabel(() -> {
 				mh.visitInsn(POP);
@@ -102,7 +106,8 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh) {
+		var data = Vars.DATA.get(mh);
 		if (this.info.supportsNull()) GenUtil.nullCheckReturn(mh, data, () -> mh.visitInsn(LCONST_1));
 
 		data.load();
@@ -114,7 +119,7 @@ public class SubclassMethod extends MethodMetadata<SubclassInfo> {
 			Class<?> clz = entry.getKey();
 			GenUtil.ifElseClass(mh, clz, clazz, () -> {
 				data.loadCast(clz);
-				entry.getValue().doMeasure(mh);
+				entry.getValue().writeMeasure(mh);
 				GenUtil.addL(mh, 1L);
 				mh.returnOp();
 			});

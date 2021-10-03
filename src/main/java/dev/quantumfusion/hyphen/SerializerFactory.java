@@ -19,7 +19,7 @@ public class SerializerFactory<K> {
 	private static final boolean EXPORT = true;
 	private static final String uwuSerializer = "UWUSerializer";
 	private final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations = new HashMap<>();
-	private final Map<TypeInfo, MethodMetadata> methods = new LinkedHashMap<>();
+	private final Map<TypeInfo, MethodMetadata<?>> methods = new LinkedHashMap<>();
 	private final Map<Object, List<Class<?>>> subclasses = new HashMap<>();
 	private final EnumMap<Options, Boolean> options = new EnumMap<>(Options.class);
 	private final boolean debug;

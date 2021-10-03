@@ -1,9 +1,9 @@
 package dev.quantumfusion.hyphen;
 
 public interface HyphenSerializer<D, IO> {
-	D decode(IO io);
+	D get(IO io);
 
-	void encode(IO io, D data);
+	void put(IO io, D data);
 
 	long measure(D data);
 }

@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.codegen.method;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.codegen.FieldEntry;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.Vars;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.info.ClassInfo;
 import dev.quantumfusion.hyphen.thr.exception.HyphenException;
@@ -59,7 +60,9 @@ public class ClassMethod extends MethodMetadata<ClassInfo> {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
+	public void writePut(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
+		var data = Vars.DATA.get(mh);
 		GenUtil.load(io, data);
 		int i = 0;
 
@@ -73,24 +76,25 @@ public class ClassMethod extends MethodMetadata<ClassInfo> {
 			if (field != null) GenUtil.getFieldFromClass(mh, this.info, field);
 
 			// io | field
-			entry.getValue().doPut(mh);
+			entry.getValue().writePut(mh);
 		}
 
 		mh.returnOp();
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh) {
+		var data = Vars.DATA.get(mh);
 		boolean first = true;
 		for (var entry : this.fields.entrySet()) {
 
 			var field = entry.getKey();
 			final SerializerDef value = entry.getValue();
-			if (field != null && value.needsField()) {
+			if (field != null && value.needsFieldOnMeasure()) {
 				data.load();
 				GenUtil.getFieldFromClass(mh, this.info, field);
 			}
-			value.doMeasure(mh);
+			value.writeMeasure(mh);
 			if (!first) mh.visitInsn(LADD);
 			else first = false;
 		}
@@ -98,15 +102,16 @@ public class ClassMethod extends MethodMetadata<ClassInfo> {
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
+	public void writeGet(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
 		if (this.fields.containsKey(null)) {
 			io.load();
-			this.fields.get(null).doGet(mh);
+			this.fields.get(null).writeGet(mh);
 		} else {
 			GenUtil.newDup(mh, this.info);
 			for (var def : this.fields.values()) {
 				io.load();
-				def.doGet(mh);
+				def.writeGet(mh);
 			}
 
 			// OBJECT | OBJECT | ... fields

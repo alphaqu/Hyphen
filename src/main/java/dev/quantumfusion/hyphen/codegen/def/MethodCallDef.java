@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.codegen.MethodMode;
+import dev.quantumfusion.hyphen.codegen.MethodType;
 import dev.quantumfusion.hyphen.codegen.method.MethodMetadata;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 
@@ -20,22 +20,22 @@ public class MethodCallDef implements SerializerDef {
 	}
 
 	@Override
-	public void doPut(MethodHandler mh) {
-		mh.callHyphenMethod(MethodMode.PUT, serializeMethod);
+	public void writePut(MethodHandler mh) {
+		mh.callHyphenMethod(MethodType.PUT, serializeMethod);
 	}
 
 	@Override
-	public void doGet(MethodHandler mh) {
-		mh.callHyphenMethod(MethodMode.GET, serializeMethod);
+	public void writeGet(MethodHandler mh) {
+		mh.callHyphenMethod(MethodType.GET, serializeMethod);
 	}
 
 	@Override
-	public void doMeasure(MethodHandler mh) {
-		mh.callHyphenMethod(MethodMode.MEASURE, serializeMethod);
+	public void writeMeasure(MethodHandler mh) {
+		mh.callHyphenMethod(MethodType.MEASURE, serializeMethod);
 	}
 
 	@Override
-	public boolean needsField() {
+	public boolean needsFieldOnMeasure() {
 		return this.serializeMethod.dynamicSize();
 	}
 

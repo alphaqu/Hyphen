@@ -126,9 +126,9 @@ public class TestUtil {
 		// final Recursive encode = new Recursive(new C1<>(""));
 		final int measure = (int) build.measure(encode);
 		final ByteBufferIO direct = ByteBufferIO.createDirect(measure * 100);
-		build.encode(direct, encode);
+		build.put(direct, encode);
 		direct.rewind();
-		final NullableC1OfC1 decode = build.decode(direct);
+		final NullableC1OfC1 decode = build.get(direct);
 
 		System.out.println("Measured: " + measure);
 		System.out.println("Actual: " + direct.pos());
@@ -161,9 +161,9 @@ public class TestUtil {
 			final int measure = (int) build.measure(encode);
 			// make oversized
 			final IO direct = ioCreator.apply((measure + 16) * 4);
-			build.encode(direct, encode);
+			build.put(direct, encode);
 			direct.rewind();
-			final DATA decode = build.decode(direct);
+			final DATA decode = build.get(direct);
 
 			// System.out.println("Measured: " + measure);
 			// System.out.println("Actual: " + direct.pos());

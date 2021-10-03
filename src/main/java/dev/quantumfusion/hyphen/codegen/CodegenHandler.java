@@ -9,8 +9,10 @@ import dev.quantumfusion.hyphen.thr.exception.HyphenException;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -18,13 +20,11 @@ public class CodegenHandler {
 	final String name;
 	final ClassWriter cw;
 	final EnumMap<Options, Boolean> options;
-	private final Map<TypeInfo, MethodMetadata> methodWriters;
-	private final EnumMap<MethodMode, Map<TypeInfo, MethodInfo>> methods;
+	private final EnumMap<MethodType, Map<TypeInfo, MethodInfo>> methods;
 	private final IOMode io;
 
-	public CodegenHandler(EnumMap<Options, Boolean> options, Map<TypeInfo, MethodMetadata> methodWriters, Class<?> ioClazz, String name) {
+	public CodegenHandler(EnumMap<Options, Boolean> options, Map<TypeInfo, MethodMetadata<?>> methodWriters, Class<?> ioClazz, String name) {
 		this.options = options;
-		this.methodWriters = methodWriters;
 		this.io = IOMode.create(ioClazz);
 		this.name = name;
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -32,40 +32,14 @@ public class CodegenHandler {
 		this.methods = parseMethodNames(methodWriters);
 	}
 
-	private EnumMap<MethodMode, Map<TypeInfo, MethodInfo>> parseMethodNames(Map<TypeInfo, MethodMetadata> methods) {
-		var out = new EnumMap<MethodMode, Map<TypeInfo, MethodInfo>>(MethodMode.class);
-
-		Map<List<Class<?>>, AtomicInteger> dedup = null;
-		if (options.get(Options.COMPACT_METHODS))
-			dedup = new HashMap<>();
-
-		for (MethodMode mode : MethodMode.values()) {
-			final HashMap<TypeInfo, MethodInfo> methodNames = new HashMap<>();
-			for (MethodMetadata methodMetadata : methods.values()) {
-				final TypeInfo info = methodMetadata.getInfo();
-				final String name;
-				final Class<?> returnClass = mode.returnClass == null ? info.getClazz() : mode.returnClass;
-				final Class<?>[] param = mode.paramFunc.apply(info, this);
-
-				if (options.get(Options.COMPACT_METHODS)) {
-					List<Class<?>> paramList = new ArrayList<>(List.of(param));
-					paramList.add(returnClass);
-					assert dedup != null;
-					if (dedup.containsKey(paramList)) {
-						dedup.get(paramList).incrementAndGet();
-						name = String.valueOf(dedup.get(paramList).get());
-					} else {
-						dedup.put(paramList, new AtomicInteger());
-						name = "_";
-					}
-
-				} else {
-					name = mode.prefix + info.getMethodName(false);
-				}
-
-				methodNames.put(info, new MethodInfo(info, name, returnClass, param));
+	private EnumMap<MethodType, Map<TypeInfo, MethodInfo>> parseMethodNames(Map<TypeInfo, MethodMetadata<?>> methodWriters) {
+		var out = new EnumMap<MethodType, Map<TypeInfo, MethodInfo>>(MethodType.class);
+		for (var type : MethodType.values()) {
+			final var values = new HashMap<TypeInfo, MethodInfo>();
+			for (var entry : methodWriters.entrySet()) {
+				values.put(entry.getKey(), MethodInfo.create(this, entry.getValue(), type));
 			}
-			out.put(mode, methodNames);
+			out.put(type, values);
 		}
 		return out;
 	}
@@ -79,113 +53,62 @@ public class CodegenHandler {
 
 	}
 
-	public MethodInfo getMethodData(MethodMode mode, TypeInfo typeInfo) {
-		return methods.get(mode).get(typeInfo);
-	}
-
-	public MethodHandler createHyphenMethod(MethodMode mode, MethodMetadata methodMetadata) {
-		final int tag = ACC_STATIC | ACC_PUBLIC | ACC_FINAL;
-		final MethodInfo methodData = getMethodData(mode, methodMetadata.getInfo());
-		return MethodHandler.create(this, tag, methodData.name(), methodData.returnClass(), methodData.param());
+	public void createMainMethods(MethodMetadata<?> writer) {
+		for (MethodType value : MethodType.values()) {
+			createMethod(MethodInfo.create(this, writer, value), true);
+		}
 	}
 
 	public void createMethods() {
-		if (!options.get(Options.DISABLE_ENCODE)) {
-			methodWriters.values().forEach(methodMetadata -> methodMetadata.createPut(this));
-		}
-		if (!options.get(Options.DISABLE_DECODE)) {
-			methodWriters.values().forEach(methodMetadata -> methodMetadata.createGet(this));
-		}
-		if (!options.get(Options.DISABLE_MEASURE)) {
-			methodWriters.values().forEach(methodMetadata -> methodMetadata.createMeasure(this));
-		}
+		methods.values().forEach((methods) -> {
+			for (MethodInfo value : methods.values())
+				createMethod(value, false);
+		});
 	}
 
-	public void createMainMethods(MethodMetadata mainSerializeMethod) {
-		this.createMainEncode(mainSerializeMethod);
-		this.createMainDecode(mainSerializeMethod);
-		this.createMainMeasure(mainSerializeMethod);
+	public MethodInfo getMethodData(MethodType type, TypeInfo typeInfo) {
+		return methods.get(type).get(typeInfo);
 	}
 
-	private void createMainEncode(MethodMetadata methodMetadata) {
-		try (MethodHandler mh = MethodHandler.createVoid(
-				this,
-				ACC_PUBLIC | ACC_FINAL,
-				"encode",
-				Object.class,
-				Object.class)
-		) {
-			if (!options.get(Options.DISABLE_ENCODE)) {
-				mh.createVar("this", Object.class);
-				var ioRaw = mh.createVar("ioRaw", Object.class);
-				var dataRaw = mh.createVar("dataRaw", Object.class);
-				var io = mh.createVar("io", this.io.ioClass);
-				var data = mh.createVar("data", methodMetadata.getInfo().getClazz());
+	public void createMethod(MethodInfo methodInfo, boolean main) {
+		var type = methodInfo.type();
+		var info = methodInfo.info();
+		var writer = methodInfo.writer();
 
-				ioRaw.load();
-				mh.cast(this.io.ioClass);
-				io.store();
+		if (options.get(type.disableOption) && !main) return;
 
-				dataRaw.load();
-				mh.cast(methodMetadata.getInfo().getClazz());
-				data.store();
-				// TODO should this call the static put instead?
-				//  methodMetadata.callPut(mh);
-				methodMetadata.writePut(mh, io, data);
-			} else {
-				ThrowHandler.fatalGen(mh, HyphenException.class, "Encode is disabled");
-			}
-		}
-	}
 
-	private void createMainDecode(MethodMetadata methodMetadata) {
-		try (MethodHandler mh = MethodHandler.create(
-				this,
-				ACC_PUBLIC | ACC_FINAL,
-				"decode",
-				Object.class,
-				Object.class)) {
-			if (!options.get(Options.DISABLE_DECODE)) {
-				mh.createVar("this", Object.class);
-				var ioRaw = mh.createVar("ioRaw", Object.class);
-				var io = mh.createVar("io", this.io.ioClass);
-				ioRaw.load();
-				mh.cast(this.io.ioClass);
-				io.store();
-
-				// TODO should this call the static get instead?
-				//  methodMetadata.callPut(mh);
-				methodMetadata.writeGet(mh, io);
-			} else {
-				ThrowHandler.fatalGen(mh, HyphenException.class, "Decode is disabled");
-			}
-		}
-	}
-
-	private void createMainMeasure(MethodMetadata methodMetadata) {
-		TypeInfo info = methodMetadata.getInfo();
-		try (MethodHandler mh = MethodHandler.create(
-				this,
-				ACC_PUBLIC | ACC_FINAL,
-				"measure",
-				long.class,
-				Object.class)
-		) {
-			if (!options.get(Options.DISABLE_MEASURE)) {
-				long size = methodMetadata.getSize();
-				if (!methodMetadata.dynamicSize()) {
-					mh.visitLdcInsn(size);
-				} else {
+		var methodName = main ? type.name().toLowerCase() : methodInfo.name;
+		var methodReturn = main ? (methodInfo.returnClass == info.getClazz() ? Object.class : methodInfo.returnClass) : methodInfo.returnClass;
+		Class[] methodParam;
+		if (main) {
+			final Class<?>[] methodParam1 = new Class[methodInfo.parameters.length];
+			Arrays.fill(methodParam1, Object.class);
+			methodParam = methodParam1;
+		} else methodParam = methodInfo.parameters;
+		try (MethodHandler mh = MethodHandler.create(this, (main ? 0 : ACC_STATIC) + ACC_PUBLIC | ACC_FINAL, methodName, methodReturn, methodParam)) {
+			if (!options.get(type.disableOption)) {
+				if (main) {
 					mh.createVar("this", Object.class);
-					var dataRaw = mh.createVar("dataRaw", Object.class);
-					var data = mh.createVar("data", info.getClazz());
-					dataRaw.load();
-					mh.cast(info.getClazz());
-					data.store();
-					methodMetadata.writeMeasure(mh, data);
+					for (Vars parameter : methodInfo.type.parameters)
+						mh.createVar(parameter.name().toLowerCase() + "Raw", Object.class);
 				}
+
+				for (Vars parameter : methodInfo.type.parameters)
+					parameter.createVar(mh, this, info);
+
+				//cast
+				if (main) {
+					for (Vars parameter : methodInfo.type.parameters) {
+						mh.getVar(parameter.name().toLowerCase() + "Raw").load();
+						mh.cast(parameter.classGetter.apply(this, info));
+						mh.getVar(parameter.name().toLowerCase()).store();
+					}
+				}
+
+				type.writer.accept(writer, mh);
 			} else {
-				ThrowHandler.fatalGen(mh, HyphenException.class, "Measure is disabled");
+				ThrowHandler.fatalGen(mh, HyphenException.class, type.name().toLowerCase() + "() is disabled");
 			}
 		}
 	}
@@ -206,7 +129,10 @@ public class CodegenHandler {
 		return this.io;
 	}
 
-	public record MethodInfo(TypeInfo info, String name, Class<?> returnClass, Class<?>... param) {
+	public record MethodInfo(TypeInfo info, MethodMetadata<?> writer, String name, Class<?> returnClass, Class<?>[] parameters, MethodType type) {
+		public static MethodInfo create(CodegenHandler ch, MethodMetadata<?> writer, MethodType type) {
+			final TypeInfo info = writer.getInfo();
+			return new MethodInfo(info, writer, type.parseMethodName(info), type.getReturn(ch, info), type.getParameters(ch, info), type);
+		}
 	}
-
 }

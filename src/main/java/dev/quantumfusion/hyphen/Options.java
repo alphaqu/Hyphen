@@ -4,8 +4,8 @@ public enum Options {
 	COMPACT_VARIABLES(true),
 	COMPACT_METHODS(true),
 	DISABLE_MEASURE(false),
-	DISABLE_ENCODE(false),
-	DISABLE_DECODE(false);
+	DISABLE_PUT(false),
+	DISABLE_GET(false);
 
 	public boolean defaultValue;
 

@@ -4,7 +4,8 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
 import java.util.Locale;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.I2L;
+import static org.objectweb.asm.Opcodes.LADD;
 
 public class IODef implements SerializerDef {
 	private final Class<?> clazz;
@@ -25,12 +26,12 @@ public class IODef implements SerializerDef {
 	}
 
 	@Override
-	public void doPut(MethodHandler mh) {
+	public void writePut(MethodHandler mh) {
 		mh.callInstanceMethod(mh.getIOClazz(), "put" + this.name(), null, this.clazz);
 	}
 
 	@Override
-	public void doGet(MethodHandler mh) {
+	public void writeGet(MethodHandler mh) {
 		mh.callInstanceMethod(mh.getIOClazz(), "get" + this.name(), this.clazz);
 	}
 
@@ -45,12 +46,12 @@ public class IODef implements SerializerDef {
 	}
 
 	@Override
-	public boolean needsField() {
+	public boolean needsFieldOnMeasure() {
 		return this.clazz == String.class;
 	}
 
 	@Override
-	public void doMeasure(MethodHandler mh) {
+	public void writeMeasure(MethodHandler mh) {
 		if (this.clazz == String.class) {
 			mh.callInstanceMethod(String.class, "length", int.class);
 			// mh.visitInsn(ICONST_2);
@@ -58,7 +59,7 @@ public class IODef implements SerializerDef {
 			mh.visitInsn(I2L);
 			mh.visitLdcInsn(this.getSize());
 			mh.visitInsn(LADD);
-		}else {
+		} else {
 			mh.visitLdcInsn(this.getSize());
 		}
 	}

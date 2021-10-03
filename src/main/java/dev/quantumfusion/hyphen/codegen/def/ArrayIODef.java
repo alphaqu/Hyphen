@@ -25,7 +25,7 @@ public class ArrayIODef implements SerializerDef {
 	}
 
 	@Override
-	public void doPut(MethodHandler mh) {
+	public void writePut(MethodHandler mh) {
 		mh.visitInsn(DUP2);
 		mh.visitInsn(ARRAYLENGTH);
 		mh.callIOPut(int.class);
@@ -33,19 +33,19 @@ public class ArrayIODef implements SerializerDef {
 	}
 
 	@Override
-	public void doGet(MethodHandler mh) {
+	public void writeGet(MethodHandler mh) {
 		mh.visitInsn(DUP);
 		mh.callIOGet(int.class);
 		mh.callInstanceMethod(mh.getIOClazz(), "get" + this.name(), this.clazz, int.class);
 	}
 
 	@Override
-	public boolean needsField() {
+	public boolean needsFieldOnMeasure() {
 		return true;
 	}
 
 	@Override
-	public void doMeasure(MethodHandler mh) {
+	public void writeMeasure(MethodHandler mh) {
 		if (this.clazz == String[].class) {
 
 		} else {

@@ -2,7 +2,8 @@ package dev.quantumfusion.hyphen.codegen.method;
 
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.codegen.MethodMode;
+import dev.quantumfusion.hyphen.codegen.MethodType;
+import dev.quantumfusion.hyphen.codegen.Vars;
 import dev.quantumfusion.hyphen.info.ArrayInfo;
 import dev.quantumfusion.hyphen.info.TypeInfo;
 import dev.quantumfusion.hyphen.util.GenUtil;
@@ -35,7 +36,9 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, MethodHandler.Var io, MethodHandler.Var data) {
+	public void writePut(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
+		var data = Vars.DATA.get(mh);
 		mh.pushScope();
 		GenUtil.load(io, data);
 		try (var forLoop = mh.iterateThroughArrayAndSaveSize().start()) {
@@ -44,7 +47,7 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 			forLoop.getFromArray();
 			// io | data[i]
 			GenUtil.castIfNotAssignable(mh, values);
-			mh.callHyphenMethod(MethodMode.PUT, values);
+			mh.callHyphenMethod(MethodType.PUT, values);
 		}
 
 		mh.popScope();
@@ -52,7 +55,8 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh, MethodHandler.Var io) {
+	public void writeGet(MethodHandler mh) {
+		var io = Vars.IO.get(mh);
 		mh.pushScope();
 		var array = mh.createVar("array", this.info.getClazz());
 		io.load();
@@ -69,7 +73,7 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 		try (var forLoop = aFor.start()) {
 			GenUtil.load(array, forLoop.i, io);
 			// array | i | io
-			mh.callHyphenMethod(MethodMode.GET, values);
+			mh.callHyphenMethod(MethodType.GET, values);
 			// array | i | component
 			mh.visitInsn(AASTORE);
 		}
@@ -79,7 +83,8 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, MethodHandler.Var data) {
+	public void writeMeasure(MethodHandler mh) {
+		var data = Vars.DATA.get(mh);
 		mh.pushScope();
 		data.load();
 		// data
@@ -95,7 +100,7 @@ public class ArrayMethod extends MethodMetadata<ArrayInfo> {
 			forLoop.getFromArray();
 			// size | data[i]
 			GenUtil.castIfNotAssignable(mh, values);
-			mh.callHyphenMethod(MethodMode.MEASURE, values);
+			mh.callHyphenMethod(MethodType.MEASURE, values);
 			// size | elementSize
 			mh.visitInsn(LADD);
 			// size

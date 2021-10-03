@@ -20,18 +20,18 @@ public abstract class WrappedDef implements SerializerDef {
 	protected abstract void unwrap(MethodHandler mh);
 
 	@Override
-	public void doPut(MethodHandler mh) {
+	public void writePut(MethodHandler mh) {
 		// io data
 		this.unwrap(mh);
 		// io inner
-		this.inner.doPut(mh);
+		this.inner.writePut(mh);
 		// --
 	}
 
 	@Override
-	public void doGet(MethodHandler mh) {
+	public void writeGet(MethodHandler mh) {
 		// io
-		this.inner.doGet(mh);
+		this.inner.writeGet(mh);
 		// inner
 		this.wrap(mh);
 		// data
@@ -39,14 +39,14 @@ public abstract class WrappedDef implements SerializerDef {
 
 
 	@Override
-	public boolean needsField() {
-		return this.inner.needsField();
+	public boolean needsFieldOnMeasure() {
+		return this.inner.needsFieldOnMeasure();
 	}
 
 	@Override
-	public void doMeasure(MethodHandler mh) {
-		if(this.needsField())
+	public void writeMeasure(MethodHandler mh) {
+		if (this.needsFieldOnMeasure())
 			this.unwrap(mh);
-		this.inner.doMeasure(mh);
+		this.inner.writeMeasure(mh);
 	}
 }

@@ -6,15 +6,13 @@ public interface SerializerDef {
 
 	Class<?> getType();
 
-	void doPut(MethodHandler mh);
+	void writePut(MethodHandler mh);
 
-	void doGet(MethodHandler mh);
+	void writeGet(MethodHandler mh);
 
-	boolean needsField();
+	void writeMeasure(MethodHandler mh);
 
-	default void doMeasure(MethodHandler mh) {
-		throw new IllegalStateException("Shouldn't be called");
-	}
+	boolean needsFieldOnMeasure();
 
 	StringBuilder toFancyString(StringBuilder sb);
 }

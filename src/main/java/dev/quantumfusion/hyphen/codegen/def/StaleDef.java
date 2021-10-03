@@ -18,23 +18,23 @@ public class StaleDef implements SerializerDef {
 	}
 
 	@Override
-	public void doPut(MethodHandler mh) {
+	public void writePut(MethodHandler mh) {
 		mh.visitInsn(POP2);
 	}
 
 	@Override
-	public void doGet(MethodHandler mh) {
+	public void writeGet(MethodHandler mh) {
 		mh.visitInsn(POP);
 		mh.visitInsn(ACONST_NULL);
 	}
 
 	@Override
-	public boolean needsField() {
+	public boolean needsFieldOnMeasure() {
 		return false;
 	}
 
 	@Override
-	public void doMeasure(MethodHandler mh) {
+	public void writeMeasure(MethodHandler mh) {
 
 	}
 

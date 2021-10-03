@@ -21,14 +21,14 @@ import java.util.function.Function;
 
 public class ScanHandler {
 	public static final TypeInfo UNKNOWN_INFO = WildcardInfo.UNKNOWN;
-	public final Map<TypeInfo, MethodMetadata> methods;
+	public final Map<TypeInfo, MethodMetadata<?>> methods;
 	public final Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations;
 	public final Map<Object, List<Class<?>>> subclasses;
 	@Nullable
 	private final DebugHandler debugHandler;
 	MethodMetadata mainSerializeMethod;
 
-	protected ScanHandler(Map<TypeInfo, MethodMetadata> methods, Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
+	protected ScanHandler(Map<TypeInfo, MethodMetadata<?>> methods, Map<Class<?>, Function<? super TypeInfo, ? extends SerializerDef>> implementations, Map<Object, List<Class<?>>> subclasses, boolean debug) {
 		this.implementations = implementations;
 		this.subclasses = subclasses;
 		this.debugHandler = debug ? new DebugHandler(this) : null;
