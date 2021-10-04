@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier;
  */
 @SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
-public final class UnsafeIO {
+public final class UnsafeIO implements IOInterface{
 	private static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
 	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
@@ -67,64 +67,76 @@ public final class UnsafeIO {
 	}
 
 	// ======================================= FUNC ======================================= //
+	@Override
 	public final void rewind() {
 		currentAddress = address;
 	}
 
+	@Override
 	public final int pos() {
 		return (int) ((int) currentAddress - address);
 	}
 
+	@Override
 	public final void close() {
 		UNSAFE.freeMemory(address);
 	}
 
 
 	// ======================================== GET ======================================== //
+	@Override
 	public final boolean getBoolean() {
 		return UNSAFE.getBoolean(null, currentAddress++ + BOOLEAN_OFFSET);
 	}
 
+	@Override
 	public final byte getByte() {
 		return UNSAFE.getByte(null, currentAddress++ + BYTE_OFFSET);
 	}
 
+	@Override
 	public final char getChar() {
 		final char c = UNSAFE.getChar(null, currentAddress + CHAR_OFFSET);
 		currentAddress += 2;
 		return c;
 	}
 
+	@Override
 	public final short getShort() {
 		final short s = UNSAFE.getShort(null, currentAddress + SHORT_OFFSET);
 		currentAddress += 2;
 		return s;
 	}
 
+	@Override
 	public final int getInt() {
 		final int i = UNSAFE.getInt(null, currentAddress + INT__OFFSET);
 		currentAddress += 4;
 		return i;
 	}
 
+	@Override
 	public final long getLong() {
 		final long l = UNSAFE.getLong(null, currentAddress + LONG_OFFSET);
 		currentAddress += 8;
 		return l;
 	}
 
+	@Override
 	public final float getFloat() {
 		final float f = UNSAFE.getFloat(null, currentAddress + FLOAT_OFFSET);
 		currentAddress += 4;
 		return f;
 	}
 
+	@Override
 	public final double getDouble() {
 		final double f = UNSAFE.getDouble(null, currentAddress + DOUBLE_OFFSET);
 		currentAddress += 8;
 		return f;
 	}
 
+	@Override
 	public final String getString() {
 		try {
 			final var infoBytes = UNSAFE.getInt(null, currentAddress + INT__OFFSET);
@@ -145,44 +157,53 @@ public final class UnsafeIO {
 
 
 	// ======================================== PUT ======================================== //
+	@Override
 	public final void putBoolean(final boolean value) {
 		UNSAFE.putBoolean(null, currentAddress++ + BOOLEAN_OFFSET, value);
 	}
 
+	@Override
 	public final void putByte(final byte value) {
 		UNSAFE.putByte(null, currentAddress++ + BYTE_OFFSET, value);
 	}
 
+	@Override
 	public final void putChar(final char value) {
 		UNSAFE.putChar(null, currentAddress + CHAR_OFFSET, value);
 		currentAddress += 2;
 	}
 
+	@Override
 	public final void putShort(final short value) {
 		UNSAFE.putShort(null, currentAddress + SHORT_OFFSET, value);
 		currentAddress += 2;
 	}
 
+	@Override
 	public final void putInt(final int value) {
 		UNSAFE.putInt(null, currentAddress + INT__OFFSET, value);
 		currentAddress += 4;
 	}
 
+	@Override
 	public final void putLong(final long value) {
 		UNSAFE.putLong(null, currentAddress + LONG_OFFSET, value);
 		currentAddress += 8;
 	}
 
+	@Override
 	public final void putFloat(final float value) {
 		UNSAFE.putFloat(null, currentAddress + FLOAT_OFFSET, value);
 		currentAddress += 4;
 	}
 
+	@Override
 	public final void putDouble(final double value) {
 		UNSAFE.putDouble(null, currentAddress + DOUBLE_OFFSET, value);
 		currentAddress += 8;
 	}
 
+	@Override
 	public final void putString(final String value) {
 		final byte[] bytes = (byte[]) UNSAFE.getObject(value, STRING_FIELD_OFFSET);
 		final int length = bytes.length;
@@ -193,6 +214,7 @@ public final class UnsafeIO {
 
 
 	// ====================================== GET_ARR ======================================== //
+	@Override
 	public final boolean[] getBooleanArray(final int bytes) {
 		final boolean[] array = new boolean[bytes];
 		if (bytes > COPY_MEMORY_THRESHOLD) {
@@ -202,6 +224,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final byte[] getByteArray(final int bytes) {
 		final byte[] array = new byte[bytes];
 		if (bytes > COPY_MEMORY_THRESHOLD) {
@@ -211,6 +234,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final char[] getCharArray(final int length) {
 		final char[] array = new char[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -221,6 +245,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final short[] getShortArray(final int length) {
 		final short[] array = new short[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -231,6 +256,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final int[] getIntArray(final int length) {
 		final int[] array = new int[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -241,6 +267,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final long[] getLongArray(final int length) {
 		final long[] array = new long[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -251,6 +278,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final float[] getFloatArray(final int length) {
 		final float[] array = new float[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -262,6 +290,7 @@ public final class UnsafeIO {
 	}
 
 
+	@Override
 	public final double[] getDoubleArray(final int length) {
 		final double[] array = new double[length];
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -272,6 +301,7 @@ public final class UnsafeIO {
 		return array;
 	}
 
+	@Override
 	public final String[] getStringArray(final int length) {
 		final String[] array = new String[length];
 		for (int i = 0; i < length; i++) array[i] = getString();
@@ -279,6 +309,7 @@ public final class UnsafeIO {
 	}
 
 	// ====================================== PUT_ARR ======================================== //
+	@Override
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
 		if (bytes > COPY_MEMORY_THRESHOLD) {
@@ -287,6 +318,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putBoolean(v);
 	}
 
+	@Override
 	public final void putByteArray(final byte[] value) {
 		final int bytes = value.length;
 		if (bytes > COPY_MEMORY_THRESHOLD) {
@@ -295,6 +327,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putByte(v);
 	}
 
+	@Override
 	public final void putCharArray(final char[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -304,6 +337,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putChar(v);
 	}
 
+	@Override
 	public final void putShortArray(final short[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -313,6 +347,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putShort(v);
 	}
 
+	@Override
 	public final void putIntArray(final int[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -322,6 +357,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putInt(v);
 	}
 
+	@Override
 	public final void putLongArray(final long[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -331,6 +367,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putLong(v);
 	}
 
+	@Override
 	public final void putFloatArray(final float[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -340,6 +377,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putFloat(v);
 	}
 
+	@Override
 	public final void putDoubleArray(final double[] value) {
 		final int length = value.length;
 		if (length > COPY_MEMORY_THRESHOLD) {
@@ -349,6 +387,7 @@ public final class UnsafeIO {
 		} else for (var v : value) putDouble(v);
 	}
 
+	@Override
 	public final void putStringArray(final String[] value) {
 		for (final String s : value) putString(s);
 	}
