@@ -33,27 +33,25 @@ public class Clazzifier {
 	}
 
 	private static Clazz createFromType(Type type, Clazz parent) {
-		return CacheUtil.cache(CREATE_CACHE, type, () -> {
-			try {
-				for (var entry : FORWARD_CLAZZERS.entrySet()) {
-					if (entry.getKey().isAssignableFrom(type.getClass())) {
-						return entry.getValue().apply(type, parent);
-					}
+		try {
+			for (var entry : FORWARD_CLAZZERS.entrySet()) {
+				if (entry.getKey().isAssignableFrom(type.getClass())) {
+					return entry.getValue().apply(type, parent);
 				}
-			} catch (ScanException e) {
-				e.parents.add(parent);
-				throw e;
 			}
-			throw new UnsupportedOperationException(type.getClass().getSimpleName() + " is unsupported");
-		});
+		} catch (ScanException e) {
+			e.parents.add(parent);
+			throw e;
+		}
+		throw new UnsupportedOperationException(type.getClass().getSimpleName() + " is unsupported");
 	}
 
-	public static Clazz[] scanFields(Clazz type) {
-		return CacheUtil.cache(FIELD_CACHE, type, () -> {
-			final Clazz[] fields = ArrayUtil.map(type.getFields(), Clazz[]::new, (field, integer) -> Clazzifier.create(field.getGenericType(), type));
-			final Type aSuper = type.getSuper();
+	public static Clazz[] scanFields(Clazz clazz) {
+		return CacheUtil.cache(FIELD_CACHE, clazz, () -> {
+			final Clazz[] fields = ArrayUtil.map(clazz.getFields(), Clazz[]::new, (field, integer) -> Clazzifier.create(field.getGenericType(), clazz));
+			final Type aSuper = clazz.getSuper();
 			if (aSuper != null) {
-				return ArrayUtil.combine(scanFields(create(aSuper, type)), fields, Clazz[]::new);
+				return ArrayUtil.combine(scanFields(create(aSuper, clazz)), fields, Clazz[]::new);
 			}
 			return fields;
 		});
