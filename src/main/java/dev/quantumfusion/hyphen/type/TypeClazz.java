@@ -37,4 +37,20 @@ public class TypeClazz extends Clazz {
 	public String toString() {
 		return "/" + actual.toString();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return this == o
+				|| o instanceof TypeClazz typeClazz
+				&& super.equals(o)
+				&& this.actual.equals(typeClazz.actual);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + this.actual.hashCode();
+		return result;
+	}
 }

@@ -46,4 +46,22 @@ public class Clazz {
 	public String toString() {
 		return clazz.getSimpleName();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return this == o
+				|| o instanceof Clazz that
+				&& this.annotations.equals(that.annotations)
+				&& this.globalAnnotations.equals(that.globalAnnotations)
+				&& this.clazz.equals(that.clazz);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = this.annotations.hashCode();
+		result = 31 * result + this.globalAnnotations.hashCode();
+		result = 31 * result + this.clazz.hashCode();
+		return result;
+	}
 }

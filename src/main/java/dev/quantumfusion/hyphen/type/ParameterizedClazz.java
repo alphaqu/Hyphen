@@ -46,4 +46,20 @@ public class ParameterizedClazz extends Clazz {
 		types.forEach((s, type) -> sj.add(s + "=" + type.toString()));
 		return super.toString() + sj;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return this == o
+				|| o instanceof ParameterizedClazz that
+				&& super.equals(o)
+				&& this.types.equals(that.types);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + this.types.hashCode();
+		return result;
+	}
 }
