@@ -32,7 +32,7 @@ public class Clazz implements Type {
 		return pullClass().getGenericSuperclass();
 	}
 
-	public Field[] getFields() {
+	public final Field[] getFields() {
 		return pullClass().getDeclaredFields();
 	}
 
@@ -40,7 +40,7 @@ public class Clazz implements Type {
 		return Clazzifier.create(clazz, this);
 	}
 
-	public Clazz getType(String type) {
+	public Clazz defineType(String type) {
 		return Clazzifier.UNKNOWN;
 	}
 

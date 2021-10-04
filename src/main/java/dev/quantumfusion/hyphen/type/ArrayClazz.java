@@ -21,8 +21,8 @@ public class ArrayClazz extends Clazz {
 	}
 
 	@Override
-	public Clazz getType(String type) {
-		return component.getType(type);
+	public Clazz defineType(String type) {
+		return component.defineType(type);
 	}
 
 	@Override

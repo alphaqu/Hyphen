@@ -9,14 +9,8 @@ public class TypeFollowing {
 
 	public static void main(String[] args) {
 		System.out.println("hello there");
-		final Clazz type = Clazzifier.create(dev.quantumfusion.hyphen.Subclasses.class, UNKNOWN);
 		final long l = System.nanoTime();
-		final Clazz[] clazzes = Clazzifier.scanFields(type);
-		for (Clazz clazz : clazzes) {
-			System.out.println(clazz);
-			final Clazz sub = clazz.getSub(dev.quantumfusion.hyphen.Subclasses.Subclass.class);
-			scan(sub, true);
-		}
+		scan(Clazzifier.create(ForwardTest.class, UNKNOWN), false);
 		System.out.println((System.nanoTime() - l) / 1_000_000f + "ms");
 		CacheUtil.printCacheStatistics();
 	}

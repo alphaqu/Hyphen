@@ -18,7 +18,7 @@ public class TypeClazz extends Clazz {
 	}
 
 	private static Clazz getType(TypeVariable<?> typeVariable, Clazz parent) {
-		final Clazz clazz = parent.getType(typeVariable.getTypeName());
+		final Clazz clazz = parent.defineType(typeVariable.getTypeName());
 		if (clazz == null) {
 			throw new ScanException("Type " + typeVariable.getTypeName() + " could not be identified from " + parent);
 		}

@@ -14,9 +14,9 @@ import java.util.function.BiFunction;
 public class Clazzifier {
 	public static final Clazz UNKNOWN = new Unknown();
 	private static final Map<Class<? extends Type>, BiFunction<Type, Clazz, Clazz>> FORWARD_CLAZZERS = new LinkedHashMap<>();
-	private static final Map<Type, Clazz> CREATE_CACHE = new IdentityHashMap<>();
 	private static final Map<Class<?>, Clazz> CLASS_CACHE = new IdentityHashMap<>();
-	private static final Map<Clazz, Clazz[]> FIELD_CACHE = new IdentityHashMap<>();
+	private static final Map<Clazz, Clazz[]> ALL_FIELD_CACHE = new IdentityHashMap<>();
+	private static final Map<Class<?>, Type[]> FIELD_CACHE = new IdentityHashMap<>();
 
 	static {
 		FORWARD_CLAZZERS.put(ParameterizedType.class, ParameterizedClazz::mapForward);
@@ -47,14 +47,19 @@ public class Clazzifier {
 	}
 
 	public static Clazz[] scanFields(Clazz clazz) {
-		return CacheUtil.cache(FIELD_CACHE, clazz, () -> {
-			final Clazz[] fields = ArrayUtil.map(clazz.getFields(), Clazz[]::new, (field, integer) -> Clazzifier.create(field.getGenericType(), clazz));
+		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, () -> {
+			final Clazz[] fields = ArrayUtil.map(getGenericFields(clazz), Clazz[]::new, (field, integer) -> Clazzifier.create(field, clazz));
 			final Type aSuper = clazz.getSuper();
-			if (aSuper != null) {
+			if (aSuper != null)
 				return ArrayUtil.combine(scanFields(create(aSuper, clazz)), fields, Clazz[]::new);
-			}
+
 			return fields;
 		});
+	}
+
+	public static Type[] getGenericFields(Clazz clazz) {
+		final Class<?> aClass = clazz.pullClass();
+		return CacheUtil.cache(FIELD_CACHE, aClass, () -> ArrayUtil.map(aClass.getDeclaredFields(), Type[]::new, (field, integer) -> field.getGenericType()));
 	}
 
 

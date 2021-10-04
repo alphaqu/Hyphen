@@ -22,10 +22,10 @@ public class ParameterizedClazz extends Clazz {
 		ParameterizedType type = (ParameterizedType) t;
 		final Map<String, Clazz> types = new HashMap<>();
 		final Class<?> rawType = (Class<?>) type.getRawType();
-		ArrayUtil.dualFor(rawType.getTypeParameters(), type.getActualTypeArguments(), (internalArg, typeArg, i) -> {
+		ArrayUtil.dualForEach(rawType.getTypeParameters(), type.getActualTypeArguments(), (internalArg, typeArg, i) -> {
 			final String internalName = internalArg.getName();
 			if (typeArg instanceof TypeVariable typeVariable)
-				types.put(internalName, parent.getType(typeVariable.getTypeName()));
+				types.put(internalName, parent.defineType(typeVariable.getTypeName()));
 			else types.put(internalName, Clazzifier.create(typeArg, parent));
 		});
 
@@ -33,7 +33,7 @@ public class ParameterizedClazz extends Clazz {
 	}
 
 	@Override
-	public Clazz getType(String type) {
+	public Clazz defineType(String type) {
 		return types.get(type);
 	}
 
