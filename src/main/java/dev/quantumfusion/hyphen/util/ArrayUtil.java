@@ -6,11 +6,12 @@ import java.util.function.Function;
 public class ArrayUtil {
 
 	public static <A, B> void dualForEach(A[] a, B[] b, DualForEach<A, B> dualForEach) {
-		final int length = a.length;
-		if (length != b.length)
-			throw new RuntimeException("A length " + length + " does not match B length " + b.length);
+		final int aLength = a.length;
+		final int bLength = b.length;
+		if (aLength != bLength)
+			throw new RuntimeException("A length " + aLength + " does not match B length " + bLength);
 
-		for (int i = 0; i < length; i++)
+		for (int i = 0; i < aLength; i++)
 			dualForEach.apply(a[i], b[i], i);
 	}
 

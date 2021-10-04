@@ -9,9 +9,9 @@ import java.lang.reflect.Type;
 import java.util.Map;
 
 public class Clazz implements Type {
-	protected final Class<?> clazz;
 	public final Map<Class<? extends Annotation>, Annotation> annotations;
 	public final Map<Class<? extends Annotation>, Annotation> globalAnnotations;
+	protected final Class<?> clazz;
 
 	protected Clazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations) {
 		this.clazz = clazz;

@@ -21,15 +21,6 @@ public class Unknown extends Clazz {
 		return Object.class;
 	}
 
-	public Type getSuper() {
-		return new Type() {
-			@Override
-			public String getTypeName() {
-				return "UNKNOWN";
-			}
-		};
-	}
-
 	public Clazz getSub(Class<?> clazz) {
 		return Clazzifier.create(AnnoUtil.wrap(clazz), this);
 	}
