@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.type.Unknown;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
@@ -26,26 +28,6 @@ public class AnnoUtil {
 	}
 
 	public static AnnotatedType wrap(Type type) {
-		return new AnnotatedType() {
-			@Override
-			public Type getType() {
-				return type;
-			}
-
-			@Override
-			public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-				return null;
-			}
-
-			@Override
-			public Annotation[] getAnnotations() {
-				return new Annotation[0];
-			}
-
-			@Override
-			public Annotation[] getDeclaredAnnotations() {
-				return new Annotation[0];
-			}
-		};
+		return new Unknown.WrappedAnnotation(type);
 	}
 }
