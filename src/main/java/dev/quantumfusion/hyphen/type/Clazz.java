@@ -5,15 +5,14 @@ import dev.quantumfusion.hyphen.util.AnnoUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Type;
 import java.util.Map;
 
-public class Clazz implements Type {
+public class Clazz {
 	public final Map<Class<? extends Annotation>, Annotation> annotations;
 	public final Map<Class<? extends Annotation>, Annotation> globalAnnotations;
-	protected final Class<?> clazz;
+	private final Class<?> clazz;
 
-	protected Clazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations) {
+	Clazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations) {
 		this.clazz = clazz;
 		this.annotations = annotations;
 		this.globalAnnotations = globalAnnotations;

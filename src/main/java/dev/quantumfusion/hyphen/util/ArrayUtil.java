@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class ArrayUtil {
 
@@ -15,14 +15,14 @@ public class ArrayUtil {
 			dualForEach.apply(a[i], b[i], i);
 	}
 
-	public static <A, B> B[] map(A[] a, Function<Integer, B[]> creator, BiFunction<A, Integer, B> mapper) {
+	public static <A, B> B[] map(A[] a, IntFunction<B[]> creator, BiFunction<A, Integer, B> mapper) {
 		final B[] out = creator.apply(a.length);
 		for (int i = 0; i < a.length; i++)
 			out[i] = mapper.apply(a[i], i);
 		return out;
 	}
 
-	public static <A> A[] combine(A[] a1, A[] a2, Function<Integer, A[]> creator) {
+	public static <A> A[] combine(A[] a1, A[] a2, IntFunction<A[]> creator) {
 		final int a1Length = a1.length;
 		final int a2Length = a2.length;
 		final A[] out = creator.apply(a1Length + a2Length);
