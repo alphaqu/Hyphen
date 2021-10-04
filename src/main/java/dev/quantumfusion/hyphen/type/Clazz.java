@@ -15,7 +15,7 @@ public class Clazz implements Type {
 	public static Clazz create(Type type, Clazz parent) {
 		Class<?> clazz = (Class<?>) type;
 		if (clazz != null && clazz.isArray()) {
-			return new ArrayClazz(clazz);
+			return ArrayClazz.create(clazz, parent);
 		}
 		return new Clazz(clazz);
 	}

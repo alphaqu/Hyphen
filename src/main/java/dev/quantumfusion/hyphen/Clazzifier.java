@@ -22,7 +22,7 @@ public class Clazzifier {
 		FORWARD_CLAZZERS.put(ParameterizedType.class, ParameterizedClazz::mapForward);
 		FORWARD_CLAZZERS.put(Class.class, Clazz::create);
 		FORWARD_CLAZZERS.put(TypeVariable.class, TypeClazz::create);
-		FORWARD_CLAZZERS.put(GenericArrayType.class, TypeArrayClazz::create);
+		FORWARD_CLAZZERS.put(GenericArrayType.class, ArrayClazz::create);
 		FORWARD_CLAZZERS.put(WildcardType.class, (type, clazz) -> UNKNOWN);
 	}
 

@@ -1,30 +1,33 @@
 package dev.quantumfusion.hyphen.type;
 
-import java.lang.reflect.Field;
+import dev.quantumfusion.hyphen.Clazzifier;
+
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 
 public class ArrayClazz extends Clazz {
-	protected ArrayClazz(Class<?> clazz) {
-		super(clazz);
+	public Clazz component;
+
+	protected ArrayClazz(Clazz type) {
+		super(type.pullClass());
+		this.component = type;
+	}
+
+	public static ArrayClazz create(Type typeVariable, Clazz parent) {
+		Type componentType = null;
+		if (typeVariable instanceof GenericArrayType t) componentType = t.getGenericComponentType();
+		if (typeVariable instanceof Class<?> c) componentType = c.getComponentType();
+		return new ArrayClazz(Clazzifier.create(componentType, parent));
 	}
 
 	@Override
-	public Type getSuper() {
-		return getComponentType().getGenericSuperclass();
-	}
-
-	@Override
-	public Field[] getFields() {
-		return getComponentType().getDeclaredFields();
-	}
-
-
-	private Class<?> getComponentType() {
-		return clazz.getComponentType();
+	public Clazz getType(String type) {
+		return component.getType(type);
 	}
 
 	@Override
 	public String toString() {
-		return super.toString() + "[]";
+		return component.toString() + "[]";
 	}
+
 }
