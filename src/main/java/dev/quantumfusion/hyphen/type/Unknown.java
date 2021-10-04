@@ -1,12 +1,14 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.util.AnnoUtil;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
 public class Unknown extends Clazz {
 	public Unknown() {
-		super(null);
+		super(null, Map.of(), Map.of());
 	}
 
 	public Class<?> pullClass() {
@@ -27,7 +29,7 @@ public class Unknown extends Clazz {
 	}
 
 	public Clazz getSub(Class<?> clazz) {
-		return Clazzifier.create(clazz, this);
+		return Clazzifier.create(AnnoUtil.wrap(clazz), this);
 	}
 
 	public Clazz defineType(String type) {

@@ -1,23 +1,26 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.util.AnnoUtil;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedArrayType;
+import java.lang.reflect.AnnotatedType;
+import java.util.Map;
 
 public class ArrayClazz extends Clazz {
 	public Clazz component;
 
-	protected ArrayClazz(Clazz type) {
-		super(type.pullClass());
-		this.component = type;
+	public ArrayClazz(Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations, Clazz component) {
+		super(component.pullClass(), annotations, globalAnnotations);
+		this.component = component;
 	}
 
-	public static ArrayClazz create(Type typeVariable, Clazz parent) {
-		Type componentType = null;
-		if (typeVariable instanceof GenericArrayType t) componentType = t.getGenericComponentType();
-		if (typeVariable instanceof Class<?> c) componentType = c.getComponentType();
-		return new ArrayClazz(Clazzifier.create(componentType, parent));
+	public static ArrayClazz create(AnnotatedType typeVariable, Clazz parent) {
+		AnnotatedType componentType;
+		if (typeVariable instanceof AnnotatedArrayType t) componentType = t.getAnnotatedGenericComponentType();
+		else componentType = typeVariable;
+		return new ArrayClazz(AnnoUtil.parseAnnotations(typeVariable), Clazzifier.getClassAnnotations(parent), Clazzifier.create(componentType, parent));
 	}
 
 	@Override

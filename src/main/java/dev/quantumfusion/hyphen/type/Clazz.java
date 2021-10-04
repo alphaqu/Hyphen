@@ -1,23 +1,30 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.util.AnnoUtil;
 
-import java.lang.reflect.Field;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
+import java.util.Map;
 
 public class Clazz implements Type {
 	protected final Class<?> clazz;
+	public final Map<Class<? extends Annotation>, Annotation> annotations;
+	public final Map<Class<? extends Annotation>, Annotation> globalAnnotations;
 
-	protected Clazz(Class<?> clazz) {
+	protected Clazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations) {
 		this.clazz = clazz;
+		this.annotations = annotations;
+		this.globalAnnotations = globalAnnotations;
 	}
 
-	public static Clazz create(Type type, Clazz parent) {
-		Class<?> clazz = (Class<?>) type;
+	public static Clazz create(AnnotatedType type, Clazz parent) {
+		Class<?> clazz = (Class<?>) type.getType();
 		if (clazz != null && clazz.isArray()) {
-			return ArrayClazz.create(clazz, parent);
+			return ArrayClazz.create(type, parent);
 		}
-		return new Clazz(clazz);
+		return new Clazz(clazz, AnnoUtil.parseAnnotations(type), Clazzifier.getClassAnnotations(parent));
 	}
 
 	public Class<?> pullClass() {
@@ -28,16 +35,8 @@ public class Clazz implements Type {
 		return clazz;
 	}
 
-	public Type getSuper() {
-		return pullClass().getGenericSuperclass();
-	}
-
-	public final Field[] getFields() {
-		return pullClass().getDeclaredFields();
-	}
-
 	public Clazz getSub(Class<?> clazz) {
-		return Clazzifier.create(clazz, this);
+		return Clazzifier.create(AnnoUtil.wrap(clazz), this);
 	}
 
 	public Clazz defineType(String type) {

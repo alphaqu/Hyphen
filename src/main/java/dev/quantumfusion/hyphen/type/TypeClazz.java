@@ -1,26 +1,29 @@
 package dev.quantumfusion.hyphen.type;
 
+import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.thr.ScanException;
+import dev.quantumfusion.hyphen.util.AnnoUtil;
 
-import java.lang.reflect.Type;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.AnnotatedTypeVariable;
 import java.lang.reflect.TypeVariable;
 
 public class TypeClazz extends Clazz {
 	public Clazz actual;
 
-	protected TypeClazz(TypeVariable<?> typeVariable, Clazz parent) {
-		super((Class<?>) typeVariable.getBounds()[0]);
+	protected TypeClazz(AnnotatedTypeVariable typeVariable, Clazz parent) {
+		super((Class<?>) ((TypeVariable<?>) typeVariable.getType()).getBounds()[0], AnnoUtil.parseAnnotations(typeVariable), Clazzifier.getClassAnnotations(parent));
 		this.actual = getType(typeVariable, parent);
 	}
 
-	public static TypeClazz create(Type typeVariable, Clazz parent) {
-		return new TypeClazz((TypeVariable<?>) typeVariable, parent);
+	public static TypeClazz create(AnnotatedType typeVariable, Clazz parent) {
+		return new TypeClazz((AnnotatedTypeVariable) typeVariable, parent);
 	}
 
-	private static Clazz getType(TypeVariable<?> typeVariable, Clazz parent) {
-		final Clazz clazz = parent.defineType(typeVariable.getTypeName());
+	private static Clazz getType(AnnotatedTypeVariable typeVariable, Clazz parent) {
+		final Clazz clazz = parent.defineType(typeVariable.getType().getTypeName());
 		if (clazz == null) {
-			throw new ScanException("Type " + typeVariable.getTypeName() + " could not be identified from " + parent);
+			throw new ScanException("Type " + typeVariable.getType().getTypeName() + " could not be identified from " + parent);
 		}
 		return clazz;
 	}

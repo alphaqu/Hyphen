@@ -1,25 +1,25 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class CacheUtil {
-	private static final boolean CACHE = false;
+	private static final boolean CACHE = true;
 	private static int SAVED = 0;
 	private static int PULLED = 0;
 
-	public static <R, P> R cache(Map<P, R> cache, P param, Supplier<R> func) {
+	public static <R, P> R cache(Map<P, R> cache, P param, Function<P, R> func) {
 		PULLED++;
 		if (CACHE) {
 			if (cache.containsKey(param)) {
 				SAVED++;
 				return cache.get(param);
 			}
-			final R apply = func.get();
+			final R apply = func.apply(param);
 			cache.put(param, apply);
 			return apply;
 		}
-		return func.get();
+		return func.apply(param);
 	}
 
 	public static void printCacheStatistics() {
