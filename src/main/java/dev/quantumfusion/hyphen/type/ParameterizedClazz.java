@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -32,7 +33,7 @@ public class ParameterizedClazz extends Clazz {
 			else types.put(internalName, Clazzifier.create(typeArg, parent));
 		});
 
-		return new ParameterizedClazz(rawType, AnnoUtil.parseAnnotations(t), Clazzifier.getClassAnnotations(parent), types);
+		return new ParameterizedClazz(rawType, AnnoUtil.parseAnnotations(t), ReflectionUtil.getClassAnnotations(parent), types);
 	}
 
 	@Override

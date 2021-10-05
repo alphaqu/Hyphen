@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
+import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -23,7 +24,7 @@ public class Clazz {
 		if (clazz != null && clazz.isArray()) {
 			return ArrayClazz.create(type, parent);
 		}
-		return new Clazz(clazz, AnnoUtil.parseAnnotations(type), Clazzifier.getClassAnnotations(parent));
+		return new Clazz(clazz, AnnoUtil.parseAnnotations(type), ReflectionUtil.getClassAnnotations(parent));
 	}
 
 	public Class<?> pullClass() {
