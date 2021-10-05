@@ -37,34 +37,14 @@ public class Unknown extends Clazz {
 		return "UNKNOWN";
 	}
 
-	public static class WrappedAnnotation implements AnnotatedType {
-		private static final Annotation[] EMPTY = new Annotation[0];
-		private final Type type;
-
-		public WrappedAnnotation(Type type) {
-			this.type = type;
-		}
-
-		@Override
-		public Type getType() {
-			return type;
-		}
-
-		@Override
-		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-			return null;
-		}
-
-		@Override
-		public Annotation[] getAnnotations() {
-			return EMPTY;
-		}
-
-		@Override
-		public Annotation[] getDeclaredAnnotations() {
-			return EMPTY;
-		}
-
+	@Override
+	public boolean equals(Object o) {
+		return this == o;
 	}
 
+	@Override
+	public int hashCode() {
+		//noinspection SpellCheckingInspection
+		return "SIXTYNINEFOURTWENTY".hashCode();
+	}
 }

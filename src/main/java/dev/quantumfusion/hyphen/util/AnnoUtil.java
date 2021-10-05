@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Annotation Util class.
  */
-public class AnnoUtil {
+public final class AnnoUtil {
 
 	/**
 	 * Parses annotations to a map which holds the annotation class as key and the instance as the value.
@@ -50,6 +50,35 @@ public class AnnoUtil {
 	 * @return The wrapped Type.
 	 */
 	public static AnnotatedType wrap(Type type) {
-		return new Unknown.WrappedAnnotation(type);
+		return new WrappedAnnotation(type);
+	}
+
+	private static class WrappedAnnotation implements AnnotatedType {
+		private static final Annotation[] EMPTY = new Annotation[0];
+		private final Type type;
+
+		WrappedAnnotation(Type type) {
+			this.type = type;
+		}
+
+		@Override
+		public Type getType() {
+			return this.type;
+		}
+
+		@Override
+		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			return null;
+		}
+
+		@Override
+		public Annotation[] getAnnotations() {
+			return EMPTY;
+		}
+
+		@Override
+		public Annotation[] getDeclaredAnnotations() {
+			return EMPTY;
+		}
 	}
 }

@@ -37,4 +37,19 @@ public class ArrayClazz extends Clazz {
 		return component.toString() + "[]";
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		return this == o
+				|| o instanceof ArrayClazz that
+				&& super.equals(o)
+				&& this.component.equals(that.component);
+
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + this.component.hashCode();
+		return result;
+	}
 }
