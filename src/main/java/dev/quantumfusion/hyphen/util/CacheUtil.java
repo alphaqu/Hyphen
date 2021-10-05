@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Util class for caching thing.
+ */
 public class CacheUtil {
 	private static final boolean CACHE = true;
 

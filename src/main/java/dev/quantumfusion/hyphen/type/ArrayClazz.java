@@ -9,6 +9,9 @@ import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
 import java.util.Map;
 
+/**
+ * An ArrayClazz is anything that is an array. The component holds what the array's elements are.
+ */
 public class ArrayClazz extends Clazz {
 	public Clazz component;
 

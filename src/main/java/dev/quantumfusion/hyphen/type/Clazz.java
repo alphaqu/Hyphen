@@ -8,6 +8,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.util.Map;
 
+/**
+ * A regular class.
+ */
 public class Clazz {
 	public final Map<Class<? extends Annotation>, Annotation> annotations;
 	public final Map<Class<? extends Annotation>, Annotation> globalAnnotations;

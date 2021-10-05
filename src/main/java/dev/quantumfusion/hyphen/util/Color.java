@@ -1,5 +1,8 @@
 package dev.quantumfusion.hyphen.util;
 
+/**
+ * Color's very nice colors. I like color's colors are cool.
+ */
 public enum Color {
 	RESET("\u001B[0m"),
 	BLACK("\u001B[30m"),

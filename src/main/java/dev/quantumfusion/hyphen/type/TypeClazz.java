@@ -8,6 +8,9 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.AnnotatedTypeVariable;
 import java.lang.reflect.TypeVariable;
 
+/**
+ * Comes from a ParameterizedClazz. This holds the bounds and the actual.
+ */
 public class TypeClazz extends Clazz {
 	public Clazz actual;
 

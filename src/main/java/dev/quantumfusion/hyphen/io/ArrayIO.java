@@ -2,6 +2,9 @@ package dev.quantumfusion.hyphen.io;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * ArrayIO. An IO that internally uses Array.
+ */
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod", "unused"})
 public final class ArrayIO implements IOInterface{
 	private final byte[] bytes;

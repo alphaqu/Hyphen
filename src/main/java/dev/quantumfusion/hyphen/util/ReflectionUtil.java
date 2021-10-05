@@ -9,7 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
- * A reflection util class. Mostly for caching Class<?> things
+ * A reflection util class. If you are doing anything Class<?> related check methods here if there are cached versions.
  */
 public class ReflectionUtil {
 	private static final Map<Class<?>, Map<Class<? extends Annotation>, Annotation>> ANNOTATION_CACHE = new IdentityHashMap<>();
@@ -20,6 +20,7 @@ public class ReflectionUtil {
 	public static Map<Class<? extends Annotation>, Annotation> getClassAnnotations(Clazz aClass) {
 		return getClassAnnotations(aClass.pullClass());
 	}
+
 
 	public static AnnotatedType[] getClassInterface(Clazz aClass) {
 		return getClassInterface(aClass.pullClass());

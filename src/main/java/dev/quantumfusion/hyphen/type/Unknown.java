@@ -8,6 +8,9 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+/**
+ * Unknown clazz. Crashes if we are trying to serialize this. Mostly a placeholder until the type is known.
+ */
 public class Unknown extends Clazz {
 	public Unknown() {
 		super(null, Map.of(), Map.of());

@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
+/**
+ * Just like a Clazz but it holds parameters and its currently known definitions.
+ */
 public class ParameterizedClazz extends Clazz {
 	public final Map<String, Clazz> types;
 

@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * <h2>This is the créme de créme of all IO. Highly unsafe but really fast.</h2>
+ * <h2>This is the créme de la créme of all IO. Highly unsafe but really fast.</h2>
  */
 @SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
