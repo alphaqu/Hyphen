@@ -2,7 +2,6 @@ package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.thr.ScanException;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.AnnotatedTypeVariable;
@@ -15,7 +14,7 @@ public class TypeClazz extends Clazz {
 	public Clazz actual;
 
 	protected TypeClazz(AnnotatedTypeVariable typeVariable, Clazz parent) {
-		super((Class<?>) ((TypeVariable<?>) typeVariable.getType()).getBounds()[0], AnnoUtil.parseAnnotations(typeVariable), ReflectionUtil.getClassAnnotations(parent));
+		super((Class<?>) ((TypeVariable<?>) typeVariable.getType()).getBounds()[0], AnnoUtil.parseAnnotations(typeVariable, parent));
 		this.actual = getType(typeVariable, parent);
 	}
 

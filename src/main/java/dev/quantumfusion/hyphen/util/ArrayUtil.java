@@ -28,12 +28,8 @@ public class ArrayUtil {
 	 * @see ArrayUtil#dualFor(Object[], Object[], BiConsumer)
 	 */
 	public static <A, B> void dualForEach(A[] a, B[] b, DualForEach<? super A, ? super B> dualForEach) {
-		final int aLength = a.length;
-		final int bLength = b.length;
-		if (aLength != bLength)
-			throw new RuntimeException("T length " + aLength + " does not match B length " + bLength);
-
-		for (int i = 0; i < aLength; i++)
+		checkMatchingLength(a, b);
+		for (int i = 0; i < a.length; i++)
 			dualForEach.apply(a[i], b[i], i);
 	}
 
@@ -41,14 +37,18 @@ public class ArrayUtil {
 	 * Same as {@link ArrayUtil#dualForEach(A[], B[], DualForEach)} but with the index excluded.
 	 */
 	public static <A, B> void dualFor(A[] a, B[] b, BiConsumer<? super A, ? super B> dualFor) {
-		final int length = a.length;
-		if (length != b.length) {
-			throw new RuntimeException("T length " + length + " does not match B length " + b.length);
-		}
-		for (int i = 0; i < length; i++) {
+		checkMatchingLength(a, b);
+		for (int i = 0; i < a.length; i++) {
 			dualFor.accept(a[i], b[i]);
 		}
 	}
+
+	private static void checkMatchingLength(Object[] a, Object[] b) {
+		if (a.length != b.length) {
+			throw new RuntimeException("T length " + a.length + " does not match B length " + b.length);
+		}
+	}
+
 
 	/**
 	 * Map a given array to another type or something else. <br>

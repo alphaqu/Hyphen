@@ -3,7 +3,6 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -20,8 +19,8 @@ import java.util.StringJoiner;
 public class ParameterizedClazz extends Clazz {
 	public final Map<String, Clazz> types;
 
-	public ParameterizedClazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations, Map<String, Clazz> types) {
-		super(clazz, annotations, globalAnnotations);
+	public ParameterizedClazz(Class<?> clazz, Map<Class<? extends Annotation>, Annotation> annotations, Map<String, Clazz> types) {
+		super(clazz, annotations);
 		this.types = types;
 	}
 
@@ -36,7 +35,7 @@ public class ParameterizedClazz extends Clazz {
 			else types.put(internalName, Clazzifier.create(typeArg, parent));
 		});
 
-		return new ParameterizedClazz(rawType, AnnoUtil.parseAnnotations(t), ReflectionUtil.getClassAnnotations(parent), types);
+		return new ParameterizedClazz(rawType, AnnoUtil.parseAnnotations(t, parent), types);
 	}
 
 	@Override

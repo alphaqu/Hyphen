@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.type.Unknown;
+import dev.quantumfusion.hyphen.type.Clazz;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -28,6 +28,12 @@ public final class AnnoUtil {
 		return out;
 	}
 
+	public static Map<Class<? extends Annotation>, Annotation> parseAnnotations(AnnotatedType type, Clazz parent) {
+		final Map<Class<? extends Annotation>, Annotation> annotations = ReflectionUtil.getClassAnnotations(parent);
+		annotations.putAll(AnnoUtil.parseAnnotations(type));
+		return annotations;
+	}
+
 	/**
 	 * Nice print method. <br>
 	 * Example: {@code @Annotation @AnotherAnnotation}
@@ -53,13 +59,8 @@ public final class AnnoUtil {
 		return new WrappedAnnotation(type);
 	}
 
-	private static class WrappedAnnotation implements AnnotatedType {
+	private record WrappedAnnotation(Type type) implements AnnotatedType {
 		private static final Annotation[] EMPTY = new Annotation[0];
-		private final Type type;
-
-		WrappedAnnotation(Type type) {
-			this.type = type;
-		}
 
 		@Override
 		public Type getType() {

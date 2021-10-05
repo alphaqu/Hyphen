@@ -8,7 +8,7 @@ import java.util.function.Function;
  * Util class for caching thing.
  */
 public class CacheUtil {
-	private static final boolean CACHE = true;
+	public static boolean CACHE = false;
 
 	public static <R, P> R cache(Map<? super P, R> cache, P param, Function<? super P, ? extends R> func) {
 		if (CACHE) {

@@ -3,9 +3,6 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
@@ -13,7 +10,7 @@ import java.util.Map;
  */
 public class Unknown extends Clazz {
 	public Unknown() {
-		super(null, Map.of(), Map.of());
+		super(null, Map.of());
 	}
 
 	public Class<?> pullClass() {
