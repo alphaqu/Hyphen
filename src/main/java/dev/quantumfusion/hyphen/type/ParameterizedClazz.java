@@ -3,11 +3,13 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.CacheUtil;
 
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -15,21 +17,29 @@ import java.util.StringJoiner;
 import static dev.quantumfusion.hyphen.Clazzifier.UNDEFINED;
 
 /**
- * Just like a Clazz but it holds parameters and its currently known definitions.
+ * Just like a Clazz, but it holds type parameters and its currently known definitions.
  */
 public class ParameterizedClazz extends Clazz {
 	private final Map<String, ? extends TypeClazz> types;
 
-	ParameterizedClazz(ParameterizedClazz template, Class<?> clazz, Map<String, ? extends TypeClazz> types) {
+	private ParameterizedClazz(ParameterizedClazz template, Class<?> clazz, Map<String, ? extends TypeClazz> types) {
 		super(template, clazz);
 		this.types = types;
 	}
 
-	public static ParameterizedClazz createParameterizedClass(AnnotatedType type) {
-		return createBaseParameterizedClass(((Class<?>) ((ParameterizedType) type.getType()).getRawType()));
+	/**
+	 * Create a parameterized clazz for the raw class.
+	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 */
+	public static ParameterizedClazz createRawParameterizedClass(AnnotatedType type) {
+		return createRawParameterizedClass(Clazz.getClassFrom(type));
 	}
 
-	public static ParameterizedClazz createBaseParameterizedClass(Class<?> type) {
+	/**
+	 * Create a parameterized clazz for the raw class.
+	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 */
+	public static ParameterizedClazz createRawParameterizedClass(Class<?> type) {
 		final Map<String, TypeClazz> types = new LinkedHashMap<>();
 
 		for (var typeParameter : type.getTypeParameters()) {
@@ -54,7 +64,7 @@ public class ParameterizedClazz extends Clazz {
 		AnnotatedType[] typeParameters;
 		if (type instanceof AnnotatedParameterizedType apt) {
 			typeParameters = apt.getAnnotatedActualTypeArguments();
-		} else if (type.getType() instanceof ParameterizedType pt){ // support wrapped annotation
+		} else if (type.getType() instanceof ParameterizedType pt) { // support wrapped annotation
 			typeParameters = ArrayUtil.map(pt.getActualTypeArguments(), AnnotatedType[]::new, AnnoUtil::wrap);
 		} else throw new IllegalArgumentException();
 
@@ -67,26 +77,30 @@ public class ParameterizedClazz extends Clazz {
 		return new ParameterizedClazz(this, Clazz.getClassFrom(type), newTypes);
 	}
 
+	private final Map<Clazz, ParameterizedClazz> RESOLVE_CACHE = new HashMap<>();
+
 	@Override
-	public Clazz resolve(Clazz source) {
-		boolean mutated = false;
-		Map<String, TypeClazz> newTypes = new LinkedHashMap<>(this.types.size());
+	public ParameterizedClazz resolve(Clazz context) {
+		return CacheUtil.cache(this.RESOLVE_CACHE, context, (cont) -> {
+			boolean mutated = false;
+			Map<String, TypeClazz> newTypes = new LinkedHashMap<>(this.types.size());
 
-		for(var entry : this.types.entrySet()) {
-			TypeClazz res;
-			newTypes.put(entry.getKey(), res = entry.getValue().resolveFUCKActual(source));
-			mutated |= res != entry.getValue();
-		}
+			for (var entry : this.types.entrySet()) {
+				TypeClazz res;
+				newTypes.put(entry.getKey(), res = entry.getValue().resolveFUCKActual(cont));
+				mutated |= res != entry.getValue();
+			}
 
-		if(!mutated) return this;
+			if (!mutated) return this;
 
-		return new ParameterizedClazz(this, this.clazz, newTypes);
+			return new ParameterizedClazz(this, this.clazz, newTypes);
+		});
 	}
 
 	@Override
 	public Clz resolveType(String type) {
 		TypeClazz t = this.types.get(type);
-		if(t == null) return UNDEFINED;
+		if (t == null) return UNDEFINED;
 		return t;
 	}
 

@@ -35,7 +35,7 @@ public class Undefined implements Clz {
 	}
 
 	@Override
-	public Clz resolve(Clazz source) {
+	public Clz resolve(Clazz context) {
 		return this;
 	}
 }

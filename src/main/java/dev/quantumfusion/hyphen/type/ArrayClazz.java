@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
 
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
@@ -9,14 +8,18 @@ import java.lang.reflect.AnnotatedType;
 /**
  * An ArrayClazz is anything that is an array. The component holds what the array's elements are.
  */
-public class ArrayClazz implements Clz {
+public final class ArrayClazz implements Clz {
 	private AnnType component;
 
-	public ArrayClazz(AnnType component) {
+	private ArrayClazz(AnnType component) {
 		this.component = component;
 	}
 
-	public static ArrayClazz createArray() {
+	/**
+	 * Creates a new raw array
+	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 */
+	public static ArrayClazz createRawArray() {
 		return new ArrayClazz(null);
 	}
 
@@ -49,9 +52,9 @@ public class ArrayClazz implements Clz {
 	}
 
 	@Override
-	public ArrayClazz resolve(Clazz source) {
-		AnnType resolved = this.component.resolve(source);
-		if (resolved == this.component)
+	public ArrayClazz resolve(Clazz context) {
+		AnnType resolved = this.component.resolve(context);
+		if (resolved == this.component) // if the component didn't change, we don't need to create a new object
 			return this;
 		return new ArrayClazz(resolved);
 	}

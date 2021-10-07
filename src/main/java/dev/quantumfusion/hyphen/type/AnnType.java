@@ -9,8 +9,8 @@ public record AnnType(
 		Map<Class<? extends Annotation>, ? extends Annotation> globalAnnotations
 ) implements Clz {
 	@Override
-	public AnnType resolve(Clazz source) {
-		Clz resolved = this.clazz.resolve(source);
+	public AnnType resolve(Clazz context) {
+		Clz resolved = this.clazz.resolve(context);
 		if (resolved == this.clazz)
 			return this;
 		return new AnnType(resolved, this.annotations, this.globalAnnotations);

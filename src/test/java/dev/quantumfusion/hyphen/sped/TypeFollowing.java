@@ -12,45 +12,61 @@ import java.util.Set;
 
 public class TypeFollowing {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
+		// Thread.sleep(20_000);
 		System.out.println("hello there");
 
-		scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
-		scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
-		scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
-		scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
+		for (int i = 0; i < 1; i++)
+			scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
+
+		// scan(Clazzifier.createClass(CachingTest.Class0.class, null), true);
 
 		float on = 0;
 		float off = 0;
 
-		final int iterations = 1_000_000;
+		final int iterations = 10;
 		CacheUtil.CACHE = false;
+		Clazz.allocations = 0;
+		CacheUtil.misses = 0;
+		CacheUtil.hits = 0;
 		final long l1 = System.nanoTime();
 		for (int i = 0; i < iterations; i++) {
 			scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
 		}
+		int offAllocations = Clazz.allocations;
+		int offMisses = CacheUtil.misses;
+		int offHits = CacheUtil.hits;
 		off += (System.nanoTime() - l1) / 1_000_000f;
 
 
 		System.out.println("on");
 
 		CacheUtil.CACHE = true;
+		Clazz.allocations = 0;
+		CacheUtil.misses = 0;
+		CacheUtil.hits = 0;
 		final long l = System.nanoTime();
 		for (int i = 0; i < iterations; i++) {
 			scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
 		}
+		int onAllocations = Clazz.allocations;
+		int onMisses = CacheUtil.misses;
+		int onHits = CacheUtil.hits;
 		on += (System.nanoTime() - l) / 1_000_000f;
 		System.out.println("done");
 
 
 		System.out.println(on + "ms / " + off + "ms");
+		System.out.println(onAllocations + " / " + offAllocations);
+		System.out.println(onMisses + " / " + offMisses);
+		System.out.println(onHits + " / " + offHits);
 		//CacheUtil.printCacheStatistics();
 	}
 
 	private static final Set<Clazz> SEEN = new HashSet<>();
 
 	public static void scan(Clazz clazz, boolean print) {
-		if(!SEEN.add(clazz)) return;
+		if (!SEEN.add(clazz) && false) return;
 		final AnnType[] fields = Clazzifier.scanFields(clazz);
 		if (print)
 			System.out.println(Color.RED + clazz.toString());
@@ -61,7 +77,7 @@ public class TypeFollowing {
 		if (print)
 			System.out.println();
 		for (var field : fields) {
-			if(field.clazz() instanceof Clazz clazz1)
+			if (field.clazz() instanceof Clazz clazz1)
 				scan(clazz1, print);
 		}
 	}

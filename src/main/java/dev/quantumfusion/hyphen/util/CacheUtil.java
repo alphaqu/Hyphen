@@ -9,10 +9,26 @@ import java.util.function.Function;
  */
 public class CacheUtil {
 	public static boolean CACHE = false;
+	public static int misses = 0;
+	public static int hits = 0;
 
 	public static <R, P> R cache(Map<? super P, R> cache, P param, Function<? super P, ? extends R> func) {
 		if (CACHE) {
 			if (cache.containsKey(param)) return cache.get(param);
+			final R apply = func.apply(param);
+			cache.put(param, apply);
+			return apply;
+		}
+		return func.apply(param);
+	}
+
+	public static <R, P> R cacheCount(Map<? super P, R> cache, P param, Function<? super P, ? extends R> func) {
+		if (CACHE) {
+			if (cache.containsKey(param)){
+				hits++;
+				return cache.get(param);
+			}
+			misses++;
 			final R apply = func.apply(param);
 			cache.put(param, apply);
 			return apply;

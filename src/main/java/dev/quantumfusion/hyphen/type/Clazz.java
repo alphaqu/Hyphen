@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.ReflectionUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
@@ -9,13 +10,17 @@ import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 
 /**
- * A regular class.
+ * A Type that takes part in the class hierarchy.
+ * Either a normal class or a parameterized class, but no arrays.
  */
 public class Clazz implements Clz {
-	final Clazz template;
+	static public int allocations = 0;
+	// The class "template"
+	private final @Nullable Clazz template;
+	// The raw class this represents
 	final Class<?> clazz;
 
-	// lateinit
+	// lazy
 	private @Nullable Clazz superClass = null;
 	private @Nullable Clazz[] superInterfaces = null;
 	private @Nullable LinkedHashMap<String, ? extends AnnType> fields = null;
@@ -23,15 +28,30 @@ public class Clazz implements Clz {
 	Clazz(Clazz template, Class<?> clazz) {
 		this.template = template;
 		this.clazz = clazz;
+
+		allocations++;
 	}
 
-	public static Clz createRawClazz(AnnotatedType type) {
-		var clazz = getClassFrom(type.getType());
+	/**
+	 * Create a class for the raw class.
+	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 * @return either a Clazz or an ArrayClazz
+	 */
+	public static Clz createRawClazz(Class<?> clazz) {
 		if (clazz.isArray()) {
-			return ArrayClazz.createArray();
+			return ArrayClazz.createRawArray();
 		}
 
 		return new Clazz(null, clazz);
+	}
+
+	/**
+	 * Create a class for the raw class.
+	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 * @return either a Clazz or an ArrayClazz
+	 */
+	public static Clz createRawClazz(AnnotatedType type) {
+		return createRawClazz(getClassFrom(type.getType()));
 	}
 
 	public void finish(AnnotatedType type, Clazz source) {
@@ -39,7 +59,8 @@ public class Clazz implements Clz {
 		this.superClass = Clazzifier.createClass(clazz.getGenericSuperclass(), this);
 		this.superInterfaces = ArrayUtil.map(clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
 
-		var classFields = clazz.getDeclaredFields();
+		// TODO: these shouldn't need to be cached, cause we are cached
+		var classFields = ReflectionUtil.getClassFields(this.clazz);
 		LinkedHashMap<String, AnnType> fields = new LinkedHashMap<>(classFields.length);
 
 		for (Field classField : classFields) {
@@ -50,10 +71,12 @@ public class Clazz implements Clz {
 		this.fields = fields;
 	}
 
+	// TODO: move to util?
 	public static Class<?> getClassFrom(AnnotatedType type) {
 		return getClassFrom(type.getType());
 	}
 
+	// TODO: move to util?
 	public static Class<?> getClassFrom(Type type) {
 		if (type instanceof Class<?> c) return c;
 		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
@@ -62,29 +85,34 @@ public class Clazz implements Clz {
 	}
 
 	@Override
-	public Clazz resolve(Clazz source) {
+	public Clazz resolve(Clazz context) {
 		return this;
 	}
 
 	public Class<?> pullClass() {
-		return clazz;
+		return this.clazz;
 	}
 
 	public Class<?> pullBytecodeClass() {
-		return clazz;
+		return this.clazz;
 	}
 
 	/*public Clazz getSub(Class<?> clazz) {
 		return Clazzifier.create(AnnoUtil.wrap(clazz), this);
 	}*/
 
+	/**
+	 * Get the Clz of a given type parameter
+	 * @param type The name of the type parameter
+	 * @return The type parameter, or {@link Undefined}
+	 */
 	public Clz resolveType(String type) {
 		return Clazzifier.UNDEFINED;
 	}
 
 	@Override
 	public String toString() {
-		return clazz.getSimpleName();
+		return this.clazz.getSimpleName();
 	}
 
 	@Override

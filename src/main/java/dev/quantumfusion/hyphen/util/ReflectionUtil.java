@@ -48,6 +48,6 @@ public class ReflectionUtil {
 	}
 
 	public static Field[] getClassFields(Class<?> aClass) {
-		return CacheUtil.cache(FIELD_CACHE, aClass, Class::getDeclaredFields);
+		return CacheUtil.cacheCount(FIELD_CACHE, aClass, Class::getDeclaredFields);
 	}
 }

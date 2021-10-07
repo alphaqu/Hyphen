@@ -96,9 +96,9 @@ public class TypeClazz implements Clz {
 
 	@SuppressWarnings({"AssignmentToForLoopParameter", "RedundantSuppression"})
 	@Override
-	public TypeClazz resolve(Clazz source) {
-		if(source.equals(this.context)) return this;
-		var defined = source.resolveType(this.name);
+	public TypeClazz resolve(Clazz context) {
+		if(context.equals(this.context)) return this;
+		var defined = context.resolveType(this.name);
 
 		// if (defined != this.actual) {
 			// a change
@@ -106,7 +106,7 @@ public class TypeClazz implements Clz {
 					this.name,
 					defined,
 					this.rawBounds,
-					source);
+					context);
 		// }
 /*
 		for (int i = 0; i < this.bounds.length; i++) {
