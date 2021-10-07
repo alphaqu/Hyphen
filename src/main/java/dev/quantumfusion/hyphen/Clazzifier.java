@@ -68,9 +68,9 @@ public class Clazzifier {
 	}
 
 	private static Clz createFromType(AnnotatedType annotated, Clazz parent) {
-		System.out.println(annotated);
-		System.out.println(parent);
-		System.out.println();
+		// System.out.println(annotated);
+		// System.out.println(parent);
+		// System.out.println();
 		Clz clz = createRawFromType(annotated, parent).instantiate(annotated);
 		if (parent == null)
 			return clz;

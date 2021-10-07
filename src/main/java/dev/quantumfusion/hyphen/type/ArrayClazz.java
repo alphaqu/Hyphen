@@ -2,7 +2,6 @@ package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;

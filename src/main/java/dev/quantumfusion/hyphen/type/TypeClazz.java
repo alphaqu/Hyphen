@@ -4,7 +4,6 @@ import dev.quantumfusion.hyphen.Clazzifier;
 import org.jetbrains.annotations.Nullable;
 import dev.quantumfusion.hyphen.thr.ScanException;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
