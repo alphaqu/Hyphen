@@ -8,6 +8,9 @@ import org.objectweb.asm.Opcodes;
 import java.lang.reflect.*;
 import java.util.LinkedHashMap;
 
+/**
+ * A regular class.
+ */
 public class Clazz implements Clz {
 	final Clazz template;
 	final Class<?> clazz;

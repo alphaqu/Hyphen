@@ -1,5 +1,9 @@
 package dev.quantumfusion.hyphen.type;
 
+
+/**
+ * Unknown clazz. Crashes if we are trying to serialize this. Mostly a placeholder until the type is known.
+ */
 public class Undefined implements Clz {
 	public static final Undefined UNDEFINED = new Undefined();
 

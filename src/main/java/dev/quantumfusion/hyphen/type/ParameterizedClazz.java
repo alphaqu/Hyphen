@@ -15,6 +15,9 @@ import java.util.StringJoiner;
 
 import static dev.quantumfusion.hyphen.Clazzifier.UNDEFINED;
 
+/**
+ * Just like a Clazz but it holds parameters and its currently known definitions.
+ */
 public class ParameterizedClazz extends Clazz {
 	private final Map<String, ? extends TypeClazz> types;
 

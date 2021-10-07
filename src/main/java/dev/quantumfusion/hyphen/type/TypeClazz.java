@@ -11,6 +11,9 @@ import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 
+/**
+ * Comes from a ParameterizedClazz. This holds the bounds and the actual.
+ */
 public class TypeClazz implements Clz {
 	private final String name;
 	private final Clz actual;

@@ -7,6 +7,9 @@ import dev.quantumfusion.hyphen.util.ReflectionUtil;
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
 
+/**
+ * An ArrayClazz is anything that is an array. The component holds what the array's elements are.
+ */
 public class ArrayClazz implements Clz {
 	private AnnType component;
 

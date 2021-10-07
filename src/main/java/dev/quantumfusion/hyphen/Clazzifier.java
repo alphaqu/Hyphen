@@ -13,6 +13,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The main type handling class. This is where you get your fields and Hyphen scans for implementations.
+ */
 public class Clazzifier {
 	public static final Clz UNDEFINED = Undefined.UNDEFINED;
 	private static final List<ClzCreator> FORWARD_CLAZZERS = new ArrayList<>();
@@ -36,6 +39,13 @@ public class Clazzifier {
 	}
 
 
+/**
+	 * This creates a {@link Clazz} from an AnnotatedType.<br> This method is cached and the actual implementations is in the {@link Clazzifier#createFromType}
+	 *
+	 * @param type   An {@link AnnotatedType} that you want to create a {@link Clazz} from
+	 * @param parent The source of the AnnotatedType. Used for mapping Class Parameters.
+	 * @return The Clazz
+	 */
 	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
 		var clazz = create(annotatedType, null);
 		return new AnnType(clazz, AnnoUtil.parseAnnotations(annotatedType), ReflectionUtil.getClassAnnotations(source));
@@ -82,6 +92,12 @@ public class Clazzifier {
 		throw new UnsupportedOperationException(type.getClass().getSimpleName() + " is unsupported");
 	}
 
+	/**
+	 * Creates Clazz for every field of a clazz.
+	 *
+	 * @param clazz The Clazz to scan.
+	 * @return The Clazz fields.
+	 */
 	public static AnnType[] scanFields(Clazz clazz) {
 		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, (c) -> {
 			final AnnType[] fields = clazz.getFields();
