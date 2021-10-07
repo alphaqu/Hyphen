@@ -25,6 +25,7 @@ public class TypeFollowing {
 		float off = 0;
 
 		final int iterations = 100000000;
+		System.out.println("runds");
 		CacheUtil.CACHE = false;
 		final long l1 = System.nanoTime();
 		for (int i = 0; i < iterations; i++) {
