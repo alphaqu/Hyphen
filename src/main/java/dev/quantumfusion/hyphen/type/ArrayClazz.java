@@ -1,36 +1,31 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
-import java.util.Map;
 
-public class ArrayClazz extends Clazz {
-	public Clazz component;
+public class ArrayClazz implements Clz {
+	private AnnType component;
 
-	public ArrayClazz(Map<Class<? extends Annotation>, Annotation> annotations, Map<Class<? extends Annotation>, Annotation> globalAnnotations, Clazz component) {
-		super(component.pullClass(), annotations, globalAnnotations);
+	public ArrayClazz(AnnType component) {
 		this.component = component;
 	}
 
-	public static ArrayClazz create(AnnotatedType typeVariable, Clazz parent) {
-		AnnotatedType componentType;
-		if (typeVariable instanceof AnnotatedArrayType t) componentType = t.getAnnotatedGenericComponentType();
-		else componentType = typeVariable;
-		return new ArrayClazz(AnnoUtil.parseAnnotations(typeVariable), Clazzifier.getClassAnnotations(parent), Clazzifier.create(componentType, parent));
+	public static ArrayClazz createArray() {
+		return new ArrayClazz(null);
 	}
 
-	@Override
-	public Clazz defineType(String type) {
-		return component.defineType(type);
+	public void finish(AnnotatedType annotatedType, Clazz source) {
+		if (!(annotatedType instanceof AnnotatedArrayType annotatedArrayType)) throw new IllegalArgumentException();
+		this.component = Clazzifier.createAnnotatedType(
+				annotatedArrayType.getAnnotatedGenericComponentType(),
+				source);
 	}
 
 	@Override
 	public String toString() {
-		return component.toString() + "[]";
+		return this.component.toString() + "[]";
 	}
 
 	@Override
@@ -47,5 +42,13 @@ public class ArrayClazz extends Clazz {
 		int result = super.hashCode();
 		result = 31 * result + this.component.hashCode();
 		return result;
+	}
+
+	@Override
+	public ArrayClazz resolve(Clazz source) {
+		AnnType resolved = this.component.resolve(source);
+		if (resolved == this.component)
+			return this;
+		return new ArrayClazz(resolved);
 	}
 }

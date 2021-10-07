@@ -1,56 +1,130 @@
 package dev.quantumfusion.hyphen.type;
 
 import dev.quantumfusion.hyphen.Clazzifier;
-import dev.quantumfusion.hyphen.thr.ScanException;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.AnnotatedTypeVariable;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Arrays;
 
-public class TypeClazz extends Clazz {
-	public Clazz actual;
+public class TypeClazz implements Clz {
+	private final String name;
+	private final Clz actual;
+	private Clz @Nullable[] bounds;
+	private final Type[] rawBounds;
+	private final Clazz context;
 
-	protected TypeClazz(AnnotatedTypeVariable typeVariable, Clazz parent) {
-		super((Class<?>) ((TypeVariable<?>) typeVariable.getType()).getBounds()[0], AnnoUtil.parseAnnotations(typeVariable), Clazzifier.getClassAnnotations(parent));
-		this.actual = getType(typeVariable, parent);
+	protected TypeClazz(String name, Clz actual, Type[] rawBounds, Clazz context) {
+		this.name = name;
+		this.actual = actual;
+		this.rawBounds = rawBounds;
+		this.context = context;
 	}
 
-	public static TypeClazz create(AnnotatedType typeVariable, Clazz parent) {
-		return new TypeClazz((AnnotatedTypeVariable) typeVariable, parent);
+
+	public static TypeClazz createRaw(TypeVariable<?> typeVariable) {
+		return new TypeClazz(typeVariable.getName(), Clazzifier.UNDEFINED, typeVariable.getBounds(), null);
 	}
 
-	private static Clazz getType(AnnotatedTypeVariable typeVariable, Clazz parent) {
-		final Clazz clazz = parent.defineType(typeVariable.getType().getTypeName());
-		if (clazz == null) {
-			throw new ScanException("Type " + typeVariable.getType().getTypeName() + " could not be identified from " + parent);
+	void resolveBounds(TypeVariable<?> typeVariable, Clazz context){
+		this.bounds = new Clz[this.rawBounds.length];
+		for (int i = 0; i < this.rawBounds.length; i++) {
+			Type bound = this.rawBounds[i];
+			this.bounds[i] = Clazzifier.create(bound, context);
 		}
-		return clazz;
+	}
+
+	public String getName() {
+		return this.name;
 	}
 
 	@Override
-	public Class<?> pullClass() {
-		return actual.pullClass();
+	public TypeClazz instantiate(AnnotatedType annotatedType) {
+		return this;
 	}
 
 	@Override
 	public String toString() {
-		return "/" + actual.toString();
+		return "/" + this.actual.toString();
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		return this == o
-				|| o instanceof TypeClazz typeClazz
-				&& super.equals(o)
-				&& this.actual.equals(typeClazz.actual);
+				|| o instanceof TypeClazz that
+				&& this.name.equals(that.name)
+				&& this.actual.equals(that.actual)
+				&& Arrays.equals(this.bounds, that.bounds);
 
 	}
 
 	@Override
 	public int hashCode() {
-		int result = super.hashCode();
+		int result = this.name.hashCode();
 		result = 31 * result + this.actual.hashCode();
+		result = 31 * result + Arrays.hashCode(this.bounds);
 		return result;
+	}
+
+	public TypeClazz withActual(Clz actual) {
+		if (actual.equals(this.actual)) return this;
+		return new TypeClazz(
+				this.name,
+				actual,
+				this.rawBounds,
+				null);
+	}
+
+	public TypeClazz resolveFUCKActual(Clazz source) {
+		var defined = this.actual.resolve(source);
+
+		// if (defined != this.actual) {
+		// a change
+		return new TypeClazz(
+				this.name,
+				defined,
+				this.rawBounds,
+				null);
+	}
+
+
+	@SuppressWarnings({"AssignmentToForLoopParameter", "RedundantSuppression"})
+	@Override
+	public TypeClazz resolve(Clazz source) {
+		if(source.equals(this.context)) return this;
+		var defined = source.resolveType(this.name);
+
+		// if (defined != this.actual) {
+			// a change
+			return new TypeClazz(
+					this.name,
+					defined,
+					this.rawBounds,
+					source);
+		// }
+/*
+		for (int i = 0; i < this.bounds.length; i++) {
+			Clz bound = this.bounds[i];
+			Clz resolvedBound = bound.resolve(source);
+			if (bound != resolvedBound) {
+				// a change
+
+				Clz[] resolvedBounds = this.bounds.clone();
+				resolvedBounds[i] = resolvedBound;
+
+				for (i++; i < this.bounds.length; i++) {
+					resolvedBounds[i] = resolvedBounds[i].resolve(source);
+				}
+
+				return new TypeClazz(
+						this.name,
+						this.actual,
+						resolvedBounds,
+						context);
+			}
+		}*/
+
+		// return this;
 	}
 }

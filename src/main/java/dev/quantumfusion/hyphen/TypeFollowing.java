@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.type.AnnType;
 import dev.quantumfusion.hyphen.type.Clazz;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.Color;
@@ -7,14 +8,12 @@ import dev.quantumfusion.hyphen.util.Color;
 import java.util.HashSet;
 import java.util.Set;
 
-import static dev.quantumfusion.hyphen.Clazzifier.UNKNOWN;
-
 public class TypeFollowing {
 
 	public static void main(String[] args) {
 		System.out.println("hello there");
 		final long l = System.nanoTime();
-		scan(Clazzifier.create(AnnoUtil.wrap(ForwardTest.class), UNKNOWN), true);
+		scan(Clazzifier.createClass(ForwardTest.class, null), true);
 		System.out.println((System.nanoTime() - l) / 1_000_000f + "ms");
 		//CacheUtil.printCacheStatistics();
 	}
@@ -22,18 +21,19 @@ public class TypeFollowing {
 	private static final Set<Clazz> SEEN = new HashSet<>();
 
 	public static void scan(Clazz clazz, boolean print) {
-		if(!SEEN.add(clazz)) return;
-		final Clazz[] clazzes = Clazzifier.scanFields(clazz);
+		if(!SEEN.add(clazz) || clazz.toString().length() > 500) return;
+		final AnnType[] fields = Clazzifier.scanFields(clazz);
 		if (print)
 			System.out.println(Color.RED + clazz.toString());
-		for (Clazz clazz1 : clazzes) {
+		for (var field : fields) {
 			if (print)
-				System.out.println("\t" + Color.CYAN + clazz1.toString() + "\t" + Color.GREEN + AnnoUtil.inlinedString(clazz1.annotations) + Color.YELLOW + AnnoUtil.inlinedString(clazz1.globalAnnotations));
+				System.out.println("\t" + Color.CYAN + field.clazz().toString() + "\t" + Color.GREEN + AnnoUtil.inlinedString(field.annotations()) + Color.YELLOW + AnnoUtil.inlinedString(field.globalAnnotations()));
 		}
 		if (print)
 			System.out.println();
-		for (Clazz clazz1 : clazzes) {
-			scan(clazz1, print);
+		for (var field : fields) {
+			if(field.clazz() instanceof Clazz clazz1)
+				scan(clazz1, print);
 		}
 	}
 

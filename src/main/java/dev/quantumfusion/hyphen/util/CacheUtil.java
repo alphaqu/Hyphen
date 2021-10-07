@@ -26,4 +26,15 @@ public class CacheUtil {
 		}
 		return func.apply(param, data);
 	}
+
+	public static <R, P, D, K> R cache(Map<? super K, R> cache, Function<? super P, ? extends K> key, P param, D data, BiFunction<? super P, ? super D, ? extends R> func) {
+		if (CACHE) {
+				var k = key.apply(param);
+				if (cache.containsKey(k)) return cache.get(k);
+				final R apply = func.apply(param, data);
+				cache.put(k, apply);
+				return apply;
+		}
+		return func.apply(param, data);
+	}
 }

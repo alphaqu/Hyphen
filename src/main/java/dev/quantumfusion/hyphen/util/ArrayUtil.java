@@ -1,10 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.util.Arrays;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 public class ArrayUtil {
 
@@ -39,6 +36,14 @@ public class ArrayUtil {
 		final B[] out = creator.apply(a.length);
 		for (int i = 0; i < a.length; i++) {
 			out[i] = mapper.apply(a[i]);
+		}
+		return out;
+	}
+
+	public static <A, B, D> B[] map(A[] a, IntFunction<B[]> creator, D data, BiFunction<? super A, ? super D, ? extends B> mapper) {
+		final B[] out = creator.apply(a.length);
+		for (int i = 0; i < a.length; i++) {
+			out[i] = mapper.apply(a[i], data);
 		}
 		return out;
 	}

@@ -17,7 +17,7 @@ public final class AnnoUtil {
 		return out;
 	}
 
-	public static String inlinedString(Map<Class<? extends Annotation>, Annotation> annotationMap) {
+	public static String inlinedString(Map<Class<? extends Annotation>, ? extends Annotation> annotationMap) {
 		StringBuilder builder = new StringBuilder();
 		for (Annotation annotation : annotationMap.values()) {
 			builder.append('@').append(annotation.annotationType().getSimpleName()).append(' ');
@@ -55,6 +55,13 @@ public final class AnnoUtil {
 		@Override
 		public Annotation[] getDeclaredAnnotations() {
 			return EMPTY;
+		}
+
+		@Override
+		public String toString() {
+			return "WrappedAnnotation{" +
+					"type=" + this.type +
+					'}';
 		}
 	}
 }

@@ -10,6 +10,11 @@ public class ForwardTest {
 	public static class Forward {
 		@Ser
 		Forward1 forward1;
+		@Ser
+		int[] is;
+		@Ser
+		Number[] ns;
+		Integer i;
 	}
 
 	@Ser
@@ -22,8 +27,9 @@ public class ForwardTest {
 		Forward3<A> forward31;
 	}
 
-	@Ser
+	// @Ser
 	public static class Forward3<A> {
+		Forward3<Forward3<A>> f;
 		A thing;
 		List<Integer>[] dfsad;
 		Forward4 thingie;
