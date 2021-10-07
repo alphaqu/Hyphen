@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.type.Unknown;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
