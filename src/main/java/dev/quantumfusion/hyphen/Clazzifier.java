@@ -5,8 +5,8 @@ import dev.quantumfusion.hyphen.type.*;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
+import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -18,9 +18,6 @@ public class Clazzifier {
 	private static final List<ClzCreator> FORWARD_CLAZZERS = new ArrayList<>();
 	private static final Map<Class<?>, Clz> CLASS_CACHE = new IdentityHashMap<>();
 	private static final Map<Clazz, AnnType[]> ALL_FIELD_CACHE = new IdentityHashMap<>();
-	private static final Map<Class<?>, AnnotatedType[]> FIELD_CACHE = new IdentityHashMap<>();
-	private static final Map<Class<?>, AnnotatedType> SUPER_CACHE = new IdentityHashMap<>();
-	private static final Map<Class<?>, Map<Class<? extends Annotation>, Annotation>> GLOBAL_ANNO_CACHE = new IdentityHashMap<>();
 
 	static {
 		FORWARD_CLAZZERS.add(ClzCreator
@@ -41,7 +38,7 @@ public class Clazzifier {
 
 	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
 		var clazz = create(annotatedType, null);
-		return new AnnType(clazz, AnnoUtil.parseAnnotations(annotatedType), getClassAnnotations(source));
+		return new AnnType(clazz, AnnoUtil.parseAnnotations(annotatedType), ReflectionUtil.getClassAnnotations(source));
 	}
 
 	public static Clazz createClass(Type bound, Clazz context) {
@@ -88,26 +85,11 @@ public class Clazzifier {
 	public static AnnType[] scanFields(Clazz clazz) {
 		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, (c) -> {
 			final AnnType[] fields = clazz.getFields();
-			final AnnotatedType aSuper = Clazzifier.getSuper(c);
+			final AnnotatedType aSuper = ReflectionUtil.getClassSuper(c);
 			if (aSuper != null)
 				return ArrayUtil.combine(scanFields(c.getSuper()), fields, AnnType[]::new);
 
 			return fields;
 		});
-	}
-
-	public static AnnotatedType[] getGenericFields(Clazz clazz) {
-		return CacheUtil.cache(FIELD_CACHE, clazz.pullClass(), (c) -> ArrayUtil.map(c.getDeclaredFields(), AnnotatedType[]::new, (field, integer) -> field.getAnnotatedType()));
-	}
-
-
-	public static AnnotatedType getSuper(Clazz clazz) {
-		return CacheUtil.cache(SUPER_CACHE, clazz.pullClass(), Class::getAnnotatedSuperclass);
-	}
-
-	public static Map<Class<? extends Annotation>, Annotation> getClassAnnotations(Clazz clazz) {
-		if (clazz == null)
-			return Map.of();
-		return CacheUtil.cache(GLOBAL_ANNO_CACHE, clazz.pullClass(), aClass -> AnnoUtil.parseAnnotations(clazz.pullClass()));
 	}
 }
