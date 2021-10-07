@@ -25,6 +25,7 @@ public class TypeFollowing {
 		float off = 0;
 
 		final int iterations = 10;
+		System.out.println("runds");
 		CacheUtil.CACHE = false;
 		Clazz.allocations = 0;
 		CacheUtil.misses = 0;
