@@ -1,9 +1,7 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import org.jetbrains.annotations.Nullable;
-import dev.quantumfusion.hyphen.thr.ScanException;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;

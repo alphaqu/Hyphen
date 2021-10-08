@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.codegen;
+package dev.quantumfusion.hyphen.gen;
 
 public abstract class SerializerMethodDef implements SerializerDef {
 	public final MethodInfo getInfo;

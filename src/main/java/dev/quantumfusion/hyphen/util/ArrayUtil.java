@@ -6,6 +6,7 @@ import java.util.function.*;
 /**
  * T lot of very useful code that helps with handling Arrays for better code readability.
  */
+@SuppressWarnings("unchecked")
 public class ArrayUtil {
 
 	/**
@@ -117,6 +118,13 @@ public class ArrayUtil {
 				clone[count++] = t;
 		}
 		return Arrays.copyOf(clone, count);
+	}
+	public static <T> T[] copyAndAppend(T[] oldArray, T newEntry) {
+		final int length = oldArray.length;
+		var newArray = new Object[length + 1];
+		System.arraycopy(oldArray, 0, newArray, 0, length);
+		newArray[length] = newEntry;
+		return (T[]) newArray;
 	}
 
 	@FunctionalInterface

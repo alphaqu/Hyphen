@@ -1,9 +1,10 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
@@ -14,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import static dev.quantumfusion.hyphen.Clazzifier.UNDEFINED;
+import static dev.quantumfusion.hyphen.scan.Clazzifier.UNDEFINED;
 
 /**
  * Just like a Clazz, but it holds type parameters and its currently known definitions.
@@ -32,7 +33,7 @@ public class ParameterizedClazz extends Clazz {
 	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
 	 */
 	public static ParameterizedClazz createRawParameterizedClass(AnnotatedType type) {
-		return createRawParameterizedClass(Clazz.getClassFrom(type));
+		return createRawParameterizedClass(ScanUtil.getClassFrom(type));
 	}
 
 	/**
@@ -74,7 +75,7 @@ public class ParameterizedClazz extends Clazz {
 			AnnotatedType typeParameter = typeParameters[i++];
 			newTypes.put(t.getName(), t.withActual(Clazzifier.createAnnotatedType(typeParameter, this)));
 		}
-		return new ParameterizedClazz(this, Clazz.getClassFrom(type), newTypes);
+		return new ParameterizedClazz(this, ScanUtil.getClassFrom(type), newTypes);
 	}
 
 	private final Map<Clazz, ParameterizedClazz> RESOLVE_CACHE = new HashMap<>();

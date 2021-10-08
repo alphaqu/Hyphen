@@ -1,11 +1,8 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.thr.ScanException;
-import dev.quantumfusion.hyphen.type.*;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
-import dev.quantumfusion.hyphen.util.ArrayUtil;
-import dev.quantumfusion.hyphen.util.CacheUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
+import dev.quantumfusion.hyphen.scan.type.*;
+import dev.quantumfusion.hyphen.util.*;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -25,7 +22,7 @@ public class Clazzifier {
 	static {
 		FORWARD_CLAZZERS.add(ClzCreator
 				.of(ParameterizedType.class, ParameterizedClazz::createRawParameterizedClass)
-				.cachedOrPostProcess(Clazz::getClassFrom, ParameterizedClazz::finish));
+				.cachedOrPostProcess(ScanUtil::getClassFrom, ParameterizedClazz::finish));
 		FORWARD_CLAZZERS.add(ClzCreator.of(TypeVariable.class, (type, clazz) -> TypeClazz.createRaw((TypeVariable<?>) type.getType())));
 		FORWARD_CLAZZERS.add(ClzCreator
 				.of(GenericArrayType.class, (annotatedType, source) -> ArrayClazz.createRawArray())
@@ -34,7 +31,7 @@ public class Clazzifier {
 		FORWARD_CLAZZERS.add(ClzCreator.of(WildcardType.class, (type, clazz) -> UNDEFINED));
 		FORWARD_CLAZZERS.add(ClzCreator
 				.of(Class.class, (type, source) -> Clazz.createRawClazz(type))
-				.cachedOrPostProcess(Clazz::getClassFrom, Clz::finish)
+				.cachedOrPostProcess(ScanUtil::getClassFrom, Clz::finish)
 		);
 	}
 

@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;

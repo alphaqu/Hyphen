@@ -1,8 +1,8 @@
 package dev.quantumfusion.hyphen.sped;
 
-import dev.quantumfusion.hyphen.Clazzifier;
-import dev.quantumfusion.hyphen.type.AnnType;
-import dev.quantumfusion.hyphen.type.Clazz;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.scan.type.AnnType;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
 import dev.quantumfusion.hyphen.util.Color;

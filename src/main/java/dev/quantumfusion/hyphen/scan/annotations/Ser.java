@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.annotations;
+package dev.quantumfusion.hyphen.scan.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

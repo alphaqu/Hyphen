@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.thr;
 
-import dev.quantumfusion.hyphen.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.type.Clazz;
-import dev.quantumfusion.hyphen.type.Clz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.Clz;
 import dev.quantumfusion.hyphen.util.CacheUtil;
 
 import java.lang.reflect.AnnotatedType;

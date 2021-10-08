@@ -1,6 +1,6 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.annotations.Ser;
+import dev.quantumfusion.hyphen.scan.annotations.Ser;
 
 import java.util.List;
 

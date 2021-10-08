@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.codegen;
+package dev.quantumfusion.hyphen.gen;
 
 import org.objectweb.asm.ClassWriter;
 

@@ -1,8 +1,9 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Clazzifier;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ReflectionUtil;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
@@ -51,11 +52,11 @@ public class Clazz implements Clz {
 	 * @return either a Clazz or an ArrayClazz
 	 */
 	public static Clz createRawClazz(AnnotatedType type) {
-		return createRawClazz(getClassFrom(type.getType()));
+		return createRawClazz(ScanUtil.getClassFrom(type.getType()));
 	}
 
 	public void finish(AnnotatedType type, Clazz source) {
-		var clazz = getClassFrom(type);
+		var clazz = ScanUtil.getClassFrom(type);
 		this.superClass = Clazzifier.createClass(clazz.getGenericSuperclass(), this);
 		this.superInterfaces = ArrayUtil.map(clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
 
@@ -69,19 +70,6 @@ public class Clazz implements Clz {
 		}
 
 		this.fields = fields;
-	}
-
-	// TODO: move to util?
-	public static Class<?> getClassFrom(AnnotatedType type) {
-		return getClassFrom(type.getType());
-	}
-
-	// TODO: move to util?
-	public static Class<?> getClassFrom(Type type) {
-		if (type instanceof Class<?> c) return c;
-		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
-		if (type instanceof GenericArrayType gat) return getClassFrom(gat.getGenericComponentType());
-		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
 
 	@Override

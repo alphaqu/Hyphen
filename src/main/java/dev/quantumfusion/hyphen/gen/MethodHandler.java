@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.codegen;
+package dev.quantumfusion.hyphen.gen;
 
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
