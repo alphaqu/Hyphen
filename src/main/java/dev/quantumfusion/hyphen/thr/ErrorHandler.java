@@ -1,24 +1,18 @@
 package dev.quantumfusion.hyphen.thr;
 
-import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.Clz;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.util.List;
 import java.util.Random;
 
 public class ErrorHandler {
 	private static final char T = '\t';
 	private static final char LN = '\n';
-	private static final String TT = String.valueOf(T + T);
+	private static final String TT = "\t\t";
 	private final StringBuilder sb = new StringBuilder();
 
 	private static final String LEFT_SIDE = "||";
@@ -93,22 +87,35 @@ public class ErrorHandler {
 	}
 
 	private String getErrorTag() {
+		InputStream inputStream = null;
 		try {
 			URL url = new URL("https://quantumfusion.dev/error.txt");
 			final URLConnection urlConnection = url.openConnection();
-			final byte[] bytes = urlConnection.getInputStream().readAllBytes();
+			inputStream = urlConnection.getInputStream();
+			final byte[] bytes = inputStream.readAllBytes();
 			final String[] split = new String(bytes).split("\n");
 
 			final Random random = new Random();
-			for (int i = 0; i < 5000; i++) {
-				final String s = split[random.nextInt(split.length)];
+
+			for (int length = split.length; length > 0; length--) {
+				int i = random.nextInt(length);
+				final String s = split[i];
 				final String trim = s.trim();
-				if (trim.isEmpty() || trim.startsWith("//"))
+				if (trim.isEmpty() || trim.startsWith("//")) {
+					split[i] = split[length - 1];
 					continue;
+				}
 				return s;
 			}
 			return "could not find things";
 		} catch (IOException ignored) {
+		} finally {
+			if(inputStream != null) {
+				try {
+					inputStream.close();
+				} catch (IOException ignored) {
+				}
+			}
 		}
 		return "Haha funny offline cring";
 	}

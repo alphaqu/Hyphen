@@ -26,6 +26,7 @@ public class TypeFollowing {
 
 		final int iterations = 10;
 		System.out.println("runds");
+		/*
 		CacheUtil.CACHE = false;
 		Clazz.allocations = 0;
 		CacheUtil.misses = 0;
@@ -38,7 +39,7 @@ public class TypeFollowing {
 		int offMisses = CacheUtil.misses;
 		int offHits = CacheUtil.hits;
 		off += (System.nanoTime() - l1) / 1_000_000f;
-
+*/
 
 		System.out.println("on");
 
@@ -58,9 +59,9 @@ public class TypeFollowing {
 
 
 		System.out.println(on + "ms / " + off + "ms");
-		System.out.println(onAllocations + " / " + offAllocations);
-		System.out.println(onMisses + " / " + offMisses);
-		System.out.println(onHits + " / " + offHits);
+		System.out.println(onAllocations + " / ?");
+		System.out.println(onMisses + " / ?");
+		System.out.println(onHits + " / ?");
 		//CacheUtil.printCacheStatistics();
 	}
 

@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import java.lang.reflect.AnnotatedType;
+import java.util.Map;
 
 /**
  * Represents a Type
@@ -28,4 +29,6 @@ public interface Clz {
 
 	default void finish(AnnotatedType type, Clazz source) {
 	}
+
+	Clz merge(Clz other, Map<TypeClazz, TypeClazz> types);
 }

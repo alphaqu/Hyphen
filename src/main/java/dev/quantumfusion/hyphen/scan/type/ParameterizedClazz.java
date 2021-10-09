@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.thr.ScanException;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
@@ -56,7 +57,7 @@ public class ParameterizedClazz extends Clazz {
 		int i = 0;
 		TypeVariable<? extends Class<?>>[] typeParameters = this.clazz.getTypeParameters();
 		for (TypeClazz t : this.types.values()) {
-			t.resolveBounds(typeParameters[i++], this);
+			t.finish(null, this);
 		}
 	}
 
@@ -126,5 +127,80 @@ public class ParameterizedClazz extends Clazz {
 		int result = super.hashCode();
 		result = 31 * result + this.types.hashCode();
 		return result;
+	}
+
+	@Override
+	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
+		// TODO: do we need a direction here?
+
+
+		// validate if other is the same as us, or extends us
+		if (this.equals(other))
+			return this;
+
+		if (!(other instanceof Clazz otherClazz) || !this.clazz.isAssignableFrom(otherClazz.clazz))
+			throw new ScanException("Invalid type merge");
+
+		if (otherClazz.clazz.equals(this.clazz))
+			return this.mergeSingle(otherClazz, types);
+
+		Clazz aSuper = this.getSuper(otherClazz);
+
+		aSuper.merge(other, types);
+
+		var newTypes = new LinkedHashMap<String, TypeClazz>();
+
+		// get all types
+		this.types.forEach((s, t) -> newTypes.put(s, types.getOrDefault(t, t)));
+
+		if(newTypes.equals(this.types))
+			return this; // no need to reallocated
+
+		return new ParameterizedClazz(this, this.clazz, newTypes);
+	}
+
+	private Clazz getSuper(Clazz otherClazz) {
+		if (this.clazz.equals(otherClazz.clazz)) {
+			return this;
+		}
+
+		Clazz aSuper = otherClazz.getSuper();
+		if (aSuper == null)
+			throw new UnsupportedOperationException("Interface merging hasn't been implemented");
+
+		return this.getSuper(aSuper);
+	}
+
+	@Override
+	protected ParameterizedClazz mergeSingle(Clazz otherClazz, Map<TypeClazz, TypeClazz> types) {
+		if (!(otherClazz instanceof ParameterizedClazz parameterizedClazz))
+			return this; // merging with a raw class like ArrayList<Integer> <-> ArrayList
+
+
+		var newTypes = new LinkedHashMap<String, TypeClazz>();
+
+		for (String s : this.types.keySet()) {
+			TypeClazz ourType = this.types.get(s);
+			TypeClazz otherType = parameterizedClazz.types.get(s);
+
+			newTypes.put(s, ourType.merge(otherType, types));
+		}
+
+		if (this.types.equals(newTypes))
+			return this; // no need to reallocated
+
+		return new ParameterizedClazz(this, this.clazz, newTypes);
+	}
+
+	@Override
+	protected ParameterizedClazz mergeSubclass(Clazz otherClazz, Map<TypeClazz, TypeClazz> types) {
+		if (!(otherClazz instanceof ParameterizedClazz parameterizedClazz)) {
+			// merging with a class like C1<T> <-> IntC1
+			// TODO: validate types
+		} else {
+			// TODO?
+		}
+
+		return null;
 	}
 }

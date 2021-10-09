@@ -37,8 +37,8 @@ public class CachingTest {
 
 	public static class Class1<A> {
 		Class2<A> class1;
-		Class2<A> class2;
-		Class2<A> class3;
+		// Class2<A> class2;
+		// Class2<A> class3;
 		// Class2<A> class4;
 		// Class2<A> class5;
 		// Class2<A> class6;
@@ -50,8 +50,8 @@ public class CachingTest {
 
 	public static class Class2<A> {
 		Class3<A> class1;
-		Class3<A> class2;
-		Class3<A> class3;
+		// Class3<A> class2;
+		// Class3<A> class3;
 		// Class3<A> class4;
 		// Class3<A> class5;
 		// Class3<A> class6;
@@ -63,8 +63,8 @@ public class CachingTest {
 
 	public static class Class3<A> {
 		Class4<A> class1;
-		Class4<A> class2;
-		Class4<A> class3;
+		// Class4<A> class2;
+		// Class4<A> class3;
 		// Class4<A> class4;
 		// Class4<A> class5;
 		// Class4<A> class6;
@@ -76,8 +76,8 @@ public class CachingTest {
 
 	public static class Class4<A> {
 		Class5<A> class1;
-		Class5<A> class2;
-		Class5<A> class3;
+		// Class5<A> class2;
+		// Class5<A> class3;
 		// Class5<A> class4;
 		// Class5<A> class5;
 		// Class5<A> class6;
@@ -102,8 +102,8 @@ public class CachingTest {
 
 	public static class Class6<A> {
 		Class7<A> class1;
-		Class7<A> class2;
-		Class7<A> class3;
+		// Class7<A> class2;
+		// Class7<A> class3;
 		// Class7<A> class4;
 		// Class7<A> class5;
 		// Class7<A> class6;

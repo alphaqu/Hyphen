@@ -1,14 +1,17 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.thr.ScanException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ReflectionUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A Type that takes part in the class hierarchy.
@@ -36,6 +39,7 @@ public class Clazz implements Clz {
 	/**
 	 * Create a class for the raw class.
 	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 *
 	 * @return either a Clazz or an ArrayClazz
 	 */
 	public static Clz createRawClazz(Class<?> clazz) {
@@ -49,6 +53,7 @@ public class Clazz implements Clz {
 	/**
 	 * Create a class for the raw class.
 	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
+	 *
 	 * @return either a Clazz or an ArrayClazz
 	 */
 	public static Clz createRawClazz(AnnotatedType type) {
@@ -73,6 +78,32 @@ public class Clazz implements Clz {
 	}
 
 	@Override
+	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
+		// TODO: do we need a direction here?
+
+
+		// validate if other is the same as us, or extends us
+		if (this.equals(other))
+			return this;
+
+		if (!(other instanceof Clazz otherClazz) || !this.clazz.isAssignableFrom(otherClazz.clazz))
+			throw new ScanException("Invalid type merge");
+
+		return otherClazz; //this.mergeRecursive(otherClazz, types);
+
+	}
+
+
+
+	protected Clazz mergeSingle(Clazz otherClazz, Map<TypeClazz, TypeClazz> types) {
+		return otherClazz;
+	}
+
+	protected Clazz mergeSubclass(Clazz otherClazz, Map<TypeClazz, TypeClazz> types){
+		return otherClazz;
+	}
+
+	@Override
 	public Clazz resolve(Clazz context) {
 		return this;
 	}
@@ -91,6 +122,7 @@ public class Clazz implements Clz {
 
 	/**
 	 * Get the Clz of a given type parameter
+	 *
 	 * @param type The name of the type parameter
 	 * @return The type parameter, or {@link Undefined}
 	 */

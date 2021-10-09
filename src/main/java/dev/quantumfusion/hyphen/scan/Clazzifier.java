@@ -23,7 +23,10 @@ public class Clazzifier {
 		FORWARD_CLAZZERS.add(ClzCreator
 				.of(ParameterizedType.class, ParameterizedClazz::createRawParameterizedClass)
 				.cachedOrPostProcess(ScanUtil::getClassFrom, ParameterizedClazz::finish));
-		FORWARD_CLAZZERS.add(ClzCreator.of(TypeVariable.class, (type, clazz) -> TypeClazz.createRaw((TypeVariable<?>) type.getType())));
+		FORWARD_CLAZZERS.add(ClzCreator
+				.of(TypeVariable.class, (type, clazz) -> TypeClazz.createRaw((TypeVariable<?>) type.getType()))
+				.postProcess(TypeClazz::finish)
+		);
 		FORWARD_CLAZZERS.add(ClzCreator
 				.of(GenericArrayType.class, (annotatedType, source) -> ArrayClazz.createRawArray())
 				.postProcess(Clz::finish)

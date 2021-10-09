@@ -1,6 +1,8 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 
+import java.util.Map;
+
 /**
  * Unknown clazz. Crashes if we are trying to serialize this. Mostly a placeholder until the type is known.
  */
@@ -37,5 +39,10 @@ public class Undefined implements Clz {
 	@Override
 	public Clz resolve(Clazz context) {
 		return this;
+	}
+
+	@Override
+	public Clz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
+		return other;
 	}
 }

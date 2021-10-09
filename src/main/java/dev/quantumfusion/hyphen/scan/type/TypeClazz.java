@@ -3,10 +3,9 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Comes from a ParameterizedClazz. This holds the bounds and the actual.
@@ -16,7 +15,7 @@ public class TypeClazz implements Clz {
 	private final Clz actual;
 	private Clz @Nullable[] bounds;
 	private final Type[] rawBounds;
-	private final Clazz context;
+	private Clazz context;
 
 	protected TypeClazz(String name, Clz actual, Type[] rawBounds, Clazz context) {
 		this.name = name;
@@ -30,7 +29,12 @@ public class TypeClazz implements Clz {
 		return new TypeClazz(typeVariable.getName(), Clazzifier.UNDEFINED, typeVariable.getBounds(), null);
 	}
 
-	void resolveBounds(TypeVariable<?> typeVariable, Clazz context){
+	@Override
+	public void finish(AnnotatedType type, Clazz context) {
+		if(type != null && !(type instanceof AnnotatedTypeVariable parameterizedType)) throw new IllegalArgumentException("" + type.getClass());
+
+		this.context = context;
+
 		this.bounds = new Clz[this.rawBounds.length];
 		for (int i = 0; i < this.rawBounds.length; i++) {
 			Type bound = this.rawBounds[i];
@@ -58,7 +62,8 @@ public class TypeClazz implements Clz {
 				|| o instanceof TypeClazz that
 				&& this.name.equals(that.name)
 				&& this.actual.equals(that.actual)
-				&& Arrays.equals(this.bounds, that.bounds);
+				&& Arrays.equals(this.bounds, that.bounds)
+				&& this.context.clazz.equals(that.context.clazz);
 
 	}
 
@@ -67,6 +72,7 @@ public class TypeClazz implements Clz {
 		int result = this.name.hashCode();
 		result = 31 * result + this.actual.hashCode();
 		result = 31 * result + Arrays.hashCode(this.bounds);
+		result = 31 * result + this.context.clazz.hashCode();
 		return result;
 	}
 
@@ -76,7 +82,7 @@ public class TypeClazz implements Clz {
 				this.name,
 				actual,
 				this.rawBounds,
-				null);
+				this.context);
 	}
 
 	public TypeClazz resolveFUCKActual(Clazz source) {
@@ -88,7 +94,7 @@ public class TypeClazz implements Clz {
 				this.name,
 				defined,
 				this.rawBounds,
-				null);
+				this.context);
 	}
 
 
@@ -129,5 +135,10 @@ public class TypeClazz implements Clz {
 		}*/
 
 		// return this;
+	}
+
+	@Override
+	public TypeClazz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
+		return null;
 	}
 }

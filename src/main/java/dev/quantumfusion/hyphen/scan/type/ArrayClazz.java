@@ -1,9 +1,11 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.thr.ScanException;
 
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
+import java.util.Map;
 
 /**
  * An ArrayClazz is anything that is an array. The component holds what the array's elements are.
@@ -28,6 +30,24 @@ public final class ArrayClazz implements Clz {
 		this.component = Clazzifier.createAnnotatedType(
 				annotatedArrayType.getAnnotatedGenericComponentType(),
 				source);
+	}
+
+	@Override
+	public ArrayClazz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
+		// TODO: do we need a direction here?
+
+		if(this.equals(other)) return this;
+		if(other instanceof ArrayClazz otherClazz){
+			var merged = this.component.merge(otherClazz.component, types);
+			if(merged.equals(otherClazz.component))
+				return otherClazz; // no need to allocate a new clazz
+			return new ArrayClazz(merged);
+		}
+
+		// validate if other is the same as us, or extends us
+
+
+		throw new ScanException("Invalid type merge");
 	}
 
 	@Override
