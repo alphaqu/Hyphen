@@ -50,7 +50,6 @@ public class Clazzifier {
 
 	public static Clazz createClass(Type bound, Clazz context) {
 		if (bound == null) return null;
-		final Color black = Color.BLACK;
 		return (Clazz) create(bound, context);
 	}
 
