@@ -36,11 +36,11 @@ public class Clazzifier {
 	}
 
 
-/**
+	/**
 	 * This creates a {@link Clazz} from an AnnotatedType.<br> This method is cached and the actual implementations is in the {@link Clazzifier#createFromType}
 	 *
-	 * @param type   An {@link AnnotatedType} that you want to create a {@link Clazz} from
-	 * @param parent The source of the AnnotatedType. Used for mapping Class Parameters.
+	 * @param annotatedType   An {@link AnnotatedType} that you want to create a {@link Clazz} from
+	 * @param source The source of the AnnotatedType. Used for mapping Class Parameters.
 	 * @return The Clazz
 	 */
 	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
@@ -50,6 +50,7 @@ public class Clazzifier {
 
 	public static Clazz createClass(Type bound, Clazz context) {
 		if (bound == null) return null;
+		final Color black = Color.BLACK;
 		return (Clazz) create(bound, context);
 	}
 
@@ -61,10 +62,10 @@ public class Clazzifier {
 		// if (type.getType() instanceof Class<?> clazz)
 		// 	return CacheUtil.cache(CLASS_CACHE, clazz, (c) -> createFromType(type, parent));
 		// else
-			return createFromType(type, parent);
+		return createFromType(type, parent);
 	}
 
-	private static Clz createFromType(AnnotatedType annotated, Clazz parent) {
+	private static Clz createFromType(final AnnotatedType annotated, Clazz parent) {
 		// System.out.println(annotated);
 		// System.out.println(parent);
 		// System.out.println();
@@ -86,6 +87,7 @@ public class Clazzifier {
 			e.parents.add(parent);
 			throw e;
 		}
+		System.out.println("Hello There \n");
 		throw new UnsupportedOperationException(type.getClass().getSimpleName() + " is unsupported");
 	}
 

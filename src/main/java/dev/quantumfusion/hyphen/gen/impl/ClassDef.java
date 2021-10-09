@@ -1,54 +1,43 @@
 package dev.quantumfusion.hyphen.gen.impl;
 
-import dev.quantumfusion.hyphen.gen.CodegenHandler;
-import dev.quantumfusion.hyphen.gen.MethodHandler;
-import dev.quantumfusion.hyphen.gen.MethodInfo;
-import dev.quantumfusion.hyphen.gen.SerializerMethodDef;
+import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.gen.*;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.ReflectionUtil;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClassDef extends SerializerMethodDef {
 	public final Clazz clazz;
-	public final Field[] classFields;
+	public final Map<Field, SerializerDef> fields;
 
-	public ClassDef(CodegenHandler handler, Clazz clazz, Field[] classFields) {
-		super(handler);
+	public ClassDef(SerializerHandler sh, Clazz clazz) {
+		super(sh, clazz);
 		this.clazz = clazz;
-		this.classFields = classFields;
-	}
+		this.fields = new HashMap<>();
 
-	public static ClassDef create(CodegenHandler handler, Clazz clazz) {
-		final Field[] classFields = ReflectionUtil.getClassFields(clazz);
-		for (Field classField : classFields) {
-
+		// create fields
+		for (Field classField : ReflectionUtil.getClassFields(clazz)) {
+			this.fields.put(classField, sh.acquireDef(Clazzifier.create(classField.getAnnotatedType(), clazz)));
 		}
-		return null;
-	}
-
-	@Override
-	public void writeGetMethod(MethodHandler mh) {
-
-	}
-
-	@Override
-	public void writePutMethod(MethodHandler mh) {
-
-	}
-
-	@Override
-	public void writeMeasureMethod(MethodHandler mh) {
 
 	}
 
 	@Override
 	public Class<?> getType() {
-		return null;
+		return clazz.pullClass();
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
+
+	}
+
+	@Override
+	public void writeGetMethod(MethodHandler mh) {
 
 	}
 
@@ -58,23 +47,17 @@ public class ClassDef extends SerializerMethodDef {
 	}
 
 	@Override
+	public void writePutMethod(MethodHandler mh) {
+
+	}
+
+	@Override
 	public void writeMeasure(MethodHandler mh) {
 
 	}
 
 	@Override
-	public MethodInfo getMethodInfo() {
-		return new MethodInfo("ClassG", Object.class);
-	}
+	public void writeMeasureMethod(MethodHandler mh) {
 
-
-	@Override
-	public MethodInfo putMethodInfo() {
-		return new MethodInfo("ClassP", Object.class);
-	}
-
-	@Override
-	public MethodInfo measureMethodInfo() {
-		return new MethodInfo("ClassM", Object.class);
 	}
 }

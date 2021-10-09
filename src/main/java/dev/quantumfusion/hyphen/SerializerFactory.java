@@ -62,7 +62,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @return Factory.
 	 */
 	public static <IO extends IOInterface, D> SerializerFactory<IO, D> create(Class<? extends IOInterface> ioClass, Class<D> dataClass, String serializerName) {
-		return new SerializerFactory<IO, D>(new SerializerHandler(ioClass, dataClass, serializerName));
+		return new SerializerFactory<IO, D>(new SerializerHandler(ioClass, dataClass, serializerName, false));
 	}
 
 	// ========================================== DEF ========================================== //

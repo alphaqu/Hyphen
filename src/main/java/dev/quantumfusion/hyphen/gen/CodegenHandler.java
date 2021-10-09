@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.gen;
 
+import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.io.UnsafeIO;
 import org.objectweb.asm.ClassWriter;
 
 import java.util.ArrayList;
@@ -14,11 +16,13 @@ import static org.objectweb.asm.Opcodes.*;
 public class CodegenHandler extends ClassWriter {
 	private final Map<MethodInfo, AtomicInteger> methodDeduplication = new HashMap<>();
 	private final List<SerializerMethodDef> methods;
-	private final boolean debug;
+	public final boolean debug;
 	public final String className;
+	public final Class<? extends IOInterface> ioClass;
 
-	public CodegenHandler(String className, boolean debug, List<SerializerMethodDef> methods) {
+	public CodegenHandler(String className, boolean debug, Class<? extends IOInterface> ioClass, List<SerializerMethodDef> methods) {
 		super(null, ClassWriter.COMPUTE_FRAMES);
+		this.ioClass = ioClass;
 		this.visit(V16, ACC_FINAL | ACC_PUBLIC, className, null, null, null);
 		this.methods = methods;
 		this.debug = debug;
@@ -45,7 +49,7 @@ public class CodegenHandler extends ClassWriter {
 	}
 
 	public static void main(String[] args) {
-		final CodegenHandler f = new CodegenHandler("f", false, new ArrayList<>());
+		final CodegenHandler f = new CodegenHandler("f", false, UnsafeIO.class, new ArrayList<>());
 		try (var mh = new MethodHandler(f, "thing", Object.class)) {
 
 		}
