@@ -3,7 +3,7 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.CacheUtil;
-import dev.quantumfusion.hyphen.util.MapUtil;
+import dev.quantumfusion.hyphen.util.java.MapUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.reflect.AnnotatedType;

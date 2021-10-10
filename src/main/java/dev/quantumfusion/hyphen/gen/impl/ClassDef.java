@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.gen.*;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
+import dev.quantumfusion.hyphen.util.java.ReflectionUtil;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

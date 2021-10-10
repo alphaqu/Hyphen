@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.util.MapUtil;
+import dev.quantumfusion.hyphen.util.java.MapUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;

@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.util;
+package dev.quantumfusion.hyphen.util.java;
 
 import dev.quantumfusion.hyphen.scan.ClzCreator;
 

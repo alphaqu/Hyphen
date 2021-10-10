@@ -3,6 +3,8 @@ package dev.quantumfusion.hyphen.scan;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.scan.type.*;
 import dev.quantumfusion.hyphen.util.*;
+import dev.quantumfusion.hyphen.util.java.ArrayUtil;
+import dev.quantumfusion.hyphen.util.java.ReflectionUtil;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;

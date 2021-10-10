@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.util.java.ReflectionUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;

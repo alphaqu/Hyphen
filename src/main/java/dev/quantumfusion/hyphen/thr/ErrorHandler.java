@@ -2,15 +2,13 @@ package dev.quantumfusion.hyphen.thr;
 
 import dev.quantumfusion.hyphen.scan.type.Clz;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
-import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.java.ArrayUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.Scanner;
 
 public class ErrorHandler {
 	private static final char T = '\t';

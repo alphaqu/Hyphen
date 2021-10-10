@@ -2,9 +2,9 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
-import dev.quantumfusion.hyphen.util.ArrayUtil;
-import dev.quantumfusion.hyphen.util.MapUtil;
-import dev.quantumfusion.hyphen.util.ReflectionUtil;
+import dev.quantumfusion.hyphen.util.java.ArrayUtil;
+import dev.quantumfusion.hyphen.util.java.MapUtil;
+import dev.quantumfusion.hyphen.util.java.ReflectionUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -13,8 +13,6 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A Type that takes part in the class hierarchy.
