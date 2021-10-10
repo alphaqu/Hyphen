@@ -37,19 +37,6 @@ public class TypeClazz implements Clz {
 		this.context = context;
 	}
 
-	@Override
-	public void finish(AnnotatedType type, Clazz context) {
-		// if(type != null && !(type instanceof AnnotatedTypeVariable parameterizedType)) throw new IllegalArgumentException("" + type.getClass());
-
-		this.context = context;
-
-		this.bounds = new Clz[this.rawBounds.length];
-		for (int i = 0; i < this.rawBounds.length; i++) {
-			Type bound = this.rawBounds[i];
-			this.bounds[i] = Clazzifier.create(bound, context);
-		}
-	}
-
 	public String getName() {
 		return this.name;
 	}
@@ -112,45 +99,19 @@ public class TypeClazz implements Clz {
 		if (context.equals(this.context)) return this;
 		var defined = context.resolveType(this.name);
 
-		if(defined instanceof TypeClazz typeClazz)
+		if (defined instanceof TypeClazz typeClazz)
 			return typeClazz;
 
-		// if (defined != this.actual) {
-		// a change
 		return new TypeClazz(
 				this.name,
 				defined,
 				this.rawBounds,
 				context);
-		// }
-/*
-		for (int i = 0; i < this.bounds.length; i++) {
-			Clz bound = this.bounds[i];
-			Clz resolvedBound = bound.resolve(source);
-			if (bound != resolvedBound) {
-				// a change
-
-				Clz[] resolvedBounds = this.bounds.clone();
-				resolvedBounds[i] = resolvedBound;
-
-				for (i++; i < this.bounds.length; i++) {
-					resolvedBounds[i] = resolvedBounds[i].resolve(source);
-				}
-
-				return new TypeClazz(
-						this.name,
-						this.actual,
-						resolvedBounds,
-						context);
-			}
-		}*/
-
-		// return this;
 	}
 
 	@Override
 	public TypeClazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		if(!types.getOrDefault(this, this).equals(this))
+		if (!types.getOrDefault(this, this).equals(this))
 			return types.getOrDefault(this, this).merge(other, types, mergeDirection);
 
 		if (other instanceof TypeClazz otherClazz) {
@@ -175,6 +136,17 @@ public class TypeClazz implements Clz {
 			types.put(this, typeClazz);
 			return typeClazz;
 		}
+	}
 
+	public Clz[] getBounds() {
+		if(this.bounds != null) return bounds;
+
+		this.bounds = new Clz[this.rawBounds.length];
+		for (int i = 0; i < this.rawBounds.length; i++) {
+			Type bound = this.rawBounds[i];
+			this.bounds[i] = Clazzifier.create(bound, context);
+		}
+
+		return this.bounds;
 	}
 }
