@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.MapUtil;
 import dev.quantumfusion.hyphen.util.ReflectionUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +13,8 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A Type that takes part in the class hierarchy.
@@ -58,28 +61,10 @@ public class Clazz implements Clz {
 		return createRawClazz(ScanUtil.getClassFrom(type.getType()));
 	}
 
-	public void finish(AnnotatedType type, Clazz source) {
-		var clazz = ScanUtil.getClassFrom(type);
-		this.superClass = Clazzifier.createClass(clazz.getGenericSuperclass(), this);
-		this.superInterfaces = ArrayUtil.map(clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
-
-		// TODO: these shouldn't need to be cached, cause we are cached
-		var classFields = ReflectionUtil.getClassFields(this.clazz);
-		LinkedHashMap<String, AnnType> fields = new LinkedHashMap<>(classFields.length);
-
-		for (Field classField : classFields) {
-			if ((classField.getModifiers() & Opcodes.ACC_STATIC) != 0) continue;
-			fields.put(classField.getName(), Clazzifier.createAnnotatedType(classField.getAnnotatedType(), this));
-		}
-
-		this.fields = fields;
-	}
-
 	@Override
 	public Clazz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		// validate if other is the same as us, or extends us
-		if (this.equals(other))
-			return this;
+		if (this.equals(other)) return this;
 
 		if (!(other instanceof Clazz otherClazz)) {
 			Clz merge = other.map(this, types, mergeDirection.swap());
@@ -96,6 +81,23 @@ public class Clazz implements Clz {
 	@Override
 	public Clazz resolve(Clazz context) {
 		return this;
+	}
+
+	public void finish(AnnotatedType type, Clazz source) {
+		var clazz = ScanUtil.getClassFrom(type);
+		this.superClass = Clazzifier.createClass(clazz.getGenericSuperclass(), this);
+		this.superInterfaces = ArrayUtil.map(clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
+
+		// TODO: these shouldn't need to be cached, cause we are cached
+		var classFields = ReflectionUtil.getClassFields(this.clazz);
+		LinkedHashMap<String, AnnType> fields = new LinkedHashMap<>(classFields.length);
+
+		for (Field classField : classFields) {
+			if ((classField.getModifiers() & Opcodes.ACC_STATIC) != 0) continue;
+			fields.put(classField.getName(), Clazzifier.createAnnotatedType(classField.getAnnotatedType(), this));
+		}
+
+		this.fields = fields;
 	}
 
 	public Class<?> pullClass() {
@@ -151,12 +153,11 @@ public class Clazz implements Clz {
 	private LinkedHashMap<String, ? extends AnnType> getFieldMap() {
 		if (this.fields != null) return this.fields;
 		assert this.template != null;
-		var templateFieldMap = this.template.getFieldMap();
-		var fieldMap = new LinkedHashMap<String, AnnType>(templateFieldMap.size());
-
-		templateFieldMap.forEach((name, ann) -> fieldMap.put(name, ann.resolve(this)));
-
-		return this.fields = fieldMap;
+		return this.fields = (LinkedHashMap<String, AnnType>)
+				MapUtil.mapValues(
+						this.template.getFieldMap(),
+						LinkedHashMap::new,
+						annType -> annType.resolve(this));
 	}
 
 	public AnnType[] getFields() {

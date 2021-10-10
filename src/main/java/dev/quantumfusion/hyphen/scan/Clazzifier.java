@@ -42,8 +42,8 @@ public class Clazzifier {
 	/**
 	 * This creates a {@link Clazz} from an AnnotatedType.<br> This method is cached and the actual implementations is in the {@link Clazzifier#createFromType}
 	 *
-	 * @param annotatedType   An {@link AnnotatedType} that you want to create a {@link Clazz} from
-	 * @param source The source of the AnnotatedType. Used for mapping Class Parameters.
+	 * @param annotatedType An {@link AnnotatedType} that you want to create a {@link Clazz} from
+	 * @param source        The source of the AnnotatedType. Used for mapping Class Parameters.
 	 * @return The Clazz
 	 */
 	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
@@ -69,23 +69,21 @@ public class Clazzifier {
 
 	private static Clz createFromType(final AnnotatedType annotated, Clazz parent) {
 		Clz clz = createRawFromType(annotated, parent).instantiate(annotated);
-		if (parent == null)
-			return clz;
+		if (parent == null) return clz;
 		return clz.resolve(parent);
 	}
 
 	private static Clz createRawFromType(AnnotatedType annotated, Clazz parent) {
 		final Type type = annotated.getType();
-		if(type == null) return UNDEFINED;
+		if (type == null) return UNDEFINED;
 		try {
 			for (var entry : FORWARD_CLAZZERS) {
-				if (entry.canProcess(type.getClass())) {
+				if (entry.canProcess(type.getClass()))
 					return entry.apply(annotated, parent);
-				}
+
 			}
 		} catch (ScanException e) {
-			e.parents.add(parent);
-			throw e;
+			throw e.addParent(parent);
 		}
 		System.out.println("Hello There \n");
 		throw new UnsupportedOperationException(type.getClass().getSimpleName() + " is unsupported");
@@ -99,9 +97,8 @@ public class Clazzifier {
 	 */
 	public static AnnType[] scanFields(Clazz clazz) {
 		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, (c) -> {
-			final AnnType[] fields = clazz.getFields();
-			final AnnotatedType aSuper = ReflectionUtil.getClassSuper(c);
-			if (aSuper != null)
+			var fields = clazz.getFields();
+			if (ReflectionUtil.getClassSuper(c) != null)
 				return ArrayUtil.combine(scanFields(c.getSuper()), fields, AnnType[]::new);
 
 			return fields;
