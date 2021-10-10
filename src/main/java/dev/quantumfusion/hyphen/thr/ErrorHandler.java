@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
+import java.util.Scanner;
 
 public class ErrorHandler {
 	private static final char T = '\t';
@@ -88,36 +90,22 @@ public class ErrorHandler {
 	}
 
 	private String getErrorTag() {
-		InputStream inputStream = null;
-		try {
-			URL url = new URL("https://quantumfusion.dev/error.txt");
-			final URLConnection urlConnection = url.openConnection();
-			inputStream = urlConnection.getInputStream();
-			final byte[] bytes = inputStream.readAllBytes();
-			final String[] split = new String(bytes).split("\n");
+		try (InputStream in = new URL("https://quantumfusion.dev/error.txt").openStream()) {
+			var split = new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n");
+			var random = new Random();
 
-			final Random random = new Random();
-
-			for (int length = split.length; length > 0; length--) {
-				int i = random.nextInt(length);
-				final String s = split[i];
-				final String trim = s.trim();
+			for (int l = split.length, i = random.nextInt(l); l > 0; l--) {
+				var trim = split[i].trim();
 				if (trim.isEmpty() || trim.startsWith("//")) {
-					split[i] = split[length - 1];
+					split[i] = split[l - 1];
 					continue;
 				}
-				return s;
+				return split[i];
 			}
 			return "could not find things";
 		} catch (IOException ignored) {
-		} finally {
-			if(inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException ignored) {
-				}
-			}
 		}
+
 		return "Haha funny offline cring";
 	}
 }
