@@ -13,14 +13,11 @@ import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static dev.quantumfusion.hyphen.scan.type.Undefined.UNDEFINED;
-
 /**
  * A Type that takes part in the class hierarchy.
  * Either a normal class or a parameterized class, but no arrays.
  */
 public class Clazz implements Clz {
-	static public int allocations = 0;
 	// The class "template"
 	private final @Nullable Clazz template;
 	// The raw class this represents
@@ -34,8 +31,6 @@ public class Clazz implements Clz {
 	Clazz(Clazz template, Class<?> clazz) {
 		this.template = template;
 		this.clazz = clazz;
-
-		allocations++;
 	}
 
 	/**
@@ -45,9 +40,8 @@ public class Clazz implements Clz {
 	 * @return either a Clazz or an ArrayClazz
 	 */
 	public static Clz createRawClazz(Class<?> clazz) {
-		if (clazz.isArray()) {
-			return ArrayClazz.createRawArray();
-		}
+		if (clazz.isArray()) return ArrayClazz.createRawArray();
+
 		if (clazz.getTypeParameters().length > 0)
 			return ParameterizedClazz.createRawParameterizedClass(clazz);
 
@@ -58,7 +52,7 @@ public class Clazz implements Clz {
 	 * Create a class for the raw class.
 	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
 	 *
-	 * @return either a Clazz or an ArrayClazz
+	 * @return either a Clazz, an ArrayClazz or a ParameterizedClazz
 	 */
 	public static Clz createRawClazz(AnnotatedType type) {
 		return createRawClazz(ScanUtil.getClassFrom(type.getType()));
@@ -82,25 +76,21 @@ public class Clazz implements Clz {
 	}
 
 	@Override
-	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		if (other == UNDEFINED)
-			return this;
-
+	public Clazz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		// validate if other is the same as us, or extends us
 		if (this.equals(other))
 			return this;
 
 		if (!(other instanceof Clazz otherClazz)) {
-			Clz merge = other.merge(this, types, mergeDirection.swap());
-			if(merge instanceof Clazz mergeClazz) return mergeClazz;
+			Clz merge = other.map(this, types, mergeDirection.swap());
+			if (merge instanceof Clazz mergeClazz) return mergeClazz;
 			else return this;
 		}
 
 		if (!mergeDirection.isAssignable(this.clazz, otherClazz.clazz))
 			throw new ScanException("Invalid type merge " + other);
 
-		return otherClazz; //this.mergeRecursive(otherClazz, types);
-
+		return otherClazz;
 	}
 
 	@Override
@@ -115,10 +105,6 @@ public class Clazz implements Clz {
 	public Class<?> pullBytecodeClass() {
 		return this.clazz;
 	}
-
-	/*public Clazz getSub(Class<?> clazz) {
-		return Clazzifier.create(AnnoUtil.wrap(clazz), this);
-	}*/
 
 	/**
 	 * Get the Clz of a given type parameter
@@ -157,7 +143,9 @@ public class Clazz implements Clz {
 		Clazz superClass = this.superClass;
 		if (superClass != null || this.template == null) return superClass;
 		Clazz aSuper = this.template.getSuper();
-		return this.superClass = aSuper == null ? null : aSuper.instantiate(this.clazz.getAnnotatedSuperclass()).resolve(this);
+		return this.superClass = aSuper == null
+				? null
+				: aSuper.instantiate(this.clazz.getAnnotatedSuperclass()).resolve(this);
 	}
 
 	private LinkedHashMap<String, ? extends AnnType> getFieldMap() {

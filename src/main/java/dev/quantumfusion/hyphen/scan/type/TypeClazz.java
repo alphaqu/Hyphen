@@ -110,27 +110,32 @@ public class TypeClazz implements Clz {
 	}
 
 	@Override
-	public TypeClazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+	public void finish(AnnotatedType type, Clazz source) {
+		this.context = source;
+	}
+
+	@Override
+	public TypeClazz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		if (!types.getOrDefault(this, this).equals(this))
-			return types.getOrDefault(this, this).merge(other, types, mergeDirection);
+			return types.getOrDefault(this, this).map(other, types, mergeDirection);
 
 		if (other instanceof TypeClazz otherClazz) {
 			TypeClazz otherFix = types.getOrDefault(otherClazz, otherClazz);
 
 			if (otherFix.equals(otherClazz)) {
 
-				Clz mergedActual = this.actual.merge(otherFix.actual, types, mergeDirection);
+				Clz mergedActual = this.actual.map(otherFix.actual, types, mergeDirection);
 
 				// todo: this feels like it's missing shit
 				return new TypeClazz(this.name, mergedActual, this.rawBounds, null);
 
 			} else {
-				TypeClazz merge = this.merge(otherFix, types, mergeDirection);
+				TypeClazz merge = this.map(otherFix, types, mergeDirection);
 				types.put(otherClazz, merge);
 				return merge;
 			}
 		} else {
-			Clz mergedActual = this.actual.merge(other, types, mergeDirection);
+			Clz mergedActual = this.actual.map(other, types, mergeDirection);
 
 			TypeClazz typeClazz = new TypeClazz(this.name, mergedActual, this.rawBounds, null);
 			types.put(this, typeClazz);

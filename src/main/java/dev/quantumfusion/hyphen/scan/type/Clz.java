@@ -31,9 +31,9 @@ public interface Clz {
 	default void finish(AnnotatedType type, Clazz source) {
 	}
 
-	Clz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection);
+	Clz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection);
 
-	default Clz merge(Clz other){
-		return this.merge(other, new HashMap<>(), MergeDirection.LEFT);
+	default Clz map(Clz other){
+		return this.map(other, new HashMap<>(), MergeDirection.LEFT);
 	}
 }

@@ -2,38 +2,55 @@ package dev.quantumfusion.hyphen.scan;
 
 import dev.quantumfusion.hyphen.scan.poly.classes.*;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 public class TestPoly {
 	C1<C0> s;
 
-	public static void main(String[] args) throws NoSuchFieldException {
+	@Test
+	void testC1C0() throws NoSuchFieldException {
+		check("s", Map.of(
+				C1.class, "C1<C1:A = AnnType{C0}>",
+				C2.class, "C2<C2:B = AnnType{C0}>",
+				C3.class, "C3<C3:C = AnnType{C0},C3:D = AnnType{UNDEFINED}>",
+				C3Def.class, "C3Def<C3Def:E = AnnType{C0}>",
+				// CoWrappedC1.class,
+				// CoWrappedC1Extends.class,
+				// CoWrappedC1Super.class,
+				C3Ignore.class, "C3Ignore<C3Ignore:C = AnnType{C0},C3Ignore:D = AnnType{UNDEFINED}>",
+				C1Pair.class, "C1Pair<C1Pair:A = AnnType{C0}>",
+				RecursiveC.class, "RecursiveC<RecursiveC:T = AnnType{C0}>"
+		));
+	}
+
+	public static void check(String name, Map<Class<?>, String> subclasses) throws NoSuchFieldException {
 		System.out.println("hello there");
 
-		Clazz s = Clazzifier.createClass(TestPoly.class.getDeclaredField("s").getAnnotatedType().getType(), null);
+		Clazz s = Clazzifier.createClass(TestPoly.class.getDeclaredField(name).getAnnotatedType().getType(), null);
 
 		// scan(Clazzifier.createClass(CachingTest.Class0.class, null), true);
 
-		var subclasses = new Class<?>[]{
-				C1.class,
-				C2.class,
-				C3.class,
-				C3Def.class,
-				CoWrappedC1.class,
-				CoWrappedC1Extends.class,
-				CoWrappedC1Super.class,
-				C3Ignore.class,
-				C1Pair.class,
-				RecursiveC.class
-		};
+		for (var entry : subclasses.entrySet()) {
+			var subclass = entry.getKey();
+			var expected = entry.getValue();
 
-		for (Class<?> subclass : subclasses) {
 			Clazz subClazz = Clazzifier.createClass(subclass, null);
-			System.out.println(subClazz);
-			System.out.println(subClazz.getSuper());
-			Clazz merge = (Clazz) s.merge(subClazz);
-			System.out.println(merge);
-			System.out.println(merge.getSuper());
+			printAndSupers(subClazz);
+			System.out.println("to");
+			Clazz merge = (Clazz) s.map(subClazz);
+			printAndSupers(merge);
+			Assertions.assertEquals(expected, merge.toString());
 			System.out.println();
 		}
+	}
+
+	private static void printAndSupers(Clazz subClazz) {
+		System.out.println(subClazz);
+		Clazz aSuper = subClazz.getSuper();
+		if(aSuper != null)
+			printAndSupers(aSuper);
 	}
 }

@@ -44,14 +44,13 @@ public class TypeFollowing {
 		System.out.println("on");
 
 		CacheUtil.CACHE = true;
-		Clazz.allocations = 0;
 		CacheUtil.misses = 0;
 		CacheUtil.hits = 0;
 		final long l = System.nanoTime();
 		for (int i = 0; i < iterations; i++) {
 			scan(Clazzifier.createClass(CachingTest.Class0.class, null), false);
 		}
-		int onAllocations = Clazz.allocations;
+		int onAllocations = 0;
 		int onMisses = CacheUtil.misses;
 		int onHits = CacheUtil.hits;
 		on += (System.nanoTime() - l) / 1_000_000f;

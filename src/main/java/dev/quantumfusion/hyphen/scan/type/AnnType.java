@@ -19,10 +19,10 @@ public record AnnType(
 	}
 
 	@Override
-	public AnnType merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+	public AnnType map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		if (other instanceof AnnType otherAnnType) {
 			// idk what to do with the annotations
-			Clz merged = this.clazz.merge(otherAnnType.clazz, types, mergeDirection);
+			Clz merged = this.clazz.map(otherAnnType.clazz, types, mergeDirection);
 			if (otherAnnType.equals(merged) && this.annotations.isEmpty() && this.globalAnnotations.isEmpty())
 				return otherAnnType;
 
@@ -33,7 +33,7 @@ public record AnnType(
 
 			return new AnnType(merged, annotations, globalAnnotations);
 		} else {
-			Clz merged = this.clazz.merge(other, types, mergeDirection);
+			Clz merged = this.clazz.map(other, types, mergeDirection);
 			if (this.clazz.equals(merged))
 				return this;
 
@@ -49,7 +49,7 @@ public record AnnType(
 	@Override
 	public String toString() {
 		return "AnnType{" +
-				"clazz=" + this.clazz +
+				this.clazz +
 				(this.annotations.isEmpty() ? "" : ", annotations=" + this.annotations) +
 				(this.globalAnnotations.isEmpty() ? "" : ", globalAnnotations=" + this.globalAnnotations) +
 				'}';

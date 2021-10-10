@@ -42,7 +42,7 @@ public class Undefined implements Clz {
 	}
 
 	@Override
-	public Clz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+	public Clz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		return other;
 	}
 }

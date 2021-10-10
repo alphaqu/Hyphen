@@ -1,9 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.function.Function;
@@ -68,5 +66,18 @@ public class ScanUtil {
 
 	public static Class<?> getClassFrom(AnnotatedType type) {
 		return getClassFrom(type.getType());
+	}
+
+	public static AnnotatedType[] getAnnotatedTypesArguments(AnnotatedType type) {
+		AnnotatedType[] typeParameters;
+		if (type instanceof AnnotatedParameterizedType apt) {
+			typeParameters = apt.getAnnotatedActualTypeArguments();
+		} else if (type.getType() instanceof ParameterizedType pt) { // support wrapped annotation
+			typeParameters = ArrayUtil.map(pt.getActualTypeArguments(), AnnotatedType[]::new, AnnoUtil::wrap);
+		} else if (type.getType() instanceof Class<?> pt) { // raw
+			typeParameters = new AnnotatedType[pt.getTypeParameters().length];
+			Arrays.fill(typeParameters, AnnoUtil.WRAPPED_NULL);
+		} else throw new IllegalArgumentException("" + type.getClass());
+		return typeParameters;
 	}
 }

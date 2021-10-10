@@ -2,15 +2,14 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
-import dev.quantumfusion.hyphen.util.AnnoUtil;
-import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
-import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.StringJoiner;
 
 import static dev.quantumfusion.hyphen.scan.Clazzifier.UNDEFINED;
 
@@ -50,15 +49,7 @@ public class ParameterizedClazz extends Clazz {
 
 	@Override
 	public ParameterizedClazz instantiate(AnnotatedType type) {
-		AnnotatedType[] typeParameters;
-		if (type instanceof AnnotatedParameterizedType apt) {
-			typeParameters = apt.getAnnotatedActualTypeArguments();
-		} else if (type.getType() instanceof ParameterizedType pt) { // support wrapped annotation
-			typeParameters = ArrayUtil.map(pt.getActualTypeArguments(), AnnotatedType[]::new, AnnoUtil::wrap);
-		} else if (type.getType() instanceof Class<?> pt) { // raw
-			typeParameters = new AnnotatedType[pt.getTypeParameters().length];
-			Arrays.fill(typeParameters, AnnoUtil.WRAPPED_NULL);
-		} else throw new IllegalArgumentException("" + type.getClass());
+		AnnotatedType[] typeParameters = ScanUtil.getAnnotatedTypesArguments(type);
 
 		int i = 0;
 		Map<String, TypeClazz> newTypes = new LinkedHashMap<>(typeParameters.length);
@@ -77,23 +68,19 @@ public class ParameterizedClazz extends Clazz {
 
 	@Override
 	public ParameterizedClazz resolve(Clazz context) {
-		return CacheUtil.cache(this.RESOLVE_CACHE, context, (cont) -> {
-			boolean mutated = false;
-			Map<String, TypeClazz> newTypes = new LinkedHashMap<>(this.types.size());
-
-			// if (!mutated) return this;
-
-			ParameterizedClazz parameterizedClazz = new ParameterizedClazz(this, this.clazz, newTypes);
+		return CacheUtil.cache(this.RESOLVE_CACHE, context, (ctx) -> {
+			var newTypes = new LinkedHashMap<String, TypeClazz>(this.types.size());
+			var mutated = false;
 
 			for (var entry : this.types.entrySet()) {
-				TypeClazz res;
-				TypeClazz res1 = entry.getValue().resolveFUCKActual(cont);
-				res1.finish(null, this);
-				newTypes.put(entry.getKey(), res = res1);
-				mutated |= res != entry.getValue();
+				var value = entry.getValue();
+				var res = value.resolveFUCKActual(ctx);
+				newTypes.put(entry.getKey(), res);
+				mutated |= res != value;
 			}
 
-			return parameterizedClazz;
+			if (!mutated) return this;
+			return new ParameterizedClazz(this, this.clazz, newTypes);
 		});
 	}
 
@@ -128,44 +115,36 @@ public class ParameterizedClazz extends Clazz {
 	}
 
 	@Override
-	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		// TODO: do we need a direction here?
-
-
+	public Clazz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mapDirection) {
 		// validate if other is the same as us, or extends us
-		if (this.equals(other))
-			return this;
+		if (this.equals(other)) return this;
 
 		if (!(other instanceof ParameterizedClazz otherClazz)) {
-			Clz merge = other.merge(other, types, mergeDirection.swap());
-			if(merge instanceof Clazz mergeClazz) return mergeClazz;
+			Clz merge = other.map(other, types, mapDirection.swap());
+			if (merge instanceof Clazz mergeClazz) return mergeClazz;
 			else return this;
-		} else if (!mergeDirection.isAssignable(this.clazz, otherClazz.clazz))
+		} else if (!mapDirection.isAssignable(this.clazz, otherClazz.clazz))
 			throw new ScanException("Invalid type merge");
 
 		if (otherClazz.clazz.equals(this.clazz))
-			return this.mergeSingle(otherClazz, types, mergeDirection);
+			return this.mapSameClass(otherClazz, types, mapDirection);
 
-		var baseClazz = mergeDirection.getBase(this, otherClazz);
-		var subClazz = mergeDirection.getSub(this, otherClazz);
+		var baseClazz = mapDirection.getBase(this, otherClazz);
+		var subClazz = mapDirection.getSub(this, otherClazz);
 
 		Clazz aSuper = baseClazz.getSuper(subClazz);
 
-		baseClazz.merge(aSuper, types, mergeDirection);
+		baseClazz.map(aSuper, types, mapDirection);
 
-		var newTypes = new LinkedHashMap<String, TypeClazz>();
-
-
-		ParameterizedClazz parameterizedClazz = new ParameterizedClazz(subClazz, subClazz.clazz, newTypes);
 
 		// get all types
+		var newTypes = new LinkedHashMap<String, TypeClazz>();
 		subClazz.types.forEach((s, t) -> {
 			TypeClazz type = types.getOrDefault(t, t);
-			type.finish(null, parameterizedClazz);
 			newTypes.put(s, type);
 		});
 
-		return parameterizedClazz;
+		return new ParameterizedClazz(subClazz, subClazz.clazz, newTypes);
 	}
 
 	private Clazz getSuper(Clazz otherClazz) {
@@ -180,35 +159,19 @@ public class ParameterizedClazz extends Clazz {
 		return this.getSuper(aSuper);
 	}
 
-	private ParameterizedClazz mergeSingle(Clazz otherClazz, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		if (!(otherClazz instanceof ParameterizedClazz parameterizedClazz))
-			throw new IllegalArgumentException("" + otherClazz.getClass());
-
+	private ParameterizedClazz mapSameClass(ParameterizedClazz otherClazz, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+		assert this.clazz.equals(otherClazz.clazz);
 
 		var newTypes = new LinkedHashMap<String, TypeClazz>();
 
-		ParameterizedClazz parameterizedClazz1 = new ParameterizedClazz(this, this.clazz, newTypes);
-
 		for (String s : this.types.keySet()) {
 			TypeClazz ourType = this.types.get(s);
-			TypeClazz otherType = parameterizedClazz.types.get(s);
+			TypeClazz otherType = otherClazz.types.get(s);
 
-			TypeClazz merge = ourType.merge(otherType, types, mergeDirection);
-			merge.finish(null, parameterizedClazz1);
+			TypeClazz merge = ourType.map(otherType, types, mergeDirection);
 			newTypes.put(s, merge);
 		}
 
-		return parameterizedClazz1;
-	}
-
-	protected ParameterizedClazz mergeSubclass(Clazz otherClazz, Map<TypeClazz, TypeClazz> types) {
-		if (!(otherClazz instanceof ParameterizedClazz parameterizedClazz)) {
-			// merging with a class like C1<T> <-> IntC1
-			// TODO: validate types
-		} else {
-			// TODO?
-		}
-
-		return null;
+		return new ParameterizedClazz(this, this.clazz, newTypes);
 	}
 }

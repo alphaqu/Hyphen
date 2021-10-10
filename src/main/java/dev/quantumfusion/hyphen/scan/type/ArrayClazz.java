@@ -33,12 +33,12 @@ public final class ArrayClazz implements Clz {
 	}
 
 	@Override
-	public ArrayClazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+	public ArrayClazz map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
 		// TODO: do we need a direction here?
 
 		if(this.equals(other)) return this;
 		if(other instanceof ArrayClazz otherClazz){
-			var merged = this.component.merge(otherClazz.component, types, mergeDirection);
+			var merged = this.component.map(otherClazz.component, types, mergeDirection);
 			if(merged.equals(otherClazz.component))
 				return otherClazz; // no need to allocate a new clazz
 			return new ArrayClazz(merged);
