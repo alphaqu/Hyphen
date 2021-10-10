@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.thr.ScanException;
+import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.scan.type.*;
 import dev.quantumfusion.hyphen.util.*;
 
@@ -47,7 +47,7 @@ public class Clazzifier {
 	 * @return The Clazz
 	 */
 	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
-		var clazz = create(annotatedType, null);
+		var clazz = create(annotatedType, source);
 		return new AnnType(clazz, AnnoUtil.parseAnnotations(annotatedType), ReflectionUtil.getClassAnnotations(source));
 	}
 
@@ -68,9 +68,6 @@ public class Clazzifier {
 	}
 
 	private static Clz createFromType(final AnnotatedType annotated, Clazz parent) {
-		// System.out.println(annotated);
-		// System.out.println(parent);
-		// System.out.println();
 		Clz clz = createRawFromType(annotated, parent).instantiate(annotated);
 		if (parent == null)
 			return clz;
@@ -79,6 +76,7 @@ public class Clazzifier {
 
 	private static Clz createRawFromType(AnnotatedType annotated, Clazz parent) {
 		final Type type = annotated.getType();
+		if(type == null) return UNDEFINED;
 		try {
 			for (var entry : FORWARD_CLAZZERS) {
 				if (entry.canProcess(type.getClass())) {

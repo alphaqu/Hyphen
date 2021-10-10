@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.thr;
+package dev.quantumfusion.hyphen.thr.exception;
 
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.Clz;
@@ -6,14 +6,14 @@ import dev.quantumfusion.hyphen.scan.type.Clz;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScanException extends RuntimeException {
+public class HyphenException extends RuntimeException {
 	public List<Clz> parents = new ArrayList<>();
 
-	public ScanException(String message) {
+	public HyphenException(String message) {
 		super(message);
 	}
 
-	private ScanException(Throwable cause) {
+	protected HyphenException(Throwable cause) {
 		super(cause);
 	}
 
@@ -22,16 +22,16 @@ public class ScanException extends RuntimeException {
 		return super.getMessage() + parents;
 	}
 
-	public ScanException addParent(Clz clz) {
+	public HyphenException addParent(Clz clz) {
 		this.parents.add(clz);
 		return this;
 	}
 
-	public static ScanException handle(Throwable e, Clz source) {
-		if (e instanceof ScanException scanException)
+	public static HyphenException handle(Throwable e, Clz source) {
+		if (e instanceof HyphenException scanException)
 			return scanException.addParent(source);
 
-		return new ScanException(e).addParent(source);
+		return new HyphenException(e).addParent(source);
 	}
 
 	public static void one() {
@@ -39,12 +39,12 @@ public class ScanException extends RuntimeException {
 		try {
 			two();
 		} catch (Throwable e) {
-			throw ScanException.handle(e, source);
+			throw HyphenException.handle(e, source);
 		}
 	}
 
 	public static void two() {
-		throw new ScanException("thing");
+		throw new HyphenException("thing");
 	}
 
 }

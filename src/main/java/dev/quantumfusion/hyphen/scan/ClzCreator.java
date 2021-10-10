@@ -70,7 +70,7 @@ public class ClzCreator<R extends Clz> {
 				this.clz,
 				(ann, context) -> {
 					var k = key.apply(ann);
-					if (CacheUtil.CACHE && cache.containsKey(k)) return cache.get(k);
+					if (cache.containsKey(k)) return cache.get(k);
 					final R res = this.create.apply(ann,context);
 					cache.put(k, res);
 					consumer.accept(res, ann, context);

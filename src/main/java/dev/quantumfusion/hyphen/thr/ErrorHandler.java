@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.thr;
 
 import dev.quantumfusion.hyphen.scan.type.Clz;
+import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 
 import java.io.IOException;

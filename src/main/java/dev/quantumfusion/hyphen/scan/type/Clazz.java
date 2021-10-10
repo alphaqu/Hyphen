@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
-import dev.quantumfusion.hyphen.thr.ScanException;
+import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ReflectionUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
@@ -12,6 +12,8 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static dev.quantumfusion.hyphen.scan.type.Undefined.UNDEFINED;
 
 /**
  * A Type that takes part in the class hierarchy.
@@ -46,6 +48,8 @@ public class Clazz implements Clz {
 		if (clazz.isArray()) {
 			return ArrayClazz.createRawArray();
 		}
+		if (clazz.getTypeParameters().length > 0)
+			return ParameterizedClazz.createRawParameterizedClass(clazz);
 
 		return new Clazz(null, clazz);
 	}
@@ -78,29 +82,25 @@ public class Clazz implements Clz {
 	}
 
 	@Override
-	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types) {
-		// TODO: do we need a direction here?
-
+	public Clazz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+		if (other == UNDEFINED)
+			return this;
 
 		// validate if other is the same as us, or extends us
 		if (this.equals(other))
 			return this;
 
-		if (!(other instanceof Clazz otherClazz) || !this.clazz.isAssignableFrom(otherClazz.clazz))
-			throw new ScanException("Invalid type merge");
+		if (!(other instanceof Clazz otherClazz)) {
+			Clz merge = other.merge(this, types, mergeDirection.swap());
+			if(merge instanceof Clazz mergeClazz) return mergeClazz;
+			else return this;
+		}
+
+		if (!mergeDirection.isAssignable(this.clazz, otherClazz.clazz))
+			throw new ScanException("Invalid type merge " + other);
 
 		return otherClazz; //this.mergeRecursive(otherClazz, types);
 
-	}
-
-
-
-	protected Clazz mergeSingle(Clazz otherClazz, Map<TypeClazz, TypeClazz> types) {
-		return otherClazz;
-	}
-
-	protected Clazz mergeSubclass(Clazz otherClazz, Map<TypeClazz, TypeClazz> types){
-		return otherClazz;
 	}
 
 	@Override

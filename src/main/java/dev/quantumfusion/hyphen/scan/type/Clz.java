@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import java.lang.reflect.AnnotatedType;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,5 +31,9 @@ public interface Clz {
 	default void finish(AnnotatedType type, Clazz source) {
 	}
 
-	Clz merge(Clz other, Map<TypeClazz, TypeClazz> types);
+	Clz merge(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection);
+
+	default Clz merge(Clz other){
+		return this.merge(other, new HashMap<>(), MergeDirection.LEFT);
+	}
 }

@@ -13,6 +13,7 @@ import java.util.Map;
  * Annotation Util class.
  */
 public final class AnnoUtil {
+	public static AnnotatedType WRAPPED_NULL = wrap(null);
 
 	/**
 	 * Parses annotations to a map which holds the annotation class as key and the instance as the value.

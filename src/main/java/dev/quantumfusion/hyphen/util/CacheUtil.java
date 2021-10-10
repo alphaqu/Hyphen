@@ -8,7 +8,7 @@ import java.util.function.Function;
  * Util class for caching thing.
  */
 public class CacheUtil {
-	public static boolean CACHE = false;
+	public static boolean CACHE = true;
 	public static int misses = 0;
 	public static int hits = 0;
 
