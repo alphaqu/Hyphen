@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.sped;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
-import dev.quantumfusion.hyphen.scan.type.AnnType;
+import dev.quantumfusion.hyphen.scan.type.FieldType;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.AnnoUtil;
 import dev.quantumfusion.hyphen.util.CacheUtil;
@@ -68,7 +68,7 @@ public class TypeFollowing {
 
 	public static void scan(Clazz clazz, boolean print) {
 		if (!SEEN.add(clazz) && false) return;
-		final AnnType[] fields = Clazzifier.scanFields(clazz);
+		final FieldType[] fields = Clazzifier.scanFields(clazz);
 		if (print)
 			System.out.println(Color.RED + clazz.toString());
 		for (var field : fields) {

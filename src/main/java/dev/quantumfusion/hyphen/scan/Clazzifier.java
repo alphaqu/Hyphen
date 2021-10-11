@@ -19,7 +19,7 @@ public class Clazzifier {
 	public static final Clz UNDEFINED = Undefined.UNDEFINED;
 	private static final List<ClzCreator> FORWARD_CLAZZERS = new ArrayList<>();
 	private static final Map<Class<?>, Clz> CLASS_CACHE = new IdentityHashMap<>();
-	private static final Map<Clazz, AnnType[]> ALL_FIELD_CACHE = new IdentityHashMap<>();
+	private static final Map<Clazz, FieldType[]> ALL_FIELD_CACHE = new IdentityHashMap<>();
 
 	static {
 		FORWARD_CLAZZERS.add(ClzCreator
@@ -48,9 +48,9 @@ public class Clazzifier {
 	 * @param source        The source of the AnnotatedType. Used for mapping Class Parameters.
 	 * @return The Clazz
 	 */
-	public static AnnType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
+	public static FieldType createAnnotatedType(AnnotatedType annotatedType, Clazz source) {
 		var clazz = create(annotatedType, source);
-		return new AnnType(clazz, AnnoUtil.parseAnnotations(annotatedType), ReflectionUtil.getClassAnnotations(source));
+		return new FieldType(clazz, AnnoUtil.parseAnnotations(annotatedType), ReflectionUtil.getClassAnnotations(source));
 	}
 
 	public static Clazz createClass(Type bound, Clazz context) {
@@ -97,11 +97,11 @@ public class Clazzifier {
 	 * @param clazz The Clazz to scan.
 	 * @return The Clazz fields.
 	 */
-	public static AnnType[] scanFields(Clazz clazz) {
+	public static FieldType[] scanFields(Clazz clazz) {
 		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, (c) -> {
 			var fields = clazz.getFields();
 			if (ReflectionUtil.getClassSuper(c) != null)
-				return ArrayUtil.combine(scanFields(c.getSuper()), fields, AnnType[]::new);
+				return ArrayUtil.combine(scanFields(c.getSuper()), fields, FieldType[]::new);
 
 			return fields;
 		});

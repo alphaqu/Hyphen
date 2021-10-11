@@ -27,7 +27,7 @@ public class Clazz implements Clz {
 	// lazy
 	private @Nullable Clazz superClass = null;
 	private @Nullable Clazz[] superInterfaces = null;
-	private @Nullable LinkedHashMap<String, ? extends AnnType> fields = null;
+	private @Nullable LinkedHashMap<String, ? extends FieldType> fields = null;
 
 	Clazz(Clazz template, Class<?> clazz) {
 		this.template = template;
@@ -88,7 +88,7 @@ public class Clazz implements Clz {
 
 		// TODO: these shouldn't need to be cached, cause we are cached
 		var classFields = ReflectionUtil.getClassFields(this.clazz);
-		LinkedHashMap<String, AnnType> fields = new LinkedHashMap<>(classFields.length);
+		LinkedHashMap<String, FieldType> fields = new LinkedHashMap<>(classFields.length);
 
 		for (Field classField : classFields) {
 			if ((classField.getModifiers() & Opcodes.ACC_STATIC) != 0) continue;
@@ -149,17 +149,17 @@ public class Clazz implements Clz {
 				: aSuper.instantiate(this.clazz.getAnnotatedSuperclass()).resolve(this);
 	}
 
-	private LinkedHashMap<String, ? extends AnnType> getFieldMap() {
+	private LinkedHashMap<String, ? extends FieldType> getFieldMap() {
 		if (this.fields != null) return this.fields;
 		assert this.template != null;
-		return this.fields = (LinkedHashMap<String, AnnType>)
+		return this.fields = (LinkedHashMap<String, FieldType>)
 				MapUtil.mapValues(
 						this.template.getFieldMap(),
 						LinkedHashMap::new,
 						annType -> annType.resolve(this));
 	}
 
-	public AnnType[] getFields() {
-		return this.getFieldMap().values().toArray(AnnType[]::new);
+	public FieldType[] getFields() {
+		return this.getFieldMap().values().toArray(FieldType[]::new);
 	}
 }

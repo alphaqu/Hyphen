@@ -11,9 +11,9 @@ import java.util.Map;
  * An ArrayClazz is anything that is an array. The component holds what the array's elements are.
  */
 public final class ArrayClazz implements Clz {
-	private AnnType component;
+	private FieldType component;
 
-	private ArrayClazz(AnnType component) {
+	private ArrayClazz(FieldType component) {
 		this.component = component;
 	}
 
@@ -40,7 +40,7 @@ public final class ArrayClazz implements Clz {
 
 	@Override
 	public ArrayClazz resolve(Clazz context) {
-		AnnType resolved = this.component.resolve(context);
+		FieldType resolved = this.component.resolve(context);
 		if (resolved == this.component) // if the component didn't change, we don't need to create a new object
 			return this;
 		return new ArrayClazz(resolved);

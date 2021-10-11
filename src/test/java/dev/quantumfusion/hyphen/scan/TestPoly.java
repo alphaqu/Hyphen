@@ -13,16 +13,16 @@ public class TestPoly {
 	@Test
 	void testC1C0() throws NoSuchFieldException {
 		check("s", Map.of(
-				C1.class, "C1<C1:A = AnnType{C0}>",
-				C2.class, "C2<C2:B = AnnType{C0}>",
-				C3.class, "C3<C3:C = AnnType{C0},C3:D = AnnType{UNDEFINED}>",
-				C3Def.class, "C3Def<C3Def:E = AnnType{C0}>",
+				C1.class, "C1<C1:A = FieldType{C0}>",
+				C2.class, "C2<C2:B = FieldType{C0}>",
+				C3.class, "C3<C3:C = FieldType{C0},C3:D = FieldType{UNDEFINED}>",
+				C3Def.class, "C3Def<C3Def:E = FieldType{C0}>",
 				// CoWrappedC1.class,
 				// CoWrappedC1Extends.class,
 				// CoWrappedC1Super.class,
-				C3Ignore.class, "C3Ignore<C3Ignore:C = AnnType{C0},C3Ignore:D = AnnType{UNDEFINED}>",
-				C1Pair.class, "C1Pair<C1Pair:A = AnnType{C0}>",
-				RecursiveC.class, "RecursiveC<RecursiveC:T = AnnType{C0}>"
+				C3Ignore.class, "C3Ignore<C3Ignore:C = FieldType{C0},C3Ignore:D = FieldType{UNDEFINED}>",
+				C1Pair.class, "C1Pair<C1Pair:A = FieldType{C0}>",
+				RecursiveC.class, "RecursiveC<RecursiveC:T = FieldType{C0}>"
 		));
 	}
 

@@ -7,33 +7,33 @@ import java.lang.reflect.AnnotatedType;
 import java.util.HashMap;
 import java.util.Map;
 
-public record AnnType(Clz clazz,
-					  Map<Class<? extends Annotation>, ? extends Annotation> annotations,
-					  Map<Class<? extends Annotation>, ? extends Annotation> globalAnnotations) implements Clz {
+public record FieldType(Clz clazz,
+						Map<Class<? extends Annotation>, ? extends Annotation> annotations,
+						Map<Class<? extends Annotation>, ? extends Annotation> globalAnnotations) implements Clz{
 
 	@Override
-	public AnnType resolve(Clazz context) {
+	public FieldType resolve(Clazz context) {
 		Clz resolved = this.clazz.resolve(context);
 		if (resolved == this.clazz) return this;
-		return new AnnType(resolved, this.annotations, this.globalAnnotations);
+		return new FieldType(resolved, this.annotations, this.globalAnnotations);
 	}
 
 	@Override
-	public AnnType map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		if (other instanceof AnnType otherAnnType) {
+	public FieldType map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+		if (other instanceof FieldType otherFieldType) {
 			// idk what to do with the annotations
-			var merged = this.clazz.map(otherAnnType.clazz, types, mergeDirection);
-			if (otherAnnType.equals(merged) && this.annotations.isEmpty() && this.globalAnnotations.isEmpty())
-				return otherAnnType;
+			var merged = this.clazz.map(otherFieldType.clazz, types, mergeDirection);
+			if (otherFieldType.equals(merged) && this.annotations.isEmpty() && this.globalAnnotations.isEmpty())
+				return otherFieldType;
 
-			return new AnnType(merged,
-					MapUtil.merge(HashMap::new, this.annotations, otherAnnType.annotations),
-					MapUtil.merge(HashMap::new, this.globalAnnotations, otherAnnType.globalAnnotations));
+			return new FieldType(merged,
+					MapUtil.merge(HashMap::new, this.annotations, otherFieldType.annotations),
+					MapUtil.merge(HashMap::new, this.globalAnnotations, otherFieldType.globalAnnotations));
 		} else {
 			Clz merged = this.clazz.map(other, types, mergeDirection);
 			if (this.clazz.equals(merged)) return this;
 
-			return new AnnType(merged, this.annotations, this.globalAnnotations);
+			return new FieldType(merged, this.annotations, this.globalAnnotations);
 		}
 	}
 
@@ -44,7 +44,7 @@ public record AnnType(Clz clazz,
 
 	@Override
 	public String toString() {
-		return "AnnType{" +
+		return "FieldType{" +
 				this.clazz +
 				(this.annotations.isEmpty() ? "" : ", annotations=" + this.annotations) +
 				(this.globalAnnotations.isEmpty() ? "" : ", globalAnnotations=" + this.globalAnnotations) +
