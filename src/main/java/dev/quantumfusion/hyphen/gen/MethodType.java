@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.gen;
 
 import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.java.ArrayUtil;
 
 import java.util.function.BiFunction;
 

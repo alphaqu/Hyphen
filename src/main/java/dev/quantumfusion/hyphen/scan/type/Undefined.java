@@ -32,7 +32,6 @@ public class Undefined implements Clz {
 
 	@Override
 	public int hashCode() {
-		//noinspection SpellCheckingInspection
 		return "SIXTYNINEFOURTWENTY".hashCode();
 	}
 
