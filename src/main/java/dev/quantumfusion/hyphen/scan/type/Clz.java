@@ -36,4 +36,6 @@ public interface Clz {
 	default Clz map(Clz other){
 		return this.map(other, new HashMap<>(), MergeDirection.LEFT);
 	}
+
+	Class<?> pullBytecodeClass();
 }

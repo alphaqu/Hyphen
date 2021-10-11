@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.AnnotatedType;
@@ -153,5 +154,10 @@ public class TypeClazz implements Clz {
 		}
 
 		return this.bounds;
+	}
+
+	@Override
+	public Class<?> pullBytecodeClass() {
+		return ScanUtil.getClassFrom(this.rawBounds[0]);
 	}
 }

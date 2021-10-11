@@ -102,6 +102,7 @@ public class Clazz implements Clz {
 		return this.clazz;
 	}
 
+	@Override
 	public Class<?> pullBytecodeClass() {
 		return this.clazz;
 	}

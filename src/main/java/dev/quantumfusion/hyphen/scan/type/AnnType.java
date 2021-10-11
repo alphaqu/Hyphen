@@ -54,4 +54,9 @@ public record AnnType(
 				(this.globalAnnotations.isEmpty() ? "" : ", globalAnnotations=" + this.globalAnnotations) +
 				'}';
 	}
+
+	@Override
+	public Class<?> pullBytecodeClass() {
+		return this.clazz.pullBytecodeClass();
+	}
 }

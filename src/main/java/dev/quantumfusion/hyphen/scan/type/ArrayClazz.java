@@ -78,4 +78,9 @@ public final class ArrayClazz implements Clz {
 			return this;
 		return new ArrayClazz(resolved);
 	}
+
+	@Override
+	public Class<?> pullBytecodeClass() {
+		return this.component.getClass().arrayType();
+	}
 }
