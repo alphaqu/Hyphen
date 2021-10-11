@@ -3,16 +3,14 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.CacheUtil;
-import dev.quantumfusion.hyphen.util.java.MapUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
+import dev.quantumfusion.hyphen.util.java.MapUtil;
 
 import java.lang.reflect.AnnotatedType;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
-
-import static dev.quantumfusion.hyphen.scan.Clazzifier.UNDEFINED;
 
 /**
  * Just like a Clazz, but it holds type parameters and its currently known definitions.
@@ -113,9 +111,8 @@ public class ParameterizedClazz extends Clazz {
 	}
 
 	@Override
-	public Clz resolveType(String type) {
-		var t = this.types.get(type);
-		return t == null ? UNDEFINED : t;
+	public TypeClazz resolveType(String type) {
+		return this.types.get(type);
 	}
 
 	private Clazz getSuper(Clazz otherClazz) {

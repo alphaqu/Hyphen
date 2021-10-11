@@ -111,10 +111,10 @@ public class Clazz implements Clz {
 	 * Get the Clz of a given type parameter
 	 *
 	 * @param type The name of the type parameter
-	 * @return The type parameter, or {@link Undefined}
+	 * @return The type parameter, or null
 	 */
-	public Clz resolveType(String type) {
-		return Clazzifier.UNDEFINED;
+	public @Nullable TypeClazz resolveType(String type) {
+		return null;
 	}
 
 	@Override

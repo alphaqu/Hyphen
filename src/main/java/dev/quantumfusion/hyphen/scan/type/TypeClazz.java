@@ -15,30 +15,28 @@ import java.util.Map;
  */
 public class TypeClazz implements Clz {
 	public final String name;
-	private final Clz actual;
+	private final FieldType actual;
 	private Clz @Nullable [] bounds;
 	private final Type[] rawBounds;
 	private Clazz context;
 
-	protected TypeClazz(String name, Clz actual, Type[] rawBounds, Clazz context) {
+	protected TypeClazz(String name, FieldType actual, Type[] rawBounds, Clazz context) {
 		this.name = name;
 		this.actual = actual;
 		this.rawBounds = rawBounds;
 		this.context = context;
-
-		assert !(actual instanceof TypeClazz);
 	}
 
 
 	public static TypeClazz createRaw(TypeVariable<?> typeVariable) {
-		return new TypeClazz(typeVariable.getName(), Clazzifier.UNDEFINED, typeVariable.getBounds(), null);
+		return new TypeClazz(typeVariable.getName(), Clazzifier.UNDEFINED_FIELD, typeVariable.getBounds(), null);
 	}
 
 	public void setContext(ParameterizedClazz context) {
 		this.context = context;
 	}
 
-	public TypeClazz withActual(Clz actual) {
+	public TypeClazz withActual(FieldType actual) {
 		if (actual.equals(this.actual)) return this;
 		return new TypeClazz(this.name, actual, this.rawBounds, this.context);
 	}
@@ -74,7 +72,7 @@ public class TypeClazz implements Clz {
 				return merge;
 			}
 		} else {
-			TypeClazz typeClazz = new TypeClazz(this.name,  this.actual.map(other, types, mergeDirection), this.rawBounds, null);
+			TypeClazz typeClazz = new TypeClazz(this.name,  this.actual.map(FieldType.of(other), types, mergeDirection), this.rawBounds, null);
 			types.put(this, typeClazz);
 			return typeClazz;
 		}
@@ -87,10 +85,10 @@ public class TypeClazz implements Clz {
 		if (context.equals(this.context)) return this;
 		var defined = context.resolveType(this.name);
 
-		if (defined instanceof TypeClazz typeClazz)
-			return typeClazz;
+		if (defined != null)
+			return defined;
 
-		return new TypeClazz(this.name, defined, this.rawBounds, context);
+		return this;
 	}
 
 	@Override

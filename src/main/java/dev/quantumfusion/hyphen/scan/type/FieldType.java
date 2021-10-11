@@ -9,35 +9,30 @@ import java.util.Map;
 
 public record FieldType(Clz clazz,
 						Map<Class<? extends Annotation>, ? extends Annotation> annotations,
-						Map<Class<? extends Annotation>, ? extends Annotation> globalAnnotations) implements Clz{
+						Map<Class<? extends Annotation>, ? extends Annotation> globalAnnotations) {
 
-	@Override
+	public static FieldType of(Clz clz) {
+		return new FieldType(clz, Map.of(), Map.of());
+	}
+
 	public FieldType resolve(Clazz context) {
 		Clz resolved = this.clazz.resolve(context);
 		if (resolved == this.clazz) return this;
 		return new FieldType(resolved, this.annotations, this.globalAnnotations);
 	}
 
-	@Override
-	public FieldType map(Clz other, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
-		if (other instanceof FieldType otherFieldType) {
-			// idk what to do with the annotations
-			var merged = this.clazz.map(otherFieldType.clazz, types, mergeDirection);
-			if (otherFieldType.equals(merged) && this.annotations.isEmpty() && this.globalAnnotations.isEmpty())
-				return otherFieldType;
+	public FieldType map(FieldType otherFieldType, Map<TypeClazz, TypeClazz> types, MergeDirection mergeDirection) {
+		// idk what to do with the annotations
+		var merged = this.clazz.map(otherFieldType.clazz, types, mergeDirection);
+		if (otherFieldType.clazz.equals(merged) && this.annotations.isEmpty() && this.globalAnnotations.isEmpty())
+			return otherFieldType;
 
-			return new FieldType(merged,
-					MapUtil.merge(HashMap::new, this.annotations, otherFieldType.annotations),
-					MapUtil.merge(HashMap::new, this.globalAnnotations, otherFieldType.globalAnnotations));
-		} else {
-			Clz merged = this.clazz.map(other, types, mergeDirection);
-			if (this.clazz.equals(merged)) return this;
-
-			return new FieldType(merged, this.annotations, this.globalAnnotations);
-		}
+		// todo copy both annotations
+		return new FieldType(merged,
+				MapUtil.merge(HashMap::new, this.annotations, otherFieldType.annotations),
+				MapUtil.merge(HashMap::new, this.globalAnnotations, otherFieldType.globalAnnotations));
 	}
 
-	@Override
 	public void finish(AnnotatedType type, Clazz source) {
 		this.clazz.finish(type, source);
 	}
@@ -51,12 +46,10 @@ public record FieldType(Clz clazz,
 				'}';
 	}
 
-	@Override
 	public Class<?> pullBytecodeClass() {
 		return this.clazz.pullBytecodeClass();
 	}
 
-	@Override
 	public Class<?> pullClass() {
 		return this.clazz.pullClass();
 	}

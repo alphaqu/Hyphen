@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class Clazzifier {
 	public static final Clz UNDEFINED = Undefined.UNDEFINED;
+	public static final FieldType UNDEFINED_FIELD = FieldType.of(Undefined.UNDEFINED);
 	private static final List<ClzCreator> FORWARD_CLAZZERS = new ArrayList<>();
 	private static final Map<Class<?>, Clz> CLASS_CACHE = new IdentityHashMap<>();
 	private static final Map<Clazz, FieldType[]> ALL_FIELD_CACHE = new IdentityHashMap<>();
