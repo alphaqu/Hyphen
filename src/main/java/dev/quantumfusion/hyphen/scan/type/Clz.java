@@ -38,4 +38,5 @@ public interface Clz {
 	}
 
 	Class<?> pullBytecodeClass();
+	Class<?> pullClass();
 }

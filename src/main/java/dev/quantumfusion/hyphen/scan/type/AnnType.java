@@ -55,4 +55,9 @@ public record AnnType(Clz clazz,
 	public Class<?> pullBytecodeClass() {
 		return this.clazz.pullBytecodeClass();
 	}
+
+	@Override
+	public Class<?> pullClass() {
+		return this.clazz.pullClass();
+	}
 }

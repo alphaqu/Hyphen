@@ -70,6 +70,11 @@ public final class ArrayClazz implements Clz {
 
 	@Override
 	public Class<?> pullBytecodeClass() {
-		return this.component.getClass().arrayType();
+		return this.component.pullBytecodeClass().arrayType();
+	}
+
+	@Override
+	public Class<?> pullClass() {
+		return this.component.pullClass().arrayType();
 	}
 }

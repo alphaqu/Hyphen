@@ -121,4 +121,9 @@ public class TypeClazz implements Clz {
 	public Class<?> pullBytecodeClass() {
 		return ScanUtil.getClassFrom(this.rawBounds[0]);
 	}
+
+	@Override
+	public Class<?> pullClass() {
+		return this.actual.pullClass();
+	}
 }
