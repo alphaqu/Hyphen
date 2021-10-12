@@ -36,11 +36,6 @@ public class TypeClazz implements Clz {
 		this.context = context;
 	}
 
-	public TypeClazz withActual(FieldType actual) {
-		if (actual.equals(this.actual)) return this;
-		return new TypeClazz(this.name, actual, this.rawBounds, this.context);
-	}
-
 	public TypeClazz resolveFUCKActual(Clazz source) {
 		// var defined = this.actual.resolve(source);
 		// if (defined != this.actual) {
@@ -51,6 +46,19 @@ public class TypeClazz implements Clz {
 	@Override
 	public TypeClazz instantiate(AnnotatedType annotatedType) {
 		return this;
+	}
+	public TypeClazz apply(AnnotatedType annotatedType) {
+		Clz clazz = this.actual.clazz();
+		if (clazz == Clazzifier.UNDEFINED)
+			// If i just gave the context with `instantiate` I could just put this in UNDEFINED
+			return new TypeClazz(this.name, Clazzifier.createAnnotatedType(annotatedType, this.context), this.rawBounds, null);
+		Clz instantiated = clazz.instantiate(annotatedType);
+
+		if (clazz == instantiated) return this;
+
+		return new TypeClazz(this.name, new FieldType(
+				instantiated, this.actual.annotations(), this.actual.globalAnnotations()
+		), this.rawBounds, null);
 	}
 
 	@Override
@@ -72,7 +80,7 @@ public class TypeClazz implements Clz {
 				return merge;
 			}
 		} else {
-			TypeClazz typeClazz = new TypeClazz(this.name,  this.actual.map(FieldType.of(other), types, mergeDirection), this.rawBounds, null);
+			TypeClazz typeClazz = new TypeClazz(this.name, this.actual.map(FieldType.of(other), types, mergeDirection), this.rawBounds, null);
 			types.put(this, typeClazz);
 			return typeClazz;
 		}
@@ -98,12 +106,17 @@ public class TypeClazz implements Clz {
 
 	@Override
 	public String toString() {
-		return this.context.clazz.getSimpleName() + ":" + this.name + " = " + this.actual.toString();
+		return (this.context == null ? "" : this.context.clazz.getSimpleName() + ":") + this.name + " = " + this.actual.toString();
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return this == o || o instanceof TypeClazz that && this.name.equals(that.name) && this.actual.equals(that.actual) && Arrays.equals(this.bounds, that.bounds) && this.context.clazz.equals(that.context.clazz);
+		return this == o
+				|| o instanceof TypeClazz that
+				&& this.name.equals(that.name)
+				&& this.actual.equals(that.actual)
+				&& Arrays.equals(this.bounds, that.bounds)
+				&& (this.context == that.context || this.context == null || that.context == null);
 	}
 
 	@Override
@@ -111,7 +124,7 @@ public class TypeClazz implements Clz {
 		int result = this.name.hashCode();
 		result = 31 * result + this.actual.hashCode();
 		result = 31 * result + Arrays.hashCode(this.bounds);
-		result = 31 * result + this.context.clazz.hashCode();
+		result = 31 * result + (this.context == null ? 0 : this.context.clazz.hashCode());
 		return result;
 	}
 

@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.CacheUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
@@ -15,10 +14,9 @@ import java.util.StringJoiner;
 /**
  * Just like a Clazz, but it holds type parameters and its currently known definitions.
  */
-public class ParameterizedClazz extends Clazz {
+public final class ParameterizedClazz extends Clazz {
 	private final Map<Clazz, ParameterizedClazz> RESOLVE_CACHE = new HashMap<>();
 	private final Map<String, ? extends TypeClazz> types;
-
 
 	private ParameterizedClazz(ParameterizedClazz template, Class<?> clazz, Map<String, ? extends TypeClazz> types) {
 		super(template, clazz);
@@ -26,18 +24,6 @@ public class ParameterizedClazz extends Clazz {
 		this.types.forEach((s, t) -> t.setContext(this));
 	}
 
-	/**
-	 * Create a parameterized clazz for the raw class.
-	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
-	 */
-	public static ParameterizedClazz createRawParameterizedClass(AnnotatedType type) {
-		return createRawParameterizedClass(ScanUtil.getClassFrom(type));
-	}
-
-	/**
-	 * Create a parameterized clazz for the raw class.
-	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
-	 */
 	public static ParameterizedClazz createRawParameterizedClass(Class<?> type) {
 		final Map<String, TypeClazz> types = new LinkedHashMap<>();
 
@@ -51,10 +37,9 @@ public class ParameterizedClazz extends Clazz {
 	public ParameterizedClazz instantiate(AnnotatedType type) {
 		var typeParameters = ScanUtil.getAnnotatedTypesArguments(type);
 
-		var newTypes = new LinkedHashMap<String, TypeClazz>(typeParameters.length);
-		MapUtil.forEachIndex(this.types, (key, value, i1) -> {
-			newTypes.put(value.name, value.withActual(Clazzifier.createAnnotatedType(typeParameters[i1], this)));
-		});
+		var newTypes = MapUtil.mapValuesIndexed(this.types, LinkedHashMap::new, (value, i) ->
+				value.apply(typeParameters[i]));
+		if(newTypes.equals(this.types)) return this;
 
 		return new ParameterizedClazz(this, ScanUtil.getClassFrom(type), newTypes);
 	}
@@ -96,16 +81,16 @@ public class ParameterizedClazz extends Clazz {
 	public ParameterizedClazz resolve(Clazz context) {
 		return CacheUtil.cache(this.RESOLVE_CACHE, context, (ctx) -> {
 			var newTypes = new LinkedHashMap<String, TypeClazz>(this.types.size());
-			var mutated = false;
+			var same = true;
 
 			for (var entry : this.types.entrySet()) {
 				var value = entry.getValue();
 				var res = value.resolveFUCKActual(ctx);
 				newTypes.put(entry.getKey(), res);
-				mutated |= res != value;
+				same &= res.equals(value);
 			}
 
-			if (!mutated) return this;
+			if (same) return this;
 			return new ParameterizedClazz(this, this.clazz, newTypes);
 		});
 	}

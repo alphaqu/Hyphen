@@ -5,7 +5,6 @@ import dev.quantumfusion.hyphen.thr.exception.ScanException;
 import dev.quantumfusion.hyphen.util.java.ArrayUtil;
 import dev.quantumfusion.hyphen.util.java.MapUtil;
 import dev.quantumfusion.hyphen.util.java.ReflectionUtil;
-import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 
@@ -25,6 +24,7 @@ public class Clazz implements Clz {
 	final Class<?> clazz;
 
 	// lazy
+	private boolean initialized = false;
 	private @Nullable Clazz superClass = null;
 	private @Nullable Clazz[] superInterfaces = null;
 	private @Nullable LinkedHashMap<String, ? extends FieldType> fields = null;
@@ -34,12 +34,6 @@ public class Clazz implements Clz {
 		this.clazz = clazz;
 	}
 
-	/**
-	 * Create a class for the raw class.
-	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
-	 *
-	 * @return either a Clazz or an ArrayClazz
-	 */
 	public static Clz createRawClazz(Class<?> clazz) {
 		if (clazz.isArray()) return ArrayClazz.createRawArray();
 
@@ -47,16 +41,6 @@ public class Clazz implements Clz {
 			return ParameterizedClazz.createRawParameterizedClass(clazz);
 
 		return new Clazz(null, clazz);
-	}
-
-	/**
-	 * Create a class for the raw class.
-	 * <p /> Should be cached and be finalized by calling {@link #finish(AnnotatedType, Clazz)}
-	 *
-	 * @return either a Clazz, an ArrayClazz or a ParameterizedClazz
-	 */
-	public static Clz createRawClazz(AnnotatedType type) {
-		return createRawClazz(ScanUtil.getClassFrom(type.getType()));
 	}
 
 	@Override
@@ -81,21 +65,33 @@ public class Clazz implements Clz {
 		return this;
 	}
 
-	public void finish(AnnotatedType type, Clazz source) {
-		var clazz = ScanUtil.getClassFrom(type);
-		this.superClass = Clazzifier.createClass(clazz.getGenericSuperclass(), this);
-		this.superInterfaces = ArrayUtil.map(clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
+	private void init() {
+		if (initialized) return;
+		initialized = true;
 
-		// TODO: these shouldn't need to be cached, cause we are cached
-		var classFields = ReflectionUtil.getClassFields(this.clazz);
-		LinkedHashMap<String, FieldType> fields = new LinkedHashMap<>(classFields.length);
+		if (this.template == null) {
+			this.superClass = Clazzifier.createClass(this.clazz.getGenericSuperclass(), this);
+			this.superInterfaces = ArrayUtil.map(this.clazz.getGenericInterfaces(), Clazz[]::new, this, Clazzifier::createClass);
 
-		for (Field classField : classFields) {
-			if ((classField.getModifiers() & Opcodes.ACC_STATIC) != 0) continue;
-			fields.put(classField.getName(), Clazzifier.createAnnotatedType(classField.getAnnotatedType(), this));
+			// TODO: these shouldn't need to be cached, cause we are cached
+			var classFields = ReflectionUtil.getClassFields(this.clazz);
+			LinkedHashMap<String, FieldType> fields = new LinkedHashMap<>(classFields.length);
+
+			for (Field classField : classFields) {
+				if ((classField.getModifiers() & Opcodes.ACC_STATIC) != 0) continue;
+				fields.put(classField.getName(), Clazzifier.createAnnotatedType(classField.getAnnotatedType(), this));
+			}
+
+			this.fields = fields;
+		} else {
+			Clazz aSuper = this.template.getSuper();
+			this.superClass = aSuper == null ? null : aSuper.resolve(this);
+			this.superInterfaces = ArrayUtil.map(this.template.getInterfaces(), Clazz[]::new, c -> c.resolve(this));
+			this.fields = MapUtil.mapValues(
+					this.template.getFieldMap(),
+					LinkedHashMap::new,
+					c -> c.resolve(this));
 		}
-
-		this.fields = fields;
 	}
 
 	public Class<?> pullClass() {
@@ -141,24 +137,22 @@ public class Clazz implements Clz {
 	}
 
 	public @Nullable Clazz getSuper() {
-		Clazz superClass = this.superClass;
-		if (superClass != null || this.template == null) return superClass;
-		Clazz aSuper = this.template.getSuper();
-		return this.superClass = aSuper == null
-				? null
-				: aSuper.instantiate(this.clazz.getAnnotatedSuperclass()).resolve(this);
+		this.init();
+		return this.superClass;
 	}
 
-	private LinkedHashMap<String, ? extends FieldType> getFieldMap() {
-		if (this.fields != null) return this.fields;
-		assert this.template != null;
-		return this.fields = (LinkedHashMap<String, FieldType>)
-				MapUtil.mapValues(
-						this.template.getFieldMap(),
-						LinkedHashMap::new,
-						annType -> annType.resolve(this));
+	public Clazz[] getInterfaces() {
+		this.init();
+		return this.superInterfaces;
 	}
 
+	// should only be called by the clazzifier
+	public LinkedHashMap<String, ? extends FieldType> getFieldMap() {
+		this.init();
+		return this.fields;
+	}
+
+	@Deprecated
 	public FieldType[] getFields() {
 		return this.getFieldMap().values().toArray(FieldType[]::new);
 	}

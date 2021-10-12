@@ -24,19 +24,19 @@ public class Clazzifier {
 
 	static {
 		FORWARD_CLAZZERS.add(ClzCreator
-				.of(ParameterizedType.class, ParameterizedClazz::createRawParameterizedClass)
+				.ofC(ParameterizedType.class, ParameterizedClazz::createRawParameterizedClass)
 				.cachedOrPostProcess(ScanUtil::getClassFrom, ParameterizedClazz::finish));
 		FORWARD_CLAZZERS.add(ClzCreator
-				.of(TypeVariable.class, (type, clazz) -> TypeClazz.createRaw((TypeVariable<?>) type.getType()))
+				.ofT(TypeVariable.class, TypeClazz::createRaw)
 				.postProcess(TypeClazz::finish)
 		);
 		FORWARD_CLAZZERS.add(ClzCreator
-				.of(GenericArrayType.class, (annotatedType, source) -> ArrayClazz.createRawArray())
+				.of(GenericArrayType.class, ArrayClazz::createRawArray)
 				.postProcess(Clz::finish)
 		);
-		FORWARD_CLAZZERS.add(ClzCreator.of(WildcardType.class, (type, clazz) -> UNDEFINED));
+		FORWARD_CLAZZERS.add(ClzCreator.of(WildcardType.class, () -> UNDEFINED));
 		FORWARD_CLAZZERS.add(ClzCreator
-				.of(Class.class, (type, source) -> Clazz.createRawClazz(type))
+				.ofC(Class.class, Clazz::createRawClazz)
 				.cachedOrPostProcess(ScanUtil::getClassFrom, Clz::finish)
 		);
 	}
@@ -98,6 +98,7 @@ public class Clazzifier {
 	 * @param clazz The Clazz to scan.
 	 * @return The Clazz fields.
 	 */
+	@Deprecated
 	public static FieldType[] scanFields(Clazz clazz) {
 		return CacheUtil.cache(ALL_FIELD_CACHE, clazz, (c) -> {
 			var fields = clazz.getFields();

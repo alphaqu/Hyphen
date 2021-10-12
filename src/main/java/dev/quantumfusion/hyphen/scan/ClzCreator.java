@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.scan;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.Clz;
 import dev.quantumfusion.hyphen.util.CacheUtil;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Type;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class ClzCreator<R extends Clz> {
 	private final Predicate<? super Class<?>> clz;
@@ -44,6 +46,25 @@ public class ClzCreator<R extends Clz> {
 		return new ClzCreator<>(clz::isAssignableFrom, (t, context) -> create.apply(t));
 	}
 
+	public static <T, R extends Clz> ClzCreator<R> ofC(
+			Class<? extends T> clz,
+			Function<? super Class<?>, ? extends R> create) {
+		return new ClzCreator<>(clz::isAssignableFrom, (t, context) -> create.apply(ScanUtil.getClassFrom(t)));
+	}
+
+	public static <T, R extends Clz> ClzCreator<R> of(
+			Class<? extends T> clz,
+			Supplier<? extends R> create) {
+		return new ClzCreator<>(clz::isAssignableFrom, (t, context) -> create.get());
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T, R extends Clz> ClzCreator<R> ofT(
+			Class<? extends T> clz,
+			Function<? super T, ? extends R> create) {
+		return new ClzCreator<>(clz::isAssignableFrom, (t, context) -> create.apply((T) t.getType()));
+	}
+
 
 	public ClzCreator<R> cached(Function<? super AnnotatedType, Object> key) {
 		Map<Object, R> cache = new HashMap<>();
@@ -71,7 +92,7 @@ public class ClzCreator<R extends Clz> {
 				(ann, context) -> {
 					var k = key.apply(ann);
 					if (cache.containsKey(k)) return cache.get(k);
-					final R res = this.create.apply(ann,context);
+					final R res = this.create.apply(ann, context);
 					cache.put(k, res);
 					consumer.accept(res, ann, context);
 					return res;

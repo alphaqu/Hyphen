@@ -1,10 +1,8 @@
 package dev.quantumfusion.hyphen.util.java;
 
-import dev.quantumfusion.hyphen.scan.ClzCreator;
-
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 public class MapUtil {
@@ -16,15 +14,33 @@ public class MapUtil {
 		}
 	}
 
-	public static <K, V, VO> Map<K, VO> mapValues(Map<K, V> map, Function<Integer, Map<K, VO>> mapProvider, Function<V, VO> mapper) {
-		final Map<K, VO> out = mapProvider.apply(map.size());
+	public static <K, V, VO, M extends Map<K,VO>> M mapValues(Map<K, V> map, IntFunction<? extends M> mapProvider, Function<? super V, ? extends VO> mapper) {
+		final M out = mapProvider.apply(map.size());
 		map.forEach((k, v) -> out.put(k, mapper.apply(v)));
 		return out;
 	}
 
-	public static <K, V, KO> Map<KO, V> mapKeys(Map<K, V> map, Function<Integer, Map<KO, V>> mapProvider, Function<K, KO> mapper) {
-		final Map<KO, V> out = mapProvider.apply(map.size());
+	public static <K, V, KO, M extends Map<KO,V>> M mapKeys(Map<K, V> map, IntFunction<? extends M> mapProvider, Function<? super K, ? extends KO> mapper) {
+		final M out = mapProvider.apply(map.size());
 		map.forEach((k, v) -> out.put(mapper.apply(k), v));
+		return out;
+	}
+
+	public static <K, V, VO, M extends Map<K,VO>> M mapValuesIndexed(Map<K, V> map, IntFunction<? extends M> mapProvider, IndexedFunction<? super V, ? extends VO> mapper) {
+		final M out = mapProvider.apply(map.size());
+		int i = 0;
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			out.put(entry.getKey(), mapper.apply(entry.getValue(), i++));
+		}
+		return out;
+	}
+
+	public static <K, V, KO, M extends Map<KO,V>> M mapKeysIndexed(Map<K, V> map, IntFunction<? extends M> mapProvider, IndexedFunction<? super K, ? extends KO> mapper) {
+		final M out = mapProvider.apply(map.size());
+		int i = 0;
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			out.put(mapper.apply(entry.getKey(), i++), entry.getValue());
+		}
 		return out;
 	}
 
@@ -35,8 +51,18 @@ public class MapUtil {
 		return out;
 	}
 
-	public interface IndexedConsumer<K, V> {
-		void consume(K key, V value, int i);
+	@FunctionalInterface
+	public interface IndexedConsumer<A, B> {
+		void consume(A a, B b, int i);
 	}
 
+	@FunctionalInterface
+	public interface IndexedFunction<A, Z> {
+		Z apply(A a, int i);
+	}
+
+	@FunctionalInterface
+	public interface IndexedBiFunction<A, B, Z> {
+		Z apply(A a, B b, int i);
+	}
 }

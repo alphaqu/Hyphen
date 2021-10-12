@@ -63,7 +63,7 @@ public class ScanUtil {
 	public static Class<?> getClassFrom(Type type) {
 		if (type instanceof Class<?> c) return c;
 		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
-		if (type instanceof GenericArrayType gat) return getClassFrom(gat.getGenericComponentType());
+		if (type instanceof GenericArrayType gat) return getClassFrom(gat.getGenericComponentType()).arrayType();
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
 

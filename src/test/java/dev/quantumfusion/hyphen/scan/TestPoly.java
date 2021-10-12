@@ -14,7 +14,7 @@ public class TestPoly {
 
 	@Test
 	void testC1C0() throws NoSuchFieldException {
-		check("s", Map.of(
+		check("s", linkedMapOf(
 				C1.class, "C1<C1:A = FieldType{C0}>",
 				C2.class, "C2<C2:B = FieldType{C0}>",
 				C3.class, "C3<C3:C = FieldType{C0},C3:D = FieldType{UNDEFINED}>",
