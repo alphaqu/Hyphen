@@ -65,7 +65,7 @@ public class ParameterizedClazz extends Clazz {
 		if (this.equals(other)) return this;
 
 		if (!(other instanceof ParameterizedClazz otherClazz)) {
-			Clz merge = other.map(other, types, mapDirection.swap());
+			Clz merge = other.map(this, types, mapDirection.swap());
 			if (merge instanceof Clazz mergeClazz) return mergeClazz;
 			else return this;
 		} else if (!mapDirection.isAssignable(this.clazz, otherClazz.clazz))
