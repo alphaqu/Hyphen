@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Direction;
 import dev.quantumfusion.hyphen.FieldEntry;
 import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.reflect.AnnotatedElement;
@@ -19,7 +20,7 @@ public class Clazz {
 	}
 
 	public static Clazz create(Class<?> type, Clazz ctx, Direction dir) {
-		if (type.isArray()) return dev.quantumfusion.hyphen.type.ArrayClazz.create(type, ctx, dir);
+		if (type.isArray()) return ArrayClazz.create(type, ctx, dir);
 		return new Clazz(type);
 	}
 
@@ -55,8 +56,11 @@ public class Clazz {
 		if (aClass.getSuperclass() != null)
 			fieldEntries.addAll(ScanHandler.create(aClass.getAnnotatedSuperclass(), this, Direction.SUPER).getFields());
 
-		for (Field field : aClass.getDeclaredFields())
-			fieldEntries.add(new FieldEntry(ScanHandler.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
+		for (Field field : aClass.getDeclaredFields()) {
+			if (field.getAnnotatedType().getDeclaredAnnotation(Data.class) != null) {
+				fieldEntries.add(new FieldEntry(ScanHandler.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
+			}
+		}
 
 		return fieldEntries;
 	}

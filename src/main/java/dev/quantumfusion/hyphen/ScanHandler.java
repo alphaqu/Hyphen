@@ -35,6 +35,7 @@ public class ScanHandler {
 			return ctx.define(t.getType().getTypeName());
 		}
 		if (type instanceof Class<?> t) return Clazz.create(t, ctx, dir);
+		if (type instanceof AnnotatedType t) return Clazz.create((Class<?>) t.getType(), ctx, dir);
 		throw new RuntimeException("Can not handle: " + type.getClass().getSimpleName());
 	}
 }
