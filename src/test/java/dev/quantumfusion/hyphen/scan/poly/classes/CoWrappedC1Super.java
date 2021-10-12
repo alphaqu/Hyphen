@@ -1,12 +1,12 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class CoWrappedC1Super<A, CA extends C1<? super A>> extends C1<CA> {
-	@Serialize
+	@Data
 	public A selfA;
 
 	public CoWrappedC1Super(CA ca, A selfA) {

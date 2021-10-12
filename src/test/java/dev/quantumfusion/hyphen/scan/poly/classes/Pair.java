@@ -1,11 +1,11 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 public class Pair<A, B> implements IPair<A, B>, IReversedPair<B, A> {
-	@Serialize
+	@Data
 	public A a;
-	@Serialize
+	@Data
 	public B b;
 
 	public Pair(A a, B b) {

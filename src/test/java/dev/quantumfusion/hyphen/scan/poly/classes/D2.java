@@ -1,9 +1,9 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 public class D2<B> extends D1<B> {
-	@Serialize
+	@Data
 	public B b;
 
 	public D2(B b, B b1) {

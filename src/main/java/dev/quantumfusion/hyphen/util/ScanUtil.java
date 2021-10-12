@@ -1,21 +1,20 @@
 package dev.quantumfusion.hyphen.util;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ScanUtil {
-	public static Type[] findPath(Type root, Predicate<Type> matcher, Function<Type, Type[]> splitter) {
-		var queue = new ArrayDeque<Type[]>();
-		var explored = new HashSet<Type>();
+	public static AnnotatedElement[] findPath(AnnotatedElement root, Predicate<AnnotatedElement> matcher, Function<AnnotatedElement, AnnotatedElement[]> splitter) {
+		var queue = new ArrayDeque<AnnotatedElement[]>();
+		var explored = new HashSet<AnnotatedElement>();
 
 		// Add start entry
 		explored.add(root);
-		queue.add(new Type[]{root});
+		queue.add(new AnnotatedElement[]{root});
 		while (!queue.isEmpty()) {
 			var parentPath = queue.poll();
 			var parentPathLength = parentPath.length;
@@ -27,7 +26,7 @@ public class ScanUtil {
 			if (matcher.test(parent)) return parentPath;
 
 			// iterate through children
-			for (Type child : splitter.apply(parent)) {
+			for (AnnotatedElement child : splitter.apply(parent)) {
 				//if its already explored skip
 				if (explored.contains(child)) continue;
 				explored.add(child);
@@ -40,45 +39,34 @@ public class ScanUtil {
 		return null;
 	}
 
-	public static Type[] getInherited(Type type) {
+	public static AnnotatedElement[] getInherited(AnnotatedElement type) {
 		var clazz = getClassFrom(type);
-		var classInterface = clazz.getGenericInterfaces();
-		var classSuper = clazz.getGenericSuperclass();
+		var classInterface = clazz.getAnnotatedInterfaces();
+		var classSuper = clazz.getAnnotatedSuperclass();
 		if (classSuper != null) return append(classInterface, classSuper);
 		return classInterface;
 	}
 
-	public static Type[] append(Type[] oldArray, Type value) {
+	public static AnnotatedElement[] append(AnnotatedElement[] oldArray, AnnotatedElement value) {
 		final int length = oldArray.length;
-		Type[] out = new Type[length + 1];
+		AnnotatedElement[] out = new AnnotatedElement[length + 1];
 		System.arraycopy(oldArray, 0, out, 0, length);
 		out[length] = value;
 		return out;
 	}
 
-	public static Type wrap(Class<?> clazz) {
-		return new ParameterizedType() {
-			@Override
-			public Type[] getActualTypeArguments() {
-				return clazz.getTypeParameters();
-			}
-
-			@Override
-			public Type getRawType() {
-				return clazz;
-			}
-
-			@Override
-			public Type getOwnerType() {
-				return null;
-			}
-		};
+	public static AnnotatedElement wrap(Class<?> clazz) {
+		return clazz;
 	}
 
-	public static Class<?> getClassFrom(Type type) {
+	public static Class<?> getClassFrom(AnnotatedElement type) {
 		if (type instanceof Class<?> c) return c;
-		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
-		if (type instanceof GenericArrayType gat) return getClassFrom(gat.getGenericComponentType());
+
+		if (type instanceof AnnotatedType annotatedType) {
+			final Type t = annotatedType.getType();
+			if (t instanceof Class<?> c) return c;
+		}
+
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
 }

@@ -5,6 +5,8 @@ import dev.quantumfusion.hyphen.FieldEntry;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -27,7 +29,7 @@ public class Clazz {
 	}
 
 	public List<FieldEntry> asSub(Class<?> sub) {
-		final Type[] path = ScanUtil.findPath(sub.getTypeParameters().length > 0 ? ScanUtil.wrap(sub) : sub, (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
+		final AnnotatedElement[] path = ScanUtil.findPath(sub.getTypeParameters().length > 0 ? ScanUtil.wrap(sub) : sub, (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
 		if (path == null)
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
 
@@ -51,10 +53,10 @@ public class Clazz {
 	public List<FieldEntry> getFields() {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		if (aClass.getSuperclass() != null)
-			fieldEntries.addAll(ScanHandler.create(aClass.getGenericSuperclass(), this, Direction.SUPER).getFields());
+			fieldEntries.addAll(ScanHandler.create(aClass.getAnnotatedSuperclass(), this, Direction.SUPER).getFields());
 
 		for (Field field : aClass.getDeclaredFields())
-			fieldEntries.add(new FieldEntry(ScanHandler.create(field.getGenericType(), this, Direction.NORMAL), field));
+			fieldEntries.add(new FieldEntry(ScanHandler.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
 
 		return fieldEntries;
 	}

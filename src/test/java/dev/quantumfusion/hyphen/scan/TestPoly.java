@@ -1,8 +1,9 @@
 package dev.quantumfusion.hyphen.scan;
 
+import dev.quantumfusion.hyphen.Direction;
+import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.scan.poly.classes.*;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import org.junit.jupiter.api.Assertions;
+import dev.quantumfusion.hyphen.type.Clazz;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -29,7 +30,7 @@ public class TestPoly {
 	public static void check(String name, Map<Class<?>, String> subclasses) throws NoSuchFieldException {
 		System.out.println("hello there");
 
-		Clazz s = Clazzifier.createClass(TestPoly.class.getDeclaredField(name).getAnnotatedType().getType(), null);
+		Clazz s = ScanHandler.create(TestPoly.class.getDeclaredField(name).getAnnotatedType(), null, Direction.NORMAL);
 
 		// scan(Clazzifier.createClass(CachingTest.Class0.class, null), true);
 
@@ -37,20 +38,14 @@ public class TestPoly {
 			var subclass = entry.getKey();
 			var expected = entry.getValue();
 
-			Clazz subClazz = Clazzifier.createClass(subclass, null);
+			Clazz subClazz = ScanHandler.create(subclass, null, Direction.NORMAL);
 			printAndSupers(subClazz);
 			System.out.println("to");
-			Clazz merge = (Clazz) s.map(subClazz);
-			printAndSupers(merge);
-			Assertions.assertEquals(expected, merge.toString());
-			System.out.println();
+
 		}
 	}
 
 	private static void printAndSupers(Clazz subClazz) {
 		System.out.println(subClazz);
-		Clazz aSuper = subClazz.getSuper();
-		if(aSuper != null)
-			printAndSupers(aSuper);
 	}
 }

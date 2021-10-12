@@ -1,12 +1,12 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class C3<C, D> extends C2<C> {
-	@Serialize
+	@Data
 	public D d;
 
 	public C3(C c, C b1, D d) {

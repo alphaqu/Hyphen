@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.Direction;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 
+import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +18,10 @@ public class ParaClazz extends Clazz {
 		this.parameters = parameters;
 	}
 
-	public static ParaClazz create(ParameterizedType type, Clazz ctx, Direction dir) {
+	public static ParaClazz create(AnnotatedParameterizedType type, Clazz ctx, Direction dir) {
 		var parameters = new HashMap<String, Clazz>();
-		var rawType = (Class<?>) type.getRawType();
-		ArrayUtil.dualFor(type.getActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
+		var rawType = (Class<?>) ((ParameterizedType)type.getType()).getRawType();
+		ArrayUtil.dualFor(type.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
 			parameters.put(internal.getTypeName(), ScanHandler.create((dir == Direction.SUB) ? internal : actual, ctx, dir));
 		});
 		return new ParaClazz(rawType, parameters);

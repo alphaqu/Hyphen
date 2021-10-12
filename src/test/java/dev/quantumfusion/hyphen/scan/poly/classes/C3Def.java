@@ -1,12 +1,12 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class C3Def<E> extends C3<E, String> {
-	@Serialize
+	@Data
 	public E e;
 
 	public C3Def(E e, E b1, String s, E e1) {

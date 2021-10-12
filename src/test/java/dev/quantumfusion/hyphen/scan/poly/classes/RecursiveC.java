@@ -1,14 +1,14 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotation.SerSubclasses;
-import dev.quantumfusion.hyphen.annotation.Serialize;
+import dev.quantumfusion.hyphen.annotations.DataSubclasses;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class RecursiveC<T> extends C1<T> {
-	@Serialize
-	@SerSubclasses({C1.class, RecursiveC.class})
+	@Data
+	@DataSubclasses({C1.class, RecursiveC.class})
 	public C1<T> foo;
 
 	public RecursiveC(T t, C1<T> foo) {

@@ -6,10 +6,7 @@ import dev.quantumfusion.hyphen.type.ParaClazz;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 
 public class ScanHandler {
 	public static final Clazz UNKNOWN = new Clazz(null) {
@@ -30,14 +27,14 @@ public class ScanHandler {
 	};
 
 
-	public static Clazz create(@NotNull Type type, @Nullable Clazz ctx, Direction dir) {
-		if (type instanceof Class<?> t) return Clazz.create(t, ctx, dir);
-		if (type instanceof ParameterizedType t) return ParaClazz.create(t, ctx, dir);
-		if (type instanceof GenericArrayType t) return ArrayClazz.createGeneric(t, ctx, dir);
-		if (type instanceof TypeVariable<?> t) {
+	public static Clazz create(@NotNull AnnotatedElement type, @Nullable Clazz ctx, Direction dir) {
+		if (type instanceof AnnotatedParameterizedType t) return ParaClazz.create(t, ctx, dir);
+		if (type instanceof AnnotatedArrayType t) return ArrayClazz.createGeneric(t, ctx, dir);
+		if (type instanceof AnnotatedTypeVariable t) {
 			if (ctx == null) throw new RuntimeException("Type Knowledge Required");
-			return ctx.define(t.getTypeName());
+			return ctx.define(t.getType().getTypeName());
 		}
+		if (type instanceof Class<?> t) return Clazz.create(t, ctx, dir);
 		throw new RuntimeException("Can not handle: " + type.getClass().getSimpleName());
 	}
 }

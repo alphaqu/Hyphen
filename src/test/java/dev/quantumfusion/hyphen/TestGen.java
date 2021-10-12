@@ -1,19 +1,15 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.annotation.Serialize;
-import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.annotations.Data;
 
 public class TestGen {
 
 	public static void main(String[] args) {
-		var factory = SerializerFactory.create(ByteBufferIO.class, Test.class, "things", true);
-		final HyphenSerializer<IOInterface, Test> build = factory.build();
-		build.get(ByteBufferIO.create(10000));
+
 	}
 
 	public static class Test {
-		@Serialize
+		@Data
 		public int anInt;
 
 		public Test(int anInt) {
