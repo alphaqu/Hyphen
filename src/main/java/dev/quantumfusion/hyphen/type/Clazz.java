@@ -5,23 +5,26 @@ import dev.quantumfusion.hyphen.FieldEntry;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class Clazz {
+	@NotNull
 	public final Class<?> aClass;
+	public final Annotation[] annotations;
 
-	public Clazz(Class<?> aClass) {
+	public Clazz(@NotNull Class<?> aClass, Annotation[] annotations) {
 		this.aClass = aClass;
+		this.annotations = annotations;
 	}
 
-	public static Clazz create(Class<?> type, Clazz ctx, Direction dir) {
-		if (type.isArray()) return ArrayClazz.create(type, ctx, dir);
-		return new Clazz(type);
+	public static Clazz create(AnnotatedType type, Clazz ctx, Direction dir) {
+		return new Clazz((Class<?>) type.getType(), type.getDeclaredAnnotations());
 	}
 
 
@@ -30,7 +33,7 @@ public class Clazz {
 	}
 
 	public List<FieldEntry> asSub(Class<?> sub) {
-		final AnnotatedElement[] path = ScanUtil.findPath(sub.getTypeParameters().length > 0 ? ScanUtil.wrap(sub) : sub, (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
+		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
 		if (path == null)
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
 

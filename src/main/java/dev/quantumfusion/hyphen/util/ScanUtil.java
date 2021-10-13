@@ -8,13 +8,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ScanUtil {
-	public static AnnotatedElement[] findPath(AnnotatedElement root, Predicate<AnnotatedElement> matcher, Function<AnnotatedElement, AnnotatedElement[]> splitter) {
-		var queue = new ArrayDeque<AnnotatedElement[]>();
-		var explored = new HashSet<AnnotatedElement>();
+	public static AnnotatedType[] findPath(AnnotatedType root, Predicate<AnnotatedType> matcher, Function<AnnotatedType, AnnotatedType[]> splitter) {
+		var queue = new ArrayDeque<AnnotatedType[]>();
+		var explored = new HashSet<AnnotatedType>();
 
 		// Add start entry
 		explored.add(root);
-		queue.add(new AnnotatedElement[]{root});
+		queue.add(new AnnotatedType[]{root});
 		while (!queue.isEmpty()) {
 			var parentPath = queue.poll();
 			var parentPathLength = parentPath.length;
@@ -26,7 +26,7 @@ public class ScanUtil {
 			if (matcher.test(parent)) return parentPath;
 
 			// iterate through children
-			for (AnnotatedElement child : splitter.apply(parent)) {
+			for (AnnotatedType child : splitter.apply(parent)) {
 				//if its already explored skip
 				if (explored.contains(child)) continue;
 				explored.add(child);
@@ -39,7 +39,7 @@ public class ScanUtil {
 		return null;
 	}
 
-	public static AnnotatedElement[] getInherited(AnnotatedElement type) {
+	public static AnnotatedType[] getInherited(AnnotatedType type) {
 		var clazz = getClassFrom(type);
 		var classInterface = clazz.getAnnotatedInterfaces();
 		var classSuper = clazz.getAnnotatedSuperclass();
@@ -47,22 +47,42 @@ public class ScanUtil {
 		return classInterface;
 	}
 
-	public static AnnotatedElement[] append(AnnotatedElement[] oldArray, AnnotatedElement value) {
+	public static AnnotatedType[] append(AnnotatedType[] oldArray, AnnotatedType value) {
 		final int length = oldArray.length;
-		AnnotatedElement[] out = new AnnotatedElement[length + 1];
+		AnnotatedType[] out = new AnnotatedType[length + 1];
 		System.arraycopy(oldArray, 0, out, 0, length);
 		out[length] = value;
 		return out;
 	}
 
-	public static AnnotatedElement wrap(Class<?> clazz) {
-		return clazz;
+	public static AnnotatedType wrap(Type clazz) {
+		return new AnnotatedType() {
+			@Override
+			public Type getType() {
+				return clazz;
+			}
+
+			@Override
+			public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+				return null;
+			}
+
+			@Override
+			public Annotation[] getAnnotations() {
+				return new Annotation[0];
+			}
+
+			@Override
+			public Annotation[] getDeclaredAnnotations() {
+				return new Annotation[0];
+			}
+		};
 	}
 
-	public static Class<?> getClassFrom(AnnotatedElement type) {
-		if (type instanceof Class<?> c) return c;
+	public static Class<?> getClassFrom(AnnotatedType type) {
+		if (type.getType() instanceof Class<?> c) return c;
 
-		if (type instanceof AnnotatedType annotatedType) {
+		if (type.getType() instanceof AnnotatedType annotatedType) {
 			final Type t = annotatedType.getType();
 			if (t instanceof Class<?> c) return c;
 		}

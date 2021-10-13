@@ -3,9 +3,12 @@ package dev.quantumfusion.hyphen.type;
 import dev.quantumfusion.hyphen.Direction;
 import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -13,18 +16,19 @@ import java.util.StringJoiner;
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
 
-	protected ParaClazz(Class<?> aClass, Map<String, Clazz> parameters) {
-		super(aClass);
+	protected ParaClazz(Class<?> aClass, Map<String, Clazz> parameters, Annotation[] annotations) {
+		super(aClass, annotations);
 		this.parameters = parameters;
 	}
 
-	public static ParaClazz create(AnnotatedParameterizedType type, Clazz ctx, Direction dir) {
+	public static ParaClazz create(AnnotatedParameterizedType annotatedType, Clazz ctx, Direction dir) {
 		var parameters = new HashMap<String, Clazz>();
-		var rawType = (Class<?>) ((ParameterizedType)type.getType()).getRawType();
-		ArrayUtil.dualFor(type.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
-			parameters.put(internal.getTypeName(), ScanHandler.create((dir == Direction.SUB) ? internal : actual, ctx, dir));
+		final ParameterizedType type = (ParameterizedType) annotatedType.getType();
+		var rawType = (Class<?>) type.getRawType();
+		ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
+			parameters.put(internal.getTypeName(), ScanHandler.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
 		});
-		return new ParaClazz(rawType, parameters);
+		return new ParaClazz(rawType, parameters, annotatedType.getAnnotations());
 	}
 
 	@Override

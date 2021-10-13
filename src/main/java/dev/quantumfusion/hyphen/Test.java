@@ -7,7 +7,7 @@ import java.util.List;
 public class Test {
 
 	public static void main(String[] args) {
-		final Clazz clx = new Clazz(Testing.class);
+		final Clazz clx = new Clazz(Testing.class, null);
 		for (FieldEntry f : clx.getFields()) {
 			final Clazz clazz = f.clazz();
 			for (FieldEntry field : clazz.getFields()) {
