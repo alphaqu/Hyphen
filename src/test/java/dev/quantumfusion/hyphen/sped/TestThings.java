@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.sped;
 
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
-import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.poly.classes.C0;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
@@ -23,7 +23,7 @@ public class TestThings {
 
 	@Test
 	public void main() throws NoSuchFieldException {
-		final Clazz things = ScanHandler.create(TestThings.class.getField("thing3").getAnnotatedType(), null, Direction.NORMAL);
+		final Clazz things = Clazzifier.create(TestThings.class.getField("thing3").getAnnotatedType(), null, Direction.NORMAL);
 		scan(things, C2.class);
 	}
 

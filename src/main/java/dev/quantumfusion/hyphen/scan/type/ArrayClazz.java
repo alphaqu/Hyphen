@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Direction;
-import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedArrayType;
@@ -16,7 +16,7 @@ public class ArrayClazz extends Clazz {
 	}
 
 	public static ArrayClazz create(AnnotatedType array, Clazz clz, Direction dir) {
-		return new ArrayClazz(Object[].class, ScanHandler.create(((AnnotatedArrayType) array).getAnnotatedGenericComponentType(), clz, dir), array.getAnnotations());
+		return new ArrayClazz(Object[].class, Clazzifier.create(((AnnotatedArrayType) array).getAnnotatedGenericComponentType(), clz, dir), array.getAnnotations());
 	}
 
 	@Override

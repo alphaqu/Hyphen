@@ -5,7 +5,7 @@ package dev.quantumfusion.hyphen;
  * @param <IO> IO Class
  * @param <D> Data Class
  */
-public interface Hyphen<IO, D> {
+public interface HyphenSerializer<IO, D> {
 	D get(IO io);
 	void put(IO io, D data);
 	int measure(D data);

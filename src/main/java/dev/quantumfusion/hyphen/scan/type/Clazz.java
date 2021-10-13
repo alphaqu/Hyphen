@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
-import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +44,7 @@ public class Clazz {
 		var fields = new LinkedHashMap<Field, Clazz>();
 		var ctx = this;
 		for (int i = path.length - 1; i >= 0; i--) {
-			ctx = ScanHandler.create(path[i], ctx, Direction.SUB);
+			ctx = Clazzifier.create(path[i], ctx, Direction.SUB);
 			for (var field : ctx.getFields()) {
 				var f = field.field();
 				var c = field.clazz();
@@ -61,11 +61,11 @@ public class Clazz {
 	public List<FieldEntry> getFields() {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		if (aClass.getSuperclass() != null)
-			fieldEntries.addAll(ScanHandler.create(aClass.getAnnotatedSuperclass(), this, Direction.SUPER).getFields());
+			fieldEntries.addAll(Clazzifier.create(aClass.getAnnotatedSuperclass(), this, Direction.SUPER).getFields());
 
 		for (Field field : aClass.getDeclaredFields()) {
 			if (field.getAnnotatedType().getDeclaredAnnotation(Data.class) != null) {
-				fieldEntries.add(new FieldEntry(ScanHandler.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
+				fieldEntries.add(new FieldEntry(Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
 			}
 		}
 

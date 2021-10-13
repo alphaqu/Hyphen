@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 
-public class ScanHandler {
+public class Clazzifier {
 	public static Clazz create(@NotNull Type type, @Nullable Clazz ctx, Direction dir) {
 		return create(ScanUtil.wrap(type), ctx, dir);
 	}

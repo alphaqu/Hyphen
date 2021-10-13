@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Direction;
-import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
@@ -27,7 +27,7 @@ public class ParaClazz extends Clazz {
 		var type = (ParameterizedType) annotatedType.getType();
 		var rawType = (Class<?>) type.getRawType();
 		ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
-			parameters.put(internal.getTypeName(), ScanHandler.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
+			parameters.put(internal.getTypeName(), Clazzifier.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
 		});
 		return new ParaClazz(rawType, parameters, annotatedType.getAnnotations());
 	}
