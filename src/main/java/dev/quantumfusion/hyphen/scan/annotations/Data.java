@@ -1,12 +1,12 @@
-package dev.quantumfusion.hyphen.annotations;
+package dev.quantumfusion.hyphen.scan.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Target(ElementType.TYPE_USE)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
-public @interface DataSubclasses {
-	Class<?>[] value();
+public @interface Data {
+	boolean nullable() default false;
 }

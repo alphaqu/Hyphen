@@ -1,8 +1,8 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.type.ArrayClazz;
-import dev.quantumfusion.hyphen.type.Clazz;
-import dev.quantumfusion.hyphen.type.ParaClazz;
+import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

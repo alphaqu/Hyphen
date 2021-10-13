@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.Data;
 
 public class D1<A> extends C0 {
 	@Data

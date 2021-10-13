@@ -1,6 +1,6 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.lang.reflect.Field;
 

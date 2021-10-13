@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen;
+package dev.quantumfusion.hyphen.scan;
 
 public enum Direction {
 	NORMAL,

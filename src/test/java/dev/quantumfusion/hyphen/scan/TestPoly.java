@@ -1,9 +1,7 @@
 package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.Direction;
-import dev.quantumfusion.hyphen.ScanHandler;
 import dev.quantumfusion.hyphen.scan.poly.classes.*;
-import dev.quantumfusion.hyphen.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;

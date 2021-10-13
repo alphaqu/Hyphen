@@ -1,14 +1,13 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Direction;
-import dev.quantumfusion.hyphen.FieldEntry;
-import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.annotations.Data;
+import dev.quantumfusion.hyphen.scan.Direction;
+import dev.quantumfusion.hyphen.scan.FieldEntry;
+import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.*;

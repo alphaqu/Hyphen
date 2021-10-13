@@ -1,7 +1,6 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.FieldEntry;
-import org.jetbrains.annotations.NotNull;
+import dev.quantumfusion.hyphen.scan.FieldEntry;
 
 import java.lang.annotation.Annotation;
 import java.util.List;

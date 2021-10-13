@@ -1,14 +1,14 @@
 package dev.quantumfusion.hyphen.sped;
 
-import dev.quantumfusion.hyphen.Direction;
-import dev.quantumfusion.hyphen.FieldEntry;
-import dev.quantumfusion.hyphen.ScanHandler;
-import dev.quantumfusion.hyphen.annotations.Data;
+import dev.quantumfusion.hyphen.scan.Direction;
+import dev.quantumfusion.hyphen.scan.FieldEntry;
+import dev.quantumfusion.hyphen.scan.ScanHandler;
+import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.poly.classes.C0;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1;
-import dev.quantumfusion.hyphen.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

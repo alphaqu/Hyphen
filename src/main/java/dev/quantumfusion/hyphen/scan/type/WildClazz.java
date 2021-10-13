@@ -1,6 +1,6 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Direction;
+import dev.quantumfusion.hyphen.scan.Direction;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.WildcardType;

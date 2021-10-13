@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
-import dev.quantumfusion.hyphen.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.Data;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;

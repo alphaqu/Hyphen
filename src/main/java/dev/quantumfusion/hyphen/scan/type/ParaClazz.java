@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen.type;
+package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.Direction;
-import dev.quantumfusion.hyphen.ScanHandler;
+import dev.quantumfusion.hyphen.scan.Direction;
+import dev.quantumfusion.hyphen.scan.ScanHandler;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
