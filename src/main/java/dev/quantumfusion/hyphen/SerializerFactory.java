@@ -1,10 +1,12 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 /**
  * The Factory where you create a {@link HyphenSerializer} <br>
- *
+ * <p>
  * If you are looking at the code, this is mostly a wrapper around {@link SerializerHandler}
  * as this class requires a lot of documentation which takes up a lot of screen space.
  *
@@ -33,8 +35,17 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		this.serializerHandler.options.put(option, value);
 	}
 
+	// ====================================== DEFINITIONS =====================================
+	//TODO add definitions
+
 
 	public HyphenSerializer<IO, D> build() {
 		return serializerHandler.codegenHandler.build();
+	}
+
+
+	@FunctionalInterface
+	public interface DynamicDefCreator {
+		SerializerDef create(Clazz clazz);
 	}
 }
