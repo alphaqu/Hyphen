@@ -6,6 +6,7 @@ import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;

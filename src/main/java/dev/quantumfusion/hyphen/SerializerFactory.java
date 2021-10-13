@@ -1,16 +1,25 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.io.IOInterface;
 
+/**
+ * The Factory where you create a {@link HyphenSerializer} <br>
+ *
+ * If you are looking at the code, this is mostly a wrapper around {@link SerializerHandler}
+ * as this class requires a lot of documentation which takes up a lot of screen space.
+ *
+ * @param <IO> IO Class
+ * @param <D>  Data Class
+ */
 public class SerializerFactory<IO extends IOInterface, D> {
-	// Internal Handlers
-	private final CodegenHandler<IO, D> codegenHandler;
+	//For anyone reading. Here is the logic. This class is just documentation
+	private final SerializerHandler<IO, D> serializerHandler;
 
 	private SerializerFactory(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
-		this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug);
+		this.serializerHandler = new SerializerHandler<>(ioClass, dataClass, debug);
 	}
 
+	// ======================================== CREATE ========================================
 	public static <IO extends IOInterface, D> SerializerFactory<IO, D> create(Class<IO> ioClass, Class<D> dataClass) {
 		return new SerializerFactory<>(ioClass, dataClass, false);
 	}
@@ -19,7 +28,13 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		return new SerializerFactory<>(ioClass, dataClass, true);
 	}
 
+	// ======================================== OPTION ========================================
+	public void setOption(Options option, Boolean value) {
+		this.serializerHandler.options.put(option, value);
+	}
+
+
 	public HyphenSerializer<IO, D> build() {
-		return codegenHandler.build();
+		return serializerHandler.codegenHandler.build();
 	}
 }

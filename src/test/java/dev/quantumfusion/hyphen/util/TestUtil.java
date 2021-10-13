@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 
