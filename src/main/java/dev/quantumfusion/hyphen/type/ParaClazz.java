@@ -7,6 +7,7 @@ import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -21,9 +22,10 @@ public class ParaClazz extends Clazz {
 		this.parameters = parameters;
 	}
 
-	public static ParaClazz create(AnnotatedParameterizedType annotatedType, Clazz ctx, Direction dir) {
+	public static ParaClazz create(AnnotatedType rawAnnotatedType, Clazz ctx, Direction dir) {
 		var parameters = new HashMap<String, Clazz>();
-		final ParameterizedType type = (ParameterizedType) annotatedType.getType();
+		var annotatedType = (AnnotatedParameterizedType) rawAnnotatedType;
+		var type = (ParameterizedType) annotatedType.getType();
 		var rawType = (Class<?>) type.getRawType();
 		ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
 			parameters.put(internal.getTypeName(), ScanHandler.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));

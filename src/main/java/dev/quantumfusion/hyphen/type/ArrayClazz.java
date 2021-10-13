@@ -5,6 +5,7 @@ import dev.quantumfusion.hyphen.ScanHandler;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedArrayType;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.GenericArrayType;
 
 public class ArrayClazz extends Clazz {
@@ -16,8 +17,9 @@ public class ArrayClazz extends Clazz {
 	}
 
 
-	public static ArrayClazz createGeneric(AnnotatedArrayType array, Clazz clz, Direction dir) {
-		return new ArrayClazz(Object[].class, ScanHandler.create(array.getAnnotatedGenericComponentType(), clz, dir), array.getAnnotations());
+
+	public static ArrayClazz create(AnnotatedType array, Clazz clz, Direction dir) {
+		return new ArrayClazz(Object[].class, ScanHandler.create(((AnnotatedArrayType)array).getAnnotatedGenericComponentType(), clz, dir), array.getAnnotations());
 	}
 
 	@Override

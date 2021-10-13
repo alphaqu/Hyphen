@@ -56,71 +56,10 @@ public class ScanUtil {
 	}
 
 	public static AnnotatedType wrap(Type clazz) {
-		if (clazz instanceof ParameterizedType parameterizedType)
-			return new AnnotatedParameterizedTypeWrap(parameterizedType);
-		if (clazz instanceof TypeVariable typeVariable) return new AnnotatedTypeVariableWrap(typeVariable);
-		if (clazz instanceof GenericArrayType genericArrayType) return new AnnotatedArrayTypeWrap(genericArrayType);
-		if (clazz instanceof Class<?> c) if (c.isArray()) return new AnnotatedArrayTypeWrap(c);
-
 		return new AnnotatedWrapped(clazz);
 	}
 
-	private static class AnnotatedParameterizedTypeWrap extends AnnotatedWrapped implements AnnotatedParameterizedType {
-		private final AnnotatedType[] annotatedTypes;
-
-		public AnnotatedParameterizedTypeWrap(ParameterizedType type) {
-			super(type);
-			final Type[] actualTypeArguments = type.getActualTypeArguments();
-			annotatedTypes = new AnnotatedType[actualTypeArguments.length];
-			for (int i = 0; i < actualTypeArguments.length; i++) {
-				annotatedTypes[i] = wrap(actualTypeArguments[i]);
-			}
-		}
-
-		@Override
-		public AnnotatedType[] getAnnotatedActualTypeArguments() {
-			return annotatedTypes;
-		}
-	}
-
-	private static class AnnotatedArrayTypeWrap extends AnnotatedWrapped implements AnnotatedArrayType {
-		private final AnnotatedType component;
-
-		public AnnotatedArrayTypeWrap(Type type) {
-			super(type);
-			if (type instanceof Class<?> c) {
-				component = wrap(c.getComponentType());
-			} else if (type instanceof GenericArrayType arr) {
-				component = wrap(arr.getGenericComponentType());
-			} else {
-				throw new RuntimeException("what");
-			}
-		}
-
-		@Override
-		public AnnotatedType getAnnotatedGenericComponentType() {
-			return component;
-		}
-	}
-
-	private static class AnnotatedTypeVariableWrap extends AnnotatedWrapped implements AnnotatedTypeVariable {
-		public AnnotatedTypeVariableWrap(TypeVariable<?> type) {
-			super(type);
-		}
-
-		@Override
-		public AnnotatedType[] getAnnotatedBounds() {
-			return ((TypeVariable<?>) type).getAnnotatedBounds();
-		}
-	}
-
-
-	private static class AnnotatedWrapped implements AnnotatedType {
-		protected final Type type;
-
-		public AnnotatedWrapped(Type type) {
-			this.type = type;
-		}
+	private record AnnotatedWrapped(Type type) implements AnnotatedType {
 
 		@Override
 		public Type getType() {
