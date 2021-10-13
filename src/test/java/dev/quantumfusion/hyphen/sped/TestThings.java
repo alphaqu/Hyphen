@@ -9,6 +9,7 @@ import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1;
 import dev.quantumfusion.hyphen.type.Clazz;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -17,22 +18,25 @@ public class TestThings {
 	public CoWrappedC1<String, C2<String>> things;
 	@Data
 	public C2<C1<C0>> thigns2;
+	@Data
+	public C1<C2<Object>> thing3;
 
-	public static void main(String[] args) throws NoSuchFieldException {
-		final Clazz things = ScanHandler.create(TestThings.class.getField("things").getAnnotatedType(), null, Direction.NORMAL);
-		scan(things);
+	@Test
+	public void main() throws NoSuchFieldException {
+		final Clazz things = ScanHandler.create(TestThings.class.getField("thing3").getAnnotatedType(), null, Direction.NORMAL);
+		scan(things, C2.class);
 	}
 
-	public static void scan(Clazz clazz) {
+	public static void scan(Clazz clazz, Class<?> cls) {
 		System.out.println(clazz);
-		for (FieldEntry field : clazz.getFields()) {
+		for (FieldEntry field : cls == null ? clazz.getFields() : clazz.asSub(cls)) {
 			System.out.println("\t" + field);
 		}
 		System.out.println();
 
 		List<FieldEntry> fields = clazz.getFields();
 		for (FieldEntry field : fields) {
-			scan(field.clazz());
+			scan(field.clazz(), null);
 		}
 	}
 }

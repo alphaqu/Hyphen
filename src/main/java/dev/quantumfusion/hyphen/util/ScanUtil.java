@@ -80,12 +80,12 @@ public class ScanUtil {
 	}
 
 	public static Class<?> getClassFrom(AnnotatedType type) {
-		if (type.getType() instanceof Class<?> c) return c;
+		return getClassFrom(type.getType());
+	}
 
-		if (type.getType() instanceof AnnotatedType annotatedType) {
-			final Type t = annotatedType.getType();
-			if (t instanceof Class<?> c) return c;
-		}
+	public static Class<?> getClassFrom(Type type) {
+		if(type instanceof Class<?> c) return c;
+		if(type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
 
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
