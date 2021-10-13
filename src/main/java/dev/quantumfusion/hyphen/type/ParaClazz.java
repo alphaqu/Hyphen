@@ -35,7 +35,7 @@ public class ParaClazz extends Clazz {
 
 	@Override
 	public Clazz define(String typeName) {
-		return parameters.getOrDefault(typeName, ScanHandler.UNKNOWN);
+		return parameters.getOrDefault(typeName, UnknownClazz.UNKNOWN);
 	}
 
 	@Override

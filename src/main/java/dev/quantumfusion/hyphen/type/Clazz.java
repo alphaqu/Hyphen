@@ -18,18 +18,23 @@ public class Clazz {
 	public final Class<?> aClass;
 	public final Annotation[] annotations;
 
-	public Clazz(@NotNull Class<?> aClass, Annotation[] annotations) {
+	public Clazz(@NotNull Class<?> aClass) {
+		this.aClass = aClass;
+		this.annotations = new Annotation[0];
+	}
+
+	protected Clazz(@NotNull Class<?> aClass, Annotation[] annotations) {
 		this.aClass = aClass;
 		this.annotations = annotations;
 	}
 
-	public static Clazz create(AnnotatedType type, Clazz ctx, Direction dir) {
+	public static Clazz create(AnnotatedType type) {
 		return new Clazz((Class<?>) type.getType(), type.getDeclaredAnnotations());
 	}
 
 
 	public Clazz define(String typeName) {
-		return ScanHandler.UNKNOWN;
+		return UnknownClazz.UNKNOWN;
 	}
 
 	public List<FieldEntry> asSub(Class<?> sub) {
