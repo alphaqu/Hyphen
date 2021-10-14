@@ -4,6 +4,8 @@ import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
@@ -16,12 +18,12 @@ import java.util.StringJoiner;
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
 
-	protected ParaClazz(Class<?> aClass, Map<String, Clazz> parameters, Annotation[] annotations) {
-		super(aClass, annotations);
+	public ParaClazz(@NotNull Class<?> aClass, Annotation[] sourceAnnotations, Annotation[] annotations, Map<String, Clazz> parameters) {
+		super(aClass, sourceAnnotations, annotations);
 		this.parameters = parameters;
 	}
 
-	public static ParaClazz create(AnnotatedType rawAnnotatedType, Clazz ctx, Direction dir) {
+	public static ParaClazz create(AnnotatedType rawAnnotatedType, @Nullable Clazz ctx, Direction dir) {
 		var parameters = new HashMap<String, Clazz>();
 		var annotatedType = (AnnotatedParameterizedType) rawAnnotatedType;
 		var type = (ParameterizedType) annotatedType.getType();
@@ -29,7 +31,7 @@ public class ParaClazz extends Clazz {
 		ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
 			parameters.put(internal.getTypeName(), Clazzifier.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
 		});
-		return new ParaClazz(rawType, parameters, annotatedType.getAnnotations());
+		return new ParaClazz(rawType, ScanUtil.parseAnnotations(ctx), annotatedType.getAnnotations(), parameters);
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -13,26 +14,41 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Clazz {
 	@NotNull
 	public final Class<?> aClass;
 	public final Annotation[] annotations;
+	public final Annotation[] parentClassAnnotations;
+
+	protected Clazz(@NotNull Class<?> aClass, Annotation[] sourceAnnotations, Annotation[] annotations) {
+		this.aClass = aClass;
+		this.annotations = annotations;
+		this.parentClassAnnotations = sourceAnnotations;
+	}
 
 	public Clazz(@NotNull Class<?> aClass) {
 		this.aClass = aClass;
 		this.annotations = new Annotation[0];
+		this.parentClassAnnotations = new Annotation[0];
 	}
 
-	protected Clazz(@NotNull Class<?> aClass, Annotation[] annotations) {
-		this.aClass = aClass;
-		this.annotations = annotations;
+	public static Clazz create(AnnotatedType type, @Nullable Clazz ctx) {
+		return new Clazz((Class<?>) type.getType(), ScanUtil.parseAnnotations(ctx), type.getDeclaredAnnotations());
 	}
 
-	public static Clazz create(AnnotatedType type) {
-		return new Clazz((Class<?>) type.getType(), type.getDeclaredAnnotations());
+	public Class<?> getDefinedClass() {
+		return aClass;
 	}
 
+	public Class<?> getBytecodeClass() {
+		return aClass;
+	}
+
+	public Annotation[] getClassAnnotations() {
+		return aClass.getDeclaredAnnotations();
+	}
 
 	public Clazz define(String typeName) {
 		return UnknownClazz.UNKNOWN;
@@ -55,9 +71,7 @@ public class Clazz {
 			}
 		}
 
-		var out = new ArrayList<FieldEntry>();
-		fields.forEach((field, clazz) -> out.add(new FieldEntry(clazz, field)));
-		return out;
+		return fields.entrySet().stream().map(FieldEntry::create).collect(Collectors.toList());
 	}
 
 	public List<FieldEntry> getFields() {
@@ -67,7 +81,7 @@ public class Clazz {
 
 		for (Field field : aClass.getDeclaredFields()) {
 			if (field.getAnnotatedType().getDeclaredAnnotation(Data.class) != null) {
-				fieldEntries.add(new FieldEntry(Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL), field));
+				fieldEntries.add(new FieldEntry(field, Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL)));
 			}
 		}
 

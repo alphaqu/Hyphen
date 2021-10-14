@@ -1,6 +1,10 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.scan.type.Clazz;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -55,6 +59,11 @@ public class ScanUtil {
 		System.arraycopy(oldArray, 0, out, 0, length);
 		out[length] = value;
 		return out;
+	}
+
+	public static Annotation[] parseAnnotations(@Nullable Clazz clazz) {
+		if(clazz == null) return new Annotation[0];
+		return clazz.getClassAnnotations();
 	}
 
 	public static AnnotatedType wrap(Type clazz) {
