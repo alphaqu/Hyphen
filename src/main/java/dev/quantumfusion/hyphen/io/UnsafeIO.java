@@ -21,6 +21,24 @@ public final class UnsafeIO implements IOInterface {
 	private static final int DOUBLE_OFFSET = UNSAFE.ARRAY_DOUBLE_BASE_OFFSET;
 	private static final long STRING_FIELD_OFFSET;
 	private static final long STRING_ENCODING_OFFSET;
+	//If an array is below this value it will just use the regular methods. Else it will use memcpy
+	private static final int COPY_MEMORY_THRESHOLD = 10;
+
+	static {
+		try {
+			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
+			STRING_ENCODING_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("coder"));
+		} catch (NoSuchFieldException e) {
+			throw new RuntimeException();
+		}
+	}
+
+	private final long address;
+	private long currentAddress;
+	private UnsafeIO(final long address) {
+		this.address = address;
+		this.currentAddress = address;
+	}
 
 	private static sun.misc.Unsafe getUnsafeInstance() {
 		Class<sun.misc.Unsafe> clazz = sun.misc.Unsafe.class;
@@ -39,26 +57,6 @@ public final class UnsafeIO implements IOInterface {
 		}
 
 		throw new IllegalStateException("Unsafe is unavailable.");
-	}
-
-	//If an array is below this value it will just use the regular methods. Else it will use memcpy
-	private static final int COPY_MEMORY_THRESHOLD = 10;
-
-	static {
-		try {
-			STRING_FIELD_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("value"));
-			STRING_ENCODING_OFFSET = UNSAFE.objectFieldOffset(String.class.getDeclaredField("coder"));
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException();
-		}
-	}
-
-	private final long address;
-	private long currentAddress;
-
-	private UnsafeIO(final long address) {
-		this.address = address;
-		this.currentAddress = address;
 	}
 
 	@SuppressWarnings("FinalStaticMethod")

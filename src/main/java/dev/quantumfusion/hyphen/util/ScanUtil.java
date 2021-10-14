@@ -1,7 +1,9 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.function.Function;
@@ -59,6 +61,17 @@ public class ScanUtil {
 		return new AnnotatedWrapped(clazz);
 	}
 
+	public static Class<?> getClassFrom(AnnotatedType type) {
+		return getClassFrom(type.getType());
+	}
+
+	public static Class<?> getClassFrom(Type type) {
+		if (type instanceof Class<?> c) return c;
+		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
+
+		throw new IllegalArgumentException(type.getClass() + ": " + type);
+	}
+
 	private record AnnotatedWrapped(Type type) implements AnnotatedType {
 
 		@Override
@@ -85,16 +98,5 @@ public class ScanUtil {
 		public AnnotatedType getAnnotatedOwnerType() {
 			return null;
 		}
-	}
-
-	public static Class<?> getClassFrom(AnnotatedType type) {
-		return getClassFrom(type.getType());
-	}
-
-	public static Class<?> getClassFrom(Type type) {
-		if (type instanceof Class<?> c) return c;
-		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
-
-		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
 }

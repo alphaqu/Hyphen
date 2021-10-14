@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.scan.FieldEntry;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-public class UnknownClazz extends Clazz{
+public class UnknownClazz extends Clazz {
 	public static final Clazz UNKNOWN = new UnknownClazz();
 
 	private UnknownClazz() {

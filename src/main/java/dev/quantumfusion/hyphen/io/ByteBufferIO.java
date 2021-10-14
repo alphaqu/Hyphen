@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
  * <h2>Useful for debug and when UnsafeIO is unavailable.</h2>
  */
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod", "unused"})
-public final class ByteBufferIO  implements IOInterface{
+public final class ByteBufferIO implements IOInterface {
 	private final ByteBuffer byteBuffer;
 
 	private ByteBufferIO(final ByteBuffer buffer) {

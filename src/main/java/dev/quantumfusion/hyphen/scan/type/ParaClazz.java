@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
+import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 

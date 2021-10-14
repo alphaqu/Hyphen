@@ -16,24 +16,12 @@ public class HyphenException extends RuntimeException {
 		super(cause);
 	}
 
-	public HyphenException append(Clazz clazz) {
-		path.add(0, clazz);
-		return this;
-	}
-
 	public static HyphenException thr(Clazz clazz, Throwable throwable) {
 		if (throwable instanceof HyphenException exception) return exception.append(clazz);
 		var exception = new HyphenException(throwable);
 		exception.append(clazz);
 		return exception;
 	}
-	//	Super Duper errror
-	//		- NullPointerException
-	//
-	//	Path
-	//		- thign
-	//		-
-
 
 	private static void printTitle(StringBuilder sb, String name) {
 		sb.append('\t').append(name).append('\n');
@@ -45,6 +33,11 @@ public class HyphenException extends RuntimeException {
 
 	private static void printEntry(StringBuilder sb, String test) {
 		sb.append("\t\t").append(" - ").append(test).append('\n');
+	}
+
+	public HyphenException append(Clazz clazz) {
+		path.add(0, clazz);
+		return this;
 	}
 
 	public String niceException() {
