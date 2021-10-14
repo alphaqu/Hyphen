@@ -13,7 +13,7 @@ import java.util.Map;
  * @param <IO> IO Class
  * @param <D>  Data Class
  */
-class SerializerHandler<IO extends IOInterface, D> {
+public class SerializerHandler<IO extends IOInterface, D> {
 	// Options, Shares with codegenHandler
 	public final EnumMap<Options, Boolean> options;
 
