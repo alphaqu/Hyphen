@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.codegen;
 import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -33,7 +34,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 	public MethodInfo apply(MethodInfo info) {
 		if (methodDedup != null)
-			info.setName(String.valueOf(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()), this);
+			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()), this);
 		return info;
 	}
 
