@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.*;
 
@@ -43,10 +44,7 @@ public class ClassDef extends MethodDef {
 			mh.varOp(ILOAD,  "io", "data");
 			//TODO add get method support / generic support
 			mh.visitFieldInsn(GETFIELD, aClass, fieldEntry.field().getName(), fieldEntry.field().getType());
-			final Clazz clazz = fieldEntry.clazz();
-			if (clazz.getDefinedClass() != clazz.getBytecodeClass()) {
-				mh.visitTypeInsn(CHECKCAST, clazz.getDefinedClass());
-			}
+			GenUtil.shouldCastGeneric(mh, fieldEntry.clazz());
 			def.writePut(mh);
 		});
 		mh.op(RETURN);
@@ -60,10 +58,7 @@ public class ClassDef extends MethodDef {
 			entry.getValue().writeMeasure(mh, () -> {
 				mh.varOp(ILOAD,  "data");
 				mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
-				final Clazz clazz = entry.getKey().clazz();
-				if (clazz.getDefinedClass() != clazz.getBytecodeClass()) {
-					mh.visitTypeInsn(CHECKCAST, clazz.getDefinedClass());
-				}
+				GenUtil.shouldCastGeneric(mh, entry.getKey().clazz());
 			});
 			if (i++ != 0) {
 				mh.op(IADD);

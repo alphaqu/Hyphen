@@ -1,6 +1,10 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.objectweb.asm.Type;
+
+import static org.objectweb.asm.Opcodes.CHECKCAST;
 
 public final class GenUtil {
 	public static Type[] of(Class<?>[] classes) {
@@ -20,6 +24,12 @@ public final class GenUtil {
 
 	public static String desc(Class<?> aClass) {
 		return Type.getDescriptor(aClass);
+	}
+
+	public static void shouldCastGeneric(MethodHandler mh, Clazz clazz) {
+		if (clazz.getDefinedClass() != clazz.getBytecodeClass()) {
+			mh.visitTypeInsn(CHECKCAST, clazz.getDefinedClass());
+		}
 	}
 
 	public static String methodDesc(Class<?> returnClass, Class<?>... parameters) {
