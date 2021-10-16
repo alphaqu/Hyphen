@@ -14,10 +14,14 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
 	private final Label start = new Label();
 	public final String self;
+	public final Class<?> dataClass;
+	public final Class<?> ioClass;
 
-	public MethodHandler(MethodVisitor methodVisitor, String self) {
+	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass) {
 		super(ASM9, methodVisitor);
 		this.self = self;
+		this.dataClass = dataClass;
+		this.ioClass = ioClass;
 		this.visitCode();
 		this.visitLabel(start);
 	}
@@ -31,7 +35,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		super.visitFieldInsn(opcode, GenUtil.internal(owner), name, GenUtil.desc(descriptor));
 	}
 
-	public void visitMethodInsn(int opcode, Class<?> owner, String name, Class<?> returnClass, Class<?> parameters) {
+	public void visitMethodInsn(int opcode, Class<?> owner, String name, Class<?> returnClass, Class<?>... parameters) {
 		super.visitMethodInsn(opcode, GenUtil.internal(owner), name, GenUtil.methodDesc(returnClass, parameters), opcode == INVOKEINTERFACE);
 	}
 

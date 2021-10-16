@@ -37,4 +37,8 @@ public final class GenUtil {
 		}
 		return new String(result);
 	}
+
+	public static String upperCase(String str) {
+		return str.substring(0,1).toUpperCase() + str.substring(1);
+	}
 }

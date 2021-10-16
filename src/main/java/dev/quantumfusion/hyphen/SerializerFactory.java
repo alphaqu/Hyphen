@@ -36,7 +36,15 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	}
 
 	// ====================================== DEFINITIONS =====================================
-	//TODO add definitions
+	public void addStaticDef(Class<?> target, SerializerDef def) {
+		this.serializerHandler.definitions.put(target, (clazz, sh) -> def);
+	}
+
+	public void addDynamicDef(Class<?> target, DynamicDefCreator defCreator) {
+		this.serializerHandler.definitions.put(target, defCreator);
+	}
+
+
 	public HyphenSerializer<IO, D> build() {
 		return serializerHandler.codegenHandler.build();
 	}
