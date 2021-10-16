@@ -38,8 +38,4 @@ public final class GenUtil {
 		}
 		return builder.toString();
 	}
-
-	public static void main(String[] args) {
-		System.out.println(hyphenShortMethodName(0));
-	}
 }
