@@ -30,7 +30,7 @@ public class ArrayClazz extends Clazz {
 
 	@Override
 	public String toString() {
-		return component.toString() + "[]";
+		return component.toString() + "]";
 	}
 
 	@Override
