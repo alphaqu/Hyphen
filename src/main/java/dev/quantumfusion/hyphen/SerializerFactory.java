@@ -46,7 +46,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 
 
 	public HyphenSerializer<IO, D> build() {
-		return serializerHandler.codegenHandler.build();
+		return serializerHandler.build();
 	}
 
 

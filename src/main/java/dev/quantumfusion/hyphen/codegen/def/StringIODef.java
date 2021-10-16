@@ -20,7 +20,7 @@ public class StringIODef implements SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh) {
+	public void writeMeasure(MethodHandler mh, Runnable alloc) {
 		if (mh.ioClass == UnsafeIO.class) {
 			//TODO unsafeStringMeasure
 		} else {

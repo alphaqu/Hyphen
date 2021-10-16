@@ -9,6 +9,7 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The Actual generation logic. For usage use {@link SerializerFactory} instead.
@@ -22,14 +23,25 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	public final EnumMap<Options, Boolean> options;
 	public final CodegenHandler<IO, D> codegenHandler;
+	public final Class<?> dataClass;
+	public final Class<?> ioClass;
 
 	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
+	public final Map<Clazz, MethodDef> methods = new HashMap<>();
 
 	public SerializerHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
 		// Initialize options
 		this.options = new EnumMap<>(Options.class);
 		for (Options value : Options.values()) this.options.put(value, value.defaultValue);
+
+		this.dataClass = dataClass;
+		this.ioClass = ioClass;
+
+		if (debug) {
+			this.options.put(Options.SHORT_METHOD_NAMES, false);
+			this.options.put(Options.SHORT_VARIABLE_NAMES, false);
+		}
 
 		this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options);
 		this.definitions = new HashMap<>(BUILD_IN_DEFINITIONS);
@@ -46,50 +58,40 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	private SerializerDef acquireDefNew(Clazz clazz) {
 		var definedClass = clazz.getDefinedClass();
-
 		//TODO Discuss about inherited definitions
-		if (definitions.containsKey(definedClass)) {
+		if (definitions.containsKey(definedClass))
 			return definitions.get(definedClass).create(clazz, this);
-		}
 
+		final MethodDef methodDef = acquireDefNewMethod(clazz);
+		methods.put(clazz, methodDef);
+		return methodDef;
+	}
+
+	private MethodDef acquireDefNewMethod(Clazz clazz) {
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
 		else return new ClassDef(this, clazz);
 	}
 
+	public HyphenSerializer<IO, D> build() {
+		codegenHandler.setupSpark(acquireDefNewMethod(new Clazz(dataClass)));
+		methods.forEach((clazz, def) -> codegenHandler.writeMethod(def, false));
+		return codegenHandler.export();
+	}
+
 	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
 
 	static {
-		addStaticDef(boolean.class, new IODef(boolean.class));
-		addStaticDef(byte.class, new IODef(byte.class));
-		addStaticDef(short.class, new IODef(short.class));
-		addStaticDef(char.class, new IODef(char.class));
-		addStaticDef(int.class, new IODef(int.class));
-		addStaticDef(float.class, new IODef(float.class));
-		addStaticDef(long.class, new IODef(long.class));
-		addStaticDef(double.class, new IODef(double.class));
-		addStaticDef(Boolean.class, new BoxedIODef(Boolean.class));
-		addStaticDef(Byte.class, new BoxedIODef(Byte.class));
-		addStaticDef(Short.class, new BoxedIODef(Short.class));
-		addStaticDef(Character.class, new BoxedIODef(Character.class));
-		addStaticDef(Integer.class, new BoxedIODef(Integer.class));
-		addStaticDef(Float.class, new BoxedIODef(Float.class));
-		addStaticDef(Long.class, new BoxedIODef(Long.class));
-		addStaticDef(Double.class, new BoxedIODef(Double.class));
-
-		addStaticDef(boolean[].class, new IODef(boolean[].class));
-		addStaticDef(byte[].class, new IODef(byte[].class));
-		addStaticDef(short[].class, new IODef(short[].class));
-		addStaticDef(char[].class, new IODef(char[].class));
-		addStaticDef(int[].class, new IODef(int[].class));
-		addStaticDef(float[].class, new IODef(float[].class));
-		addStaticDef(long[].class, new IODef(long[].class));
-		addStaticDef(double[].class, new IODef(double[].class));
-
-		addStaticDef(String.class, new StringIODef());
+		addStaticDef(IODef::new,
+				boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class,
+				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
+		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 	}
 
-	private static void addStaticDef(Class<?> clazz, SerializerDef def) {
-		BUILD_IN_DEFINITIONS.put(clazz, (c, sh) -> def);
+	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
+		for (Class<?> aClass : clazz) {
+			BUILD_IN_DEFINITIONS.put(aClass, (c, sh) -> creator.apply(aClass));
+		}
 	}
 }

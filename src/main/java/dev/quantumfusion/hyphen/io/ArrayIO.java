@@ -274,54 +274,63 @@ public final class ArrayIO implements IOInterface {
 	// ====================================== PUT_ARR ======================================== //
 	@Override
 	public final void putBooleanArray(final boolean[] value) {
+		putInt(value.length);
 		for (final boolean b : value) putByte((byte) (b ? 1 : 0));
 	}
 
 
 	@Override
 	public final void putByteArray(final byte[] value) {
+		putInt(value.length);
 		for (final byte b : value) putByte(b);
 	}
 
 
 	@Override
 	public final void putCharArray(final char[] value) {
+		putInt(value.length);
 		for (final char c : value) putChar(c);
 	}
 
 
 	@Override
 	public final void putShortArray(final short[] value) {
+		putInt(value.length);
 		for (final short s : value) putShort(s);
 	}
 
 
 	@Override
 	public final void putIntArray(final int[] value) {
+		putInt(value.length);
 		for (final int i : value) putInt(i);
 	}
 
 
 	@Override
 	public final void putLongArray(final long[] value) {
+		putInt(value.length);
 		for (final long l : value) putLong(l);
 	}
 
 
 	@Override
 	public final void putFloatArray(final float[] value) {
+		putInt(value.length);
 		for (final float f : value) putFloat(f);
 	}
 
 
 	@Override
 	public final void putDoubleArray(final double[] value) {
+		putInt(value.length);
 		for (final double d : value) putDouble(d);
 	}
 
 
 	@Override
 	public final void putStringArray(final String[] value) {
+		putInt(value.length);
 		for (final String s : value) putString(s);
 	}
 }

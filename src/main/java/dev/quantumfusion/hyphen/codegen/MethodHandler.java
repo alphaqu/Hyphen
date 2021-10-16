@@ -1,10 +1,12 @@
 package dev.quantumfusion.hyphen.codegen;
 
 import dev.quantumfusion.hyphen.util.GenUtil;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,15 +18,42 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public final String self;
 	public final Class<?> dataClass;
 	public final Class<?> ioClass;
+	private boolean compactVars;
 
 	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass) {
 		super(ASM9, methodVisitor);
 		this.self = self;
 		this.dataClass = dataClass;
 		this.ioClass = ioClass;
+		this.compactVars = false;
+
 		this.visitCode();
 		this.visitLabel(start);
 	}
+
+	public MethodHandler(ClassWriter cw, MethodInfo methodInfo, String self, Class<?> dataClass, Class<?> ioClass, boolean raw, boolean compactVars) {
+		this(cw.visitMethod(ACC_PUBLIC | (raw ? 0 : ACC_STATIC) | ACC_FINAL,
+				methodInfo.getName(),
+				GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
+				null, null), self, dataClass, ioClass);
+
+		if (raw) this.addVar("this", Object.class);
+		this.compactVars = compactVars;
+	}
+
+	private static Class<?>[] parameters(Class<?>[] parameters, boolean raw) {
+		if (raw) {
+			final Class<?>[] a = new Class[parameters.length];
+			Arrays.fill(a, Object.class);
+			return a;
+		}
+		return parameters;
+	}
+	private static Class<?> convert(Class<?> parameters, boolean raw) {
+		if (raw) if (!parameters.isPrimitive()) return Object.class;
+		return parameters;
+	}
+
 
 	// Classification:tm:
 	public void visitTypeInsn(int opcode, Class<?> type) {
@@ -78,9 +107,12 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public void close() {
 		Label stop = new Label();
 		this.visitLabel(stop);
+
+		int i = 0;
 		for (var entry : variableMap.entrySet()) {
 			var var = entry.getValue();
-			this.visitLocalVariable(entry.getKey(), var.type().getDescriptor(), null, start, stop, var.pos());
+			final String name = compactVars ?  GenUtil.hyphenShortMethodName(i) :  entry.getKey();
+			this.visitLocalVariable(name, var.type().getDescriptor(), null, start, stop, var.pos());
 		}
 		this.visitMaxs(0, 0);
 		this.visitEnd();

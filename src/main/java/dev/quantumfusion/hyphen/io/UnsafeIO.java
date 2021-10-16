@@ -320,6 +320,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putBooleanArray(final boolean[] value) {
 		final int bytes = value.length;
+		putInt(bytes);
 		if (bytes > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 			currentAddress += bytes;
@@ -329,6 +330,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putByteArray(final byte[] value) {
 		final int bytes = value.length;
+		putInt(bytes);
 		if (bytes > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
 			currentAddress += bytes;
@@ -338,6 +340,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putCharArray(final char[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -348,6 +351,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putShortArray(final short[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -358,6 +362,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putIntArray(final int[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -368,6 +373,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putLongArray(final long[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -378,6 +384,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putFloatArray(final float[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -388,6 +395,7 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void putDoubleArray(final double[] value) {
 		final int length = value.length;
+		putInt(length);
 		if (length > COPY_MEMORY_THRESHOLD) {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress + BYTE_OFFSET, bytes);
@@ -397,6 +405,7 @@ public final class UnsafeIO implements IOInterface {
 
 	@Override
 	public final void putStringArray(final String[] value) {
+		putInt(value.length);
 		for (final String s : value) putString(s);
 	}
 }

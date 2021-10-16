@@ -20,7 +20,8 @@ public class ArrayClazz extends Clazz {
 	}
 
 	public static ArrayClazz create(AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
-		return new ArrayClazz(Object[].class, array.getAnnotations(), ScanUtil.parseAnnotations(ctx), Clazzifier.create(((AnnotatedArrayType) array).getAnnotatedGenericComponentType(), ctx, dir));
+		final Clazz component = Clazzifier.create(((AnnotatedArrayType) array).getAnnotatedGenericComponentType(), ctx, dir);
+		return new ArrayClazz(component.getBytecodeClass().arrayType(), array.getAnnotations(), ScanUtil.parseAnnotations(ctx), component);
 	}
 
 	@Override

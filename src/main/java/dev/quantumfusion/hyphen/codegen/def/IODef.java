@@ -23,7 +23,7 @@ public class IODef implements SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh) {
+	public void writeMeasure(MethodHandler mh, Runnable alloc) {
 		Class<?> prim = primitive.isArray() ? primitive.getComponentType() : primitive;
 		int size;
 		if (prim == boolean.class || prim == byte.class) size = 1;
@@ -33,11 +33,11 @@ public class IODef implements SerializerDef {
 		else throw new RuntimeException("what");
 
 		if (primitive.isArray()) {
+			alloc.run();
 			mh.op(ARRAYLENGTH);
 			mh.visitLdcInsn(size);
-			mh.op(IMUL);
+			mh.op(IMUL, ICONST_4, IADD);
 		} else {
-			mh.op(POP);
 			mh.visitLdcInsn(size);
 		}
 	}

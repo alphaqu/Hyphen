@@ -79,7 +79,7 @@ public class Clazz {
 			fieldEntries.addAll(Clazzifier.create(aSuper, this, Direction.SUPER).getFields());
 
 		for (Field field : aClass.getDeclaredFields()) {
-			if (field.getAnnotatedType().getDeclaredAnnotation(Data.class) != null) {
+			if (field.getDeclaredAnnotation(Data.class) != null) {
 				fieldEntries.add(new FieldEntry(field, Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL)));
 			}
 		}

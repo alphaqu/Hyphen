@@ -1,23 +1,78 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.scan.Clazzifier;
-import dev.quantumfusion.hyphen.scan.Direction;
-import dev.quantumfusion.hyphen.scan.FieldEntry;
+import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.poly.classes.C1;
-import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.util.TestUtil;
 
-import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class TestGen {
-	CoWrappedC1<List<String>, C1<List<String>>> wrappedC1;
-	public static void main(String[] args) throws NoSuchFieldException {
-		final Clazz wrappedC1 = Clazzifier.create(TestGen.class.getDeclaredField("wrappedC1").getAnnotatedType(), null, Direction.NORMAL);
+	@Data
+	public Simple<Integer> field;
 
-		for (FieldEntry field : wrappedC1.getFields()) {
-			System.out.println(field);
+	public TestGen(Simple<Integer> field) {
+		this.field = field;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		TestGen testGen = (TestGen) o;
+		return Objects.equals(field, testGen.field);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(field);
+	}
+
+	public static void main(String[] args) {
+		SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
+
+		final HyphenSerializer<ByteBufferIO, TestGen> build = factory.build();
+		final TestGen data = new TestGen(new Simple(new int[]{54, 234, 5423}, 69, 5));
+		final int measure = build.measure(data);
+		final ByteBufferIO byteBufferIO = ByteBufferIO.create(measure * 10);
+		build.put(byteBufferIO, data);
+
+
+		System.out.println(byteBufferIO.pos() + " / " + measure);
+		byteBufferIO.rewind();
+		final TestGen testGen = build.get(byteBufferIO);
+
+
+
+		System.out.println(testGen.equals(data));
+	}
+
+	public static class Simple<O> {
+		@Data
+		public int[] thign;
+		@Data
+		public int thign2;
+		@Data
+		public O thign3;
+
+		public Simple(int[] thign, int thign2, O thign3) {
+			this.thign = thign;
+			this.thign2 = thign2;
+			this.thign3 = thign3;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			Simple simple = (Simple) o;
+			return thign2 == simple.thign2 && Objects.equals(thign3, simple.thign3) && Arrays.equals(thign, simple.thign);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = Objects.hash(thign2, thign3);
+			result = 31 * result + Arrays.hashCode(thign);
+			return result;
 		}
 	}
 

@@ -8,22 +8,22 @@ public class ArrayDef extends MethodDef {
 	protected final SerializerDef componentDef;
 
 	public ArrayDef(SerializerHandler<?, ?> handler, ArrayClazz clazz) {
-		super(handler.codegenHandler, clazz.toString());
+		super(handler.codegenHandler, clazz);
 		this.componentDef = handler.acquireDef(clazz.component);
 	}
 
 	@Override
-	void writeMethodGet(MethodHandler mh) {
+	public void writeMethodGet(MethodHandler mh) {
 
 	}
 
 	@Override
-	void writeMethodPut(MethodHandler mh) {
+	public void writeMethodPut(MethodHandler mh) {
 
 	}
 
 	@Override
-	void writeMethodMeasure(MethodHandler mh) {
+	public void writeMethodMeasure(MethodHandler mh) {
 
 	}
 }
