@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
+import java.util.Objects;
 
 public class ArrayClazz extends Clazz {
 	public final Clazz component;
@@ -30,5 +31,19 @@ public class ArrayClazz extends Clazz {
 	@Override
 	public String toString() {
 		return component.toString() + "[]";
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		ArrayClazz that = (ArrayClazz) o;
+		return Objects.equals(component, that.component);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), component);
 	}
 }

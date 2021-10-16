@@ -1,10 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.scan.annotations.IgnoreInterfaces;
+import dev.quantumfusion.hyphen.scan.annotations.IgnoreSuperclass;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -14,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ScanUtil {
-	public static AnnotatedType[] findPath(AnnotatedType root, Predicate<AnnotatedType> matcher, Function<AnnotatedType, AnnotatedType[]> splitter) {
+	public static <O> AnnotatedType[] findPath(AnnotatedType root, Predicate<AnnotatedType> matcher, Function<AnnotatedType, AnnotatedType[]> splitter) {
 		var queue = new ArrayDeque<AnnotatedType[]>();
 		var explored = new HashSet<AnnotatedType>();
 
@@ -45,10 +46,24 @@ public class ScanUtil {
 		return null;
 	}
 
+	@Nullable
+	public static AnnotatedType getSuper(Class<?> clazz) {
+		if (clazz.getDeclaredAnnotation(IgnoreSuperclass.class) == null)
+			if (clazz.getSuperclass() != null) return clazz.getAnnotatedSuperclass();
+		return null;
+	}
+
+
+	public static AnnotatedType[] getInterfaces(Class<?> clazz) {
+		if (clazz.getDeclaredAnnotation(IgnoreInterfaces.class) == null)
+			return clazz.getAnnotatedInterfaces();
+		return new AnnotatedType[0];
+	}
+
 	public static AnnotatedType[] getInherited(AnnotatedType type) {
 		var clazz = getClassFrom(type);
-		var classInterface = clazz.getAnnotatedInterfaces();
-		var classSuper = clazz.getAnnotatedSuperclass();
+		var classInterface = getInterfaces(clazz);
+		var classSuper = getSuper(clazz);
 		if (classSuper != null) return append(classInterface, classSuper);
 		return classInterface;
 	}
@@ -62,7 +77,7 @@ public class ScanUtil {
 	}
 
 	public static Annotation[] parseAnnotations(@Nullable Clazz clazz) {
-		if(clazz == null) return new Annotation[0];
+		if (clazz == null) return new Annotation[0];
 		return clazz.getClassAnnotations();
 	}
 

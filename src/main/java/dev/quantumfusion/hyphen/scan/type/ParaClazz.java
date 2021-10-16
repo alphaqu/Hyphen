@@ -13,6 +13,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class ParaClazz extends Clazz {
@@ -51,5 +52,19 @@ public class ParaClazz extends Clazz {
 		var sj = new StringJoiner(", ", "<", ">");
 		parameters.forEach((s, clazz) -> sj.add(s + " = " + clazz.toString()));
 		return super.toString() + sj;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		ParaClazz paraClazz = (ParaClazz) o;
+		return Objects.equals(parameters, paraClazz.parameters);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), parameters);
 	}
 }

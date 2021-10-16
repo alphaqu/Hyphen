@@ -9,6 +9,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.AnnotatedTypeVariable;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
+import java.util.Objects;
 
 public class TypeClazz extends Clazz {
 	private final Clazz defined;
@@ -63,5 +64,19 @@ public class TypeClazz extends Clazz {
 	@Override
 	public String toString() {
 		return defined.toString();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
+		TypeClazz typeClazz = (TypeClazz) o;
+		return Objects.equals(bytecodeBound, typeClazz.bytecodeBound);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), bytecodeBound);
 	}
 }

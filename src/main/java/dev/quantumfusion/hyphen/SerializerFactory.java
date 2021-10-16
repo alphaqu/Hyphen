@@ -37,8 +37,6 @@ public class SerializerFactory<IO extends IOInterface, D> {
 
 	// ====================================== DEFINITIONS =====================================
 	//TODO add definitions
-
-
 	public HyphenSerializer<IO, D> build() {
 		return serializerHandler.codegenHandler.build();
 	}
@@ -46,6 +44,6 @@ public class SerializerFactory<IO extends IOInterface, D> {
 
 	@FunctionalInterface
 	public interface DynamicDefCreator {
-		SerializerDef create(Clazz clazz);
+		SerializerDef create(Clazz clazz, SerializerHandler<?,?> serializerHandler);
 	}
 }

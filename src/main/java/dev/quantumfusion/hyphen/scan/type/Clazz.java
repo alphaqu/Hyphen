@@ -11,9 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Clazz {
@@ -76,8 +74,9 @@ public class Clazz {
 
 	public List<FieldEntry> getFields() {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
-		if (aClass.getSuperclass() != null)
-			fieldEntries.addAll(Clazzifier.create(aClass.getAnnotatedSuperclass(), this, Direction.SUPER).getFields());
+		final AnnotatedType aSuper = ScanUtil.getSuper(aClass);
+		if (aSuper != null)
+			fieldEntries.addAll(Clazzifier.create(aSuper, this, Direction.SUPER).getFields());
 
 		for (Field field : aClass.getDeclaredFields()) {
 			if (field.getAnnotatedType().getDeclaredAnnotation(Data.class) != null) {
@@ -95,5 +94,21 @@ public class Clazz {
 	@Override
 	public String toString() {
 		return aClass.getSimpleName();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Clazz clazz = (Clazz) o;
+		return aClass.equals(clazz.aClass) && Arrays.equals(annotations, clazz.annotations) && Arrays.equals(parentClassAnnotations, clazz.parentClassAnnotations);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = Objects.hash(aClass);
+		result = 31 * result + Arrays.hashCode(annotations);
+		result = 31 * result + Arrays.hashCode(parentClassAnnotations);
+		return result;
 	}
 }
