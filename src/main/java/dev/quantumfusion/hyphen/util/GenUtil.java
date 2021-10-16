@@ -26,16 +26,15 @@ public final class GenUtil {
 		return Type.getMethodDescriptor(of(returnClass), of(parameters));
 	}
 
-	private static final char[] HYPHEN_METHOD_BASE_CHARS = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_', '$'};
+	private static final char[] HYPHEN_METHOD_BASE_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$_".toCharArray();
 
 	public static String hyphenShortMethodName(int methodId) {
-		StringBuilder builder = new StringBuilder();
-		if (methodId == 0) builder.append('A');
-		// ishland big brain
-		while(methodId != 0) {
-			builder.append(HYPHEN_METHOD_BASE_CHARS[(methodId & 63)]);
+		final int length = (63 - Long.numberOfLeadingZeros(methodId)) / 6 + 1;
+		final char[] result = new char[length];
+		for (int i = length - 1; i >= 0; i--) {
+			result[i] = HYPHEN_METHOD_BASE_CHARS[methodId & 63];
 			methodId >>= 6;
 		}
-		return builder.toString();
+		return new String(result);
 	}
 }
