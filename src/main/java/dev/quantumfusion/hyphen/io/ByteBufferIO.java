@@ -92,7 +92,7 @@ public final class ByteBufferIO implements IOInterface {
 
 	@Override
 	public final String getString() {
-		final byte[] byteArray = getByteArray(byteBuffer.getInt());
+		final byte[] byteArray = getByteArray();
 		return new String(byteArray, 0, byteArray.length, StandardCharsets.UTF_8);
 	}
 
@@ -155,7 +155,8 @@ public final class ByteBufferIO implements IOInterface {
 
 	// ====================================== GET_ARR ======================================== //
 	@Override
-	public final boolean[] getBooleanArray(final int length) {
+	public final boolean[] getBooleanArray() {
+		final int length = getInt();
 		final boolean[] out = new boolean[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.get() == 1;
@@ -164,7 +165,7 @@ public final class ByteBufferIO implements IOInterface {
 
 
 	@Override
-	public final byte[] getByteArray(final int length) {
+	public final byte[] getByteArray() {final int length = getInt();
 		final byte[] out = new byte[length];
 		byteBuffer.get(out, 0, length);
 		return out;
@@ -172,7 +173,7 @@ public final class ByteBufferIO implements IOInterface {
 
 
 	@Override
-	public final char[] getCharArray(final int length) {
+	public final char[] getCharArray() {final int length = getInt();
 		final char[] out = new char[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getChar();
@@ -180,7 +181,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final short[] getShortArray(final int length) {
+	public final short[] getShortArray() {final int length = getInt();
 		final short[] out = new short[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getShort();
@@ -188,7 +189,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final int[] getIntArray(final int length) {
+	public final int[] getIntArray() {final int length = getInt();
 		final int[] out = new int[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getInt();
@@ -196,7 +197,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final long[] getLongArray(final int length) {
+	public final long[] getLongArray() {final int length = getInt();
 		final long[] out = new long[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getLong();
@@ -204,7 +205,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final float[] getFloatArray(final int length) {
+	public final float[] getFloatArray() {final int length = getInt();
 		final float[] out = new float[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getFloat();
@@ -212,7 +213,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final double[] getDoubleArray(final int length) {
+	public final double[] getDoubleArray() {final int length = getInt();
 		final double[] out = new double[length];
 		for (int i = 0; i < length; i++)
 			out[i] = byteBuffer.getDouble();
@@ -220,7 +221,7 @@ public final class ByteBufferIO implements IOInterface {
 	}
 
 	@Override
-	public final String[] getStringArray(final int length) {
+	public final String[] getStringArray() {final int length = getInt();
 		final String[] out = new String[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getString();

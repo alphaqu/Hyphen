@@ -38,23 +38,23 @@ public interface IOInterface {
 
 	void putString(String value);
 
-	boolean[] getBooleanArray(int length);
+	boolean[] getBooleanArray();
 
-	byte[] getByteArray(int length);
+	byte[] getByteArray();
 
-	char[] getCharArray(int length);
+	char[] getCharArray();
 
-	short[] getShortArray(int length);
+	short[] getShortArray();
 
-	int[] getIntArray(int length);
+	int[] getIntArray();
 
-	long[] getLongArray(int length);
+	long[] getLongArray();
 
-	float[] getFloatArray(int length);
+	float[] getFloatArray();
 
-	double[] getDoubleArray(int length);
+	double[] getDoubleArray();
 
-	String[] getStringArray(int length);
+	String[] getStringArray();
 
 	void putBooleanArray(boolean[] value);
 
