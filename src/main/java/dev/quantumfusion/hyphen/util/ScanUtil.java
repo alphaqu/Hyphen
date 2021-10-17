@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ScanUtil {
-	public static <O> AnnotatedType[] findPath(AnnotatedType root, Predicate<AnnotatedType> matcher, Function<AnnotatedType, AnnotatedType[]> splitter) {
+	public static AnnotatedType[] findPath(AnnotatedType root, Predicate<AnnotatedType> matcher, Function<AnnotatedType, AnnotatedType[]> splitter) {
 		var queue = new ArrayDeque<AnnotatedType[]>();
 		var explored = new HashSet<AnnotatedType>();
 
@@ -44,28 +44,6 @@ public class ScanUtil {
 		}
 
 		return null;
-	}
-
-	@Nullable
-	public static AnnotatedType getSuper(Class<?> clazz) {
-		if (clazz.getDeclaredAnnotation(IgnoreSuperclass.class) == null)
-			if (clazz.getSuperclass() != null) return clazz.getAnnotatedSuperclass();
-		return null;
-	}
-
-
-	public static AnnotatedType[] getInterfaces(Class<?> clazz) {
-		if (clazz.getDeclaredAnnotation(IgnoreInterfaces.class) == null)
-			return clazz.getAnnotatedInterfaces();
-		return new AnnotatedType[0];
-	}
-
-	public static AnnotatedType[] getInherited(AnnotatedType type) {
-		var clazz = getClassFrom(type);
-		var classInterface = getInterfaces(clazz);
-		var classSuper = getSuper(clazz);
-		if (classSuper != null) return append(classInterface, classSuper);
-		return classInterface;
 	}
 
 	public static AnnotatedType[] append(AnnotatedType[] oldArray, AnnotatedType value) {

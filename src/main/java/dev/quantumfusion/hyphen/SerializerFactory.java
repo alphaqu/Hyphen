@@ -35,6 +35,10 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		this.serializerHandler.options.put(option, value);
 	}
 
+	public void setClassLoader(ClassLoader classLoader) {
+		this.serializerHandler.definer = new ClassDefiner(classLoader);
+	}
+
 	// ====================================== DEFINITIONS =====================================
 	public void addStaticDef(Class<?> target, SerializerDef def) {
 		this.serializerHandler.definitions.put(target, (clazz, sh) -> def);

@@ -24,13 +24,16 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	// Options, Shares with codegenHandler
 
 	public final EnumMap<Options, Boolean> options;
-	public final CodegenHandler<IO, D> codegenHandler;
-	public final Class<?> dataClass;
-	public final Class<?> ioClass;
+	public final Class<D> dataClass;
+	public final Class<IO> ioClass;
+	public final boolean debug;
+	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
 
 	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
 	public final Map<Clazz, MethodDef> methods = new HashMap<>();
+	// not null on export
+	public CodegenHandler<IO, D> codegenHandler;
 
 	public SerializerHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
 		// Initialize options
@@ -39,13 +42,13 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 		this.dataClass = dataClass;
 		this.ioClass = ioClass;
+		this.debug = debug;
 
 		if (debug) {
 			this.options.put(Options.SHORT_METHOD_NAMES, false);
 			this.options.put(Options.SHORT_VARIABLE_NAMES, false);
 		}
 
-		this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options);
 		this.definitions = new HashMap<>(BUILD_IN_DEFINITIONS);
 	}
 
@@ -78,9 +81,14 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		else return new ClassDef(this, clazz);
 	}
 
+	private MethodDef scan() {
+		return acquireDefNewMethod(new Clazz(dataClass));
+	}
+
 	public HyphenSerializer<IO, D> build() {
-		codegenHandler.setupSpark(acquireDefNewMethod(new Clazz(dataClass)));
-		methods.forEach((clazz, def) -> codegenHandler.writeMethod(def, false));
+		this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options, definer);
+		codegenHandler.setupSpark(this.scan());
+		codegenHandler.writeMethods(methods.values());
 		return codegenHandler.export();
 	}
 

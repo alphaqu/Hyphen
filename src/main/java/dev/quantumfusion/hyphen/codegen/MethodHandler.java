@@ -13,6 +13,7 @@ import java.util.Map;
 import static org.objectweb.asm.Opcodes.*;
 
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
+	private static final char SHORT_VAR_NAME = '\u0D9E'; // amogus
 	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
 	private final Label start = new Label();
 	public final String self;
@@ -111,7 +112,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		int i = 0;
 		for (var entry : variableMap.entrySet()) {
 			var var = entry.getValue();
-			final String name = compactVars ?  GenUtil.hyphenShortMethodName(i) :  entry.getKey();
+			final String name = compactVars ? String.valueOf(SHORT_VAR_NAME) :  entry.getKey();
 			this.visitLocalVariable(name, var.type().getDescriptor(), null, start, stop, var.pos());
 		}
 		this.visitMaxs(0, 0);

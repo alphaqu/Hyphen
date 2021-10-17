@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.codegen;
 
+import dev.quantumfusion.hyphen.ClassDefiner;
 import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.codegen.def.MethodDef;
@@ -9,10 +10,10 @@ import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassWriter;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,15 +36,17 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	@Nullable
 	private final Map<MethodInfo, AtomicInteger> methodDedup;
 
-	// cw
+	// other
 	private final ClassWriter cw;
+	private final ClassDefiner definer;
 
-	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug, EnumMap<Options, Boolean> options) {
+	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug, EnumMap<Options, Boolean> options, ClassDefiner definer) {
 		this.ioClass = ioClass;
 		this.dataClass = dataClass;
 		this.debug = debug;
 		this.options = options;
-		this.self = "UWU";
+		this.definer = definer;
+		this.self = "uwu";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
 
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -53,12 +56,28 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			mh.visitMethodInsn(INVOKESPECIAL, Object.class, "<init>", Void.TYPE);
 			mh.op(RETURN);
 		}
+
+		if (options.get(Options.FAST_ALLOC)) {
+			try (var mh = new MethodHandler(this.cw.visitMethod(ACC_STATIC, "<clinit>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass)) {
+				mh.visitTypeInsn(NEW, self);
+				mh.op(DUP);
+				mh.visitMethodInsn(INVOKESPECIAL, self, "<init>", GenUtil.methodDesc(Void.TYPE), false);
+				mh.visitFieldInsn(PUTSTATIC, ClassDefiner.class, "SERIALIZER", HyphenSerializer.class);
+				mh.op(RETURN);
+			}
+		}
 	}
 
 	public MethodInfo apply(MethodInfo info) {
 		if (methodDedup != null)
 			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()), this);
 		return info;
+	}
+
+	public void writeMethods(Collection<MethodDef> methods) {
+		for (MethodDef method : methods) {
+			writeMethod(method, false);
+		}
 	}
 
 	public void writeMethod(MethodDef def, boolean raw) {
@@ -90,35 +109,40 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	private String getVarName(Class<?> c) {
-		if(c == ioClass) return "io";
+		if (c == ioClass) return "io";
 		return "data";
 	}
 
 	public void setupSpark(MethodDef spark) {
-		spark.getInfo.setName("get",this);
-		spark.putInfo.setName("put",this);
-		spark.measureInfo.setName("measure",this);
+		spark.getInfo.setName("get", this);
+		spark.putInfo.setName("put", this);
+		spark.measureInfo.setName("measure", this);
 		writeMethod(spark, true);
 	}
 
-	public HyphenSerializer<IO, D> export() {
+	@SuppressWarnings("unchecked")
+	public synchronized <O extends HyphenSerializer<IO, D>> HyphenSerializer<IO, D> export() {
 		final byte[] bytes = cw.toByteArray();
-		final Class<?> hyphen = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
-			public Class<?> def() {
-				return defineClass(self, bytes, 0, bytes.length);
+
+		if (debug) {
+			try {
+				Files.write(Path.of("./\u0D9E.class"), bytes, StandardOpenOption.CREATE);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		}.def();
-
-		try {
-			Files.write(Path.of("./UWU.class"), bytes, StandardOpenOption.CREATE);
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		final Class<O> def = (Class<O>) definer.def(self, bytes);
 
-		try {
-			return (HyphenSerializer<IO, D>) hyphen.getConstructor().newInstance();
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-			throw new RuntimeException(e);
+		if (options.get(Options.FAST_ALLOC)) {
+			return (HyphenSerializer<IO, D>) ClassDefiner.SERIALIZER;
+		} else {
+			try {
+				var constructor = def.getConstructor();
+				constructor.setAccessible(true);
+				return constructor.newInstance();
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }

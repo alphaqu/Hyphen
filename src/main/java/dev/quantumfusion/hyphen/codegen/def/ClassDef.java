@@ -6,7 +6,12 @@ import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -28,7 +33,6 @@ public class ClassDef extends MethodDef {
 		mh.op(DUP);
 		List<Class<?>> constParameters = new ArrayList<>();
 		fields.forEach((fieldEntry, def) -> {
-			mh.varOp(ILOAD,  "io");
 			def.writeGet(mh);
 			// TODO fix constructors
 			constParameters.add(fieldEntry.clazz().getBytecodeClass());
@@ -41,29 +45,56 @@ public class ClassDef extends MethodDef {
 	@Override
 	public void writeMethodPut(MethodHandler mh) {
 		fields.forEach((fieldEntry, def) -> {
-			mh.varOp(ILOAD,  "io", "data");
-			//TODO add get method support / generic support
-			mh.visitFieldInsn(GETFIELD, aClass, fieldEntry.field().getName(), fieldEntry.field().getType());
-			GenUtil.shouldCastGeneric(mh, fieldEntry.clazz());
-			def.writePut(mh);
+			def.writePut(mh, () -> {
+				//TODO add get method support / generic support
+				allocateField(mh, fieldEntry.field(), fieldEntry.clazz());
+			});
 		});
 		mh.op(RETURN);
 	}
 
 	@Override
 	public void writeMethodMeasure(MethodHandler mh) {
-		int i = 0;
-		for (var entry : fields.entrySet()) {
-			var field = entry.getKey().field();
-			entry.getValue().writeMeasure(mh, () -> {
-				mh.varOp(ILOAD,  "data");
-				mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
-				GenUtil.shouldCastGeneric(mh, entry.getKey().clazz());
-			});
-			if (i++ != 0) {
-				mh.op(IADD);
+		if (fields.size() == 0) {
+			mh.op(ICONST_0);
+		} else {
+			int i = 0;
+			for (var entry : fields.entrySet()) {
+				var field = entry.getKey().field();
+				entry.getValue().writeMeasure(mh, () -> allocateField(mh, field, entry.getKey().clazz()));
+				if (i++ != 0) {
+					mh.op(IADD);
+				}
 			}
 		}
 		mh.op(IRETURN);
 	}
+
+	private void allocateField(MethodHandler mh, Field field, Clazz clazz) {
+		mh.varOp(ILOAD, "data");
+		if (Modifier.isPublic(field.getModifiers())) {
+			mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
+		} else {
+			mh.visitMethodInsn(INVOKEVIRTUAL, aClass, getGetter(aClass, field.getName()), clazz.getBytecodeClass());
+		}
+		GenUtil.shouldCastGeneric(mh, clazz);
+	}
+
+	public String getGetter(Class<?> aClass, String fieldName) {
+		if (!aClass.isRecord()) {
+			try {
+				final String name = "get" + GenUtil.upperCase(fieldName);
+				aClass.getDeclaredMethod(name);
+				return name;
+			} catch (NoSuchMethodException ignored) {
+			}
+		}
+		try {
+			aClass.getDeclaredMethod(fieldName);
+			return fieldName;
+		} catch (NoSuchMethodException ignored) {
+		}
+		throw new RuntimeException("Could not access" + fieldName + " in class " + aClass.getSimpleName());
+	}
+
 }
