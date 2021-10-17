@@ -6,7 +6,7 @@ import dev.quantumfusion.hyphen.util.GenUtil;
 import static org.objectweb.asm.Opcodes.*;
 
 public class IODef implements SerializerDef {
-	protected final Class<?> primitive;
+	final Class<?> primitive;
 
 	public IODef(Class<?> primitive) {
 		this.primitive = primitive;
@@ -14,17 +14,17 @@ public class IODef implements SerializerDef {
 
 	@Override
 	public void writePut(MethodHandler mh) {
-		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "put" + getName(), Void.TYPE, primitive);
+		GenUtil.putIO(mh, this.primitive);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
-		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "get" + getName(), primitive);
+		GenUtil.getIO(mh, this.primitive);
 	}
 
 	@Override
 	public void writeMeasure(MethodHandler mh, Runnable alloc) {
-		Class<?> prim = primitive.isArray() ? primitive.getComponentType() : primitive;
+		Class<?> prim = this.primitive.isArray() ? this.primitive.getComponentType() : this.primitive;
 		int size;
 		if (prim == boolean.class || prim == byte.class) size = 1;
 		else if (prim == short.class || prim == char.class) size = 2;
@@ -32,7 +32,7 @@ public class IODef implements SerializerDef {
 		else if (prim == long.class || prim == double.class) size = 8;
 		else throw new RuntimeException("what");
 
-		if (primitive.isArray()) {
+		if (this.primitive.isArray()) {
 			alloc.run();
 			mh.op(ARRAYLENGTH);
 			mh.visitLdcInsn(size);
@@ -40,11 +40,5 @@ public class IODef implements SerializerDef {
 		} else {
 			mh.visitLdcInsn(size);
 		}
-	}
-
-	private String getName() {
-		if (primitive.isArray())
-			return GenUtil.upperCase(primitive.getComponentType().getSimpleName()) + "Array";
-		return GenUtil.upperCase(primitive.getSimpleName());
 	}
 }

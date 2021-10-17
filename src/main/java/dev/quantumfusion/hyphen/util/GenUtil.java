@@ -5,7 +5,9 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.objectweb.asm.Type;
 
 import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
+@SuppressWarnings("WeakerAccess")
 public final class GenUtil {
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];
@@ -86,5 +88,20 @@ public final class GenUtil {
 
 	public static String upperCase(String str) {
 		return str.substring(0,1).toUpperCase() + str.substring(1);
+	}
+
+
+	public static void putIO(MethodHandler mh, Class<?> primitive) {
+		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "put" + getName(primitive), Void.TYPE, primitive);
+	}
+
+	public static void getIO(MethodHandler mh, Class<?> primitive) {
+		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "get" + getName(primitive), primitive);
+	}
+
+	private static String getName(Class<?> primitive) {
+		if (primitive.isArray())
+			return GenUtil.upperCase(primitive.getComponentType().getSimpleName()) + "Array";
+		return GenUtil.upperCase(primitive.getSimpleName());
 	}
 }
