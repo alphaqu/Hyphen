@@ -3,7 +3,7 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
-import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.util.ClassCache;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +53,7 @@ public class Clazz {
 	}
 
 	public List<FieldEntry> asSub(Class<?> sub) {
-		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
+		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, clazz -> ClassCache.getInherited(ScanUtil.getClassFrom(clazz)));
 		if (path == null)
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
 
@@ -74,15 +74,13 @@ public class Clazz {
 
 	public List<FieldEntry> getFields() {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
-		final AnnotatedType aSuper = ScanUtil.getSuper(aClass);
+		final AnnotatedType aSuper = ClassCache.getSuperClass(aClass);
 		if (aSuper != null)
 			fieldEntries.addAll(Clazzifier.create(aSuper, this, Direction.SUPER).getFields());
 
-		boolean globalData = aClass.getDeclaredAnnotation(Data.class) != null;
-		for (Field field : aClass.getDeclaredFields()) {
-			if (globalData || field.getDeclaredAnnotation(Data.class) != null) {
-				fieldEntries.add(new FieldEntry(field, Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL)));
-			}
+
+		for (var field : ClassCache.getFields(aClass)) {
+			fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(field.type(), this, Direction.NORMAL)));
 		}
 
 		return fieldEntries;

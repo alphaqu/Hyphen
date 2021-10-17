@@ -81,11 +81,13 @@ public class ClassDef extends MethodDef {
 	}
 
 	public String getGetter(Class<?> aClass, String fieldName) {
-		try {
-			final String name = "get" + GenUtil.upperCase(fieldName);
-			aClass.getDeclaredMethod(name);
-			return name;
-		} catch (NoSuchMethodException ignored) {
+		if (!aClass.isRecord()) {
+			try {
+				final String name = "get" + GenUtil.upperCase(fieldName);
+				aClass.getDeclaredMethod(name);
+				return name;
+			} catch (NoSuchMethodException ignored) {
+			}
 		}
 		try {
 			aClass.getDeclaredMethod(fieldName);
