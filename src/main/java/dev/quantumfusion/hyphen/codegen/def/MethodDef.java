@@ -35,18 +35,18 @@ public abstract class MethodDef implements SerializerDef {
 	public void writePut(MethodHandler mh, Runnable alloc) {
 		mh.varOp(ILOAD, "io");
 		alloc.run();
-		mh.visitMethodInsn(putInfo);
+		mh.callInst(putInfo);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
 		mh.varOp(ILOAD, "io");
-		mh.visitMethodInsn(getInfo);
+		mh.callInst(getInfo);
 	}
 
 	@Override
 	public void writeMeasure(MethodHandler mh, Runnable alloc) {
 		alloc.run();
-		mh.visitMethodInsn(measureInfo);
+		mh.callInst(measureInfo);
 	}
 }

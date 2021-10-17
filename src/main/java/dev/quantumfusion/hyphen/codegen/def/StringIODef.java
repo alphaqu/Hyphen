@@ -12,13 +12,13 @@ public class StringIODef implements SerializerDef {
 	@Override
 	public void writePut(MethodHandler mh, Runnable alloc) {
 		alloc.run();
-		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
+		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
 		mh.varOp(ILOAD, "io");
-		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "getString", String.class);
+		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "getString", String.class);
 	}
 
 	@Override
@@ -29,7 +29,7 @@ public class StringIODef implements SerializerDef {
 			alloc.run();
 			// kinda bad for speed, but it's kinda our only option here
 			mh.visitFieldInsn(GETSTATIC, StandardCharsets.class, "UTF_8", Charset.class);
-			mh.visitMethodInsn(INVOKESTATIC, String.class, "getBytes", byte[].class, Charset.class);
+			mh.callInst(INVOKESTATIC, String.class, "getBytes", byte[].class, Charset.class);
 			mh.op(ARRAYLENGTH);
 		}
 	}

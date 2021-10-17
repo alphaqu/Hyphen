@@ -43,10 +43,6 @@ public class Clazz {
 		return aClass;
 	}
 
-	public Annotation[] getClassAnnotations() {
-		return aClass.getDeclaredAnnotations();
-	}
-
 	public Clazz define(String typeName) {
 		return UnknownClazz.UNKNOWN;
 	}

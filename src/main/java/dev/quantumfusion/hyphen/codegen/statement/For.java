@@ -11,13 +11,9 @@ public class For implements AutoCloseable {
 	protected final Label stop = new Label();
 
 
-	public For(MethodHandler mh) {
+	protected For(MethodHandler mh) {
 		this.mh = mh;
-	}
-
-	public For start() {
 		this.mh.visitLabel(start);
-		return this;
 	}
 
 	public void exit(int op) {
@@ -28,5 +24,10 @@ public class For implements AutoCloseable {
 	public void close() {
 		this.mh.visitJumpInsn(GOTO, start);
 		this.mh.visitLabel(stop);
+	}
+
+	public static For create(MethodHandler mh) {
+
+		return new For(mh);
 	}
 }

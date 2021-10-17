@@ -50,6 +50,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		}
 		return parameters;
 	}
+
 	private static Class<?> convert(Class<?> parameters, boolean raw) {
 		if (raw) if (!parameters.isPrimitive()) return Object.class;
 		return parameters;
@@ -57,7 +58,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 
 	// Classification:tm:
-	public void visitTypeInsn(int opcode, Class<?> type) {
+	public void typeOp(int opcode, Class<?> type) {
 		super.visitTypeInsn(opcode, GenUtil.internal(type));
 	}
 
@@ -65,11 +66,11 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		super.visitFieldInsn(opcode, GenUtil.internal(owner), name, GenUtil.desc(descriptor));
 	}
 
-	public void visitMethodInsn(int opcode, Class<?> owner, String name, Class<?> returnClass, Class<?>... parameters) {
+	public void callInst(int opcode, Class<?> owner, String name, Class<?> returnClass, Class<?>... parameters) {
 		super.visitMethodInsn(opcode, GenUtil.internal(owner), name, GenUtil.methodDesc(returnClass, parameters), opcode == INVOKEINTERFACE);
 	}
 
-	public void visitMethodInsn(MethodInfo info) {
+	public void callInst(MethodInfo info) {
 		super.visitMethodInsn(INVOKESTATIC, self, info.getName(), GenUtil.methodDesc(info.returnClass, info.parameters), false);
 	}
 
@@ -93,6 +94,22 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public void varOp(int op, Variable var) {
 		this.visitIntInsn(var.type().getOpcode(op), var.pos());
 	}
+
+	// IOgentification:tm:
+	public void getIO(Class<?> primitive) {
+		this.callInst(INVOKEVIRTUAL, this.ioClass, "get" + getIOName(primitive), primitive);
+	}
+
+	public void putIO(Class<?> primitive) {
+		this.callInst(INVOKEVIRTUAL, this.ioClass, "put" + getIOName(primitive), Void.TYPE, primitive);
+	}
+
+	private static String getIOName(Class<?> primitive) {
+		if (primitive.isArray())
+			return GenUtil.upperCase(primitive.getComponentType().getSimpleName()) + "Array";
+		return GenUtil.upperCase(primitive.getSimpleName());
+	}
+
 
 	// Var things
 	public Variable addVar(String name, Class<?> type) {
@@ -119,7 +136,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		int i = 0;
 		for (var entry : variableMap.entrySet()) {
 			var var = entry.getValue();
-			final String name = compactVars ? String.valueOf(SHORT_VAR_NAME) :  entry.getKey();
+			final String name = compactVars ? String.valueOf(SHORT_VAR_NAME) : entry.getKey();
 			this.visitLocalVariable(name, var.type().getDescriptor(), null, start, stop, var.pos());
 		}
 		this.visitMaxs(0, 0);

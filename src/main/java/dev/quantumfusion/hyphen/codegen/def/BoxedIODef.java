@@ -16,14 +16,14 @@ public class BoxedIODef extends IODef {
 	@Override
 	public void writeGet(MethodHandler mh) {
 		super.writeGet(mh);
-		mh.visitMethodInsn(INVOKESTATIC, boxed, "valueOf", boxed, primitive);
+		mh.callInst(INVOKESTATIC, boxed, "valueOf", boxed, primitive);
 	}
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable alloc) {
 		super.writePut(mh, () -> {
 			alloc.run();
-			mh.visitMethodInsn(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);
+			mh.callInst(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);
 		});
 	}
 

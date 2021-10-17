@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.util.GenUtil;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -16,13 +15,13 @@ public class IODef implements SerializerDef {
 	public void writePut(MethodHandler mh, Runnable alloc) {
 		mh.varOp(ILOAD, "io");
 		alloc.run();
-		GenUtil.putIO(mh, this.primitive);
+		mh.putIO(this.primitive);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
 		mh.varOp(ILOAD, "io");
-		GenUtil.getIO(mh, this.primitive);
+		mh.getIO(this.primitive);
 	}
 
 	@Override

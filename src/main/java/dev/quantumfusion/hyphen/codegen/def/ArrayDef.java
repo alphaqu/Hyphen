@@ -23,12 +23,14 @@ public class ArrayDef extends MethodDef {
 	@Override
 	public void writeMethodPut(MethodHandler mh) {
 		final Variable length = mh.addVar("length", int.class);
+		final Variable data = mh.getVar("data");
+
 		mh.varOp(ILOAD, "io", "data");
 		mh.op(ARRAYLENGTH);
 		mh.op(DUP);
 		mh.varOp(ISTORE, length);
-		GenUtil.putIO(mh, int.class);
-		try (var array = new ArrayFor(mh, "data", "i", length).start()) {
+		mh.putIO(int.class);
+		try (var array = ArrayFor.create(mh, data, null, length)) {
 			componentDef.writePut(mh, () -> {
 				array.getElement();
 				GenUtil.shouldCastGeneric(mh, component);
@@ -39,35 +41,37 @@ public class ArrayDef extends MethodDef {
 
 	@Override
 	public void writeMethodGet(MethodHandler mh) {
-		mh.addVar("out", Object[].class);
+		final Variable out = mh.addVar("out", Object[].class);
 		mh.varOp(ILOAD, "io");
-		GenUtil.getIO(mh, int.class);
-		mh.visitTypeInsn(ANEWARRAY, component.getBytecodeClass());
-		mh.varOp(ISTORE, "out");
-		try (var array = new ArrayFor(mh, "out").start()) {
+		mh.getIO(int.class);
+		mh.typeOp(ANEWARRAY, component.getBytecodeClass());
+		mh.varOp(ISTORE, out);
+		try (var array = ArrayFor.create(mh, out, null, null)) {
 			mh.varOp(ILOAD, "out", "i");
 			componentDef.writeGet(mh);
 			mh.op(AASTORE);
 		}
-		mh.varOp(ILOAD, "out");
+		mh.varOp(ILOAD, out);
 		mh.op(ARETURN);
 	}
 
 	@Override
 	public void writeMethodMeasure(MethodHandler mh) {
-		mh.addVar("out", int.class);
+		final Variable out = mh.addVar("out", int.class);
+		final Variable data = mh.getVar("data");
+
 		mh.op(ICONST_4);
-		mh.varOp(ISTORE, "out");
-		try (var array = new ArrayFor(mh, "data").start()) {
-			mh.varOp(ILOAD, "out");
+		mh.varOp(ISTORE, out);
+		try (var array = ArrayFor.create(mh, data, null, null)) {
+			mh.varOp(ILOAD, out);
 			componentDef.writeMeasure(mh, () -> {
 				array.getElement();
 				GenUtil.shouldCastGeneric(mh, component);
 			});
 			mh.op(IADD);
-			mh.varOp(ISTORE, "out");
+			mh.varOp(ISTORE, out);
 		}
-		mh.varOp(ILOAD, "out");
+		mh.varOp(ILOAD, out);
 		mh.op(IRETURN);
 	}
 }

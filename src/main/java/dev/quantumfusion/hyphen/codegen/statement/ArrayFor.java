@@ -8,34 +8,13 @@ import static org.objectweb.asm.Opcodes.*;
 public class ArrayFor extends For implements AutoCloseable {
 	private final Variable i;
 	private final Variable array;
-	private final Variable length;
 
-	public ArrayFor(MethodHandler mh, String array) {
-		this(mh, array, "i", "length");
-	}
-
-	public ArrayFor(MethodHandler mh, String array, String iName, String lengthName) {
-		this(mh, array, iName, mh.addVar(lengthName, int.class));
-		mh.varOp(ILOAD, array);
-		mh.op(ARRAYLENGTH);
-		mh.varOp(ISTORE, lengthName);
-	}
-
-	public ArrayFor(MethodHandler mh, String array, String iName, Variable length) {
+	protected ArrayFor(MethodHandler mh, Variable array, Variable i, Variable length) {
 		super(mh);
-		this.i = mh.addVar(iName, int.class);
-		this.array = mh.getVar(array);
-		this.length = length;
-
-		mh.op(ICONST_0);
-		mh.varOp(ISTORE, this.i);
-	}
-
-	public ArrayFor start() {
-		super.start();
-		mh.varOp(ILOAD, this.i, length);
+		this.i = i;
+		this.array = array;
+		this.mh.varOp(ILOAD, i, length);
 		exit(IF_ICMPGE);
-		return this;
 	}
 
 	public void getElement() {
@@ -47,5 +26,20 @@ public class ArrayFor extends For implements AutoCloseable {
 	public void close() {
 		mh.visitIincInsn(i.pos(), 1); // i++
 		super.close();
+	}
+
+	public static ArrayFor create(MethodHandler mh, Variable array, Variable i, Variable length) {
+		if (i == null) {
+			i = mh.addVar("i", int.class);
+			mh.op(ICONST_0);
+			mh.varOp(ISTORE, i);
+		}
+		if (length == null) {
+			length = mh.addVar("length", int.class);
+			mh.varOp(ILOAD, array);
+			mh.op(ARRAYLENGTH);
+			mh.varOp(ISTORE, length);
+		}
+		return new ArrayFor(mh, array, i, length);
 	}
 }

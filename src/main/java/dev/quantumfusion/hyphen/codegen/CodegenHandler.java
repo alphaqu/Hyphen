@@ -48,12 +48,13 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		this.definer = definer;
 		this.self = "HyphenSerializer";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
-
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+
 		this.cw.visit(V16, ACC_PUBLIC | ACC_FINAL, this.self, null, GenUtil.internal(Object.class), new String[]{GenUtil.internal(HyphenSerializer.class)});
+
 		try (var mh = new MethodHandler(this.cw.visitMethod(ACC_PUBLIC, "<init>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass)) {
 			mh.visitIntInsn(ALOAD, 0);
-			mh.visitMethodInsn(INVOKESPECIAL, Object.class, "<init>", Void.TYPE);
+			mh.callInst(INVOKESPECIAL, Object.class, "<init>", Void.TYPE);
 			mh.op(RETURN);
 		}
 
@@ -98,7 +99,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 					mh.addVar(varName, parameter); // add var
 					// cast
 					mh.varOp(ILOAD, varName + "raw");
-					mh.visitTypeInsn(CHECKCAST, parameter);
+					mh.typeOp(CHECKCAST, parameter);
 					mh.varOp(ISTORE, varName);
 				}
 			}
@@ -126,7 +127,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 		if (debug) {
 			try {
-				Files.write(Path.of("./HyphenSerializer.class"), bytes, StandardOpenOption.CREATE);
+				Files.write(Path.of("./" + self + ".class"), bytes, StandardOpenOption.CREATE);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

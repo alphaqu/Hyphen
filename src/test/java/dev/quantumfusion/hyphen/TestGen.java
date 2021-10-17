@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -18,9 +19,10 @@ public class TestGen {
 	public static final class Simple<O> {
 		public final O[] thign;
 		public final int thign2;
-		public final O thign3;
+		@DataSubclasses({Integer.class, Float.class})
+		public final Number thign3;
 
-		public Simple(O[] thign, int thign2, O thign3) {
+		public Simple(O[] thign, int thign2, Number thign3) {
 			this.thign = thign;
 			this.thign2 = thign2;
 			this.thign3 = thign3;
@@ -57,7 +59,7 @@ public class TestGen {
 	}
 
 	public static void main(String[] args) {
-		final Simple<Integer> integerSimple = new Simple<>(new Integer[]{69, 420}, 432, 123);
+		final Simple<Integer> integerSimple = new Simple<>(new Integer[]{69, 420}, 432, 123f);
 		TestGen in = new TestGen(new Simple[]{integerSimple, integerSimple, integerSimple});
 		var serializer = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class).build();
 		int measure = serializer.measure(in);

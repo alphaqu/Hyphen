@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.scan.annotations.IgnoreInterfaces;
-import dev.quantumfusion.hyphen.scan.annotations.IgnoreSuperclass;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,7 +54,7 @@ public class ScanUtil {
 
 	public static Annotation[] parseAnnotations(@Nullable Clazz clazz) {
 		if (clazz == null) return new Annotation[0];
-		return clazz.getClassAnnotations();
+		return clazz.aClass.getDeclaredAnnotations();
 	}
 
 	public static AnnotatedType wrap(Type clazz) {

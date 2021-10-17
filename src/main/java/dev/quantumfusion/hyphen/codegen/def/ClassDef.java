@@ -29,7 +29,7 @@ public class ClassDef extends MethodDef {
 
 	@Override
 	public void writeMethodGet(MethodHandler mh) {
-		mh.visitTypeInsn(NEW, aClass);
+		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
 		List<Class<?>> constParameters = new ArrayList<>();
 		fields.forEach((fieldEntry, def) -> {
@@ -38,7 +38,7 @@ public class ClassDef extends MethodDef {
 			constParameters.add(fieldEntry.clazz().getBytecodeClass());
 		});
 		//TODO add generic support
-		mh.visitMethodInsn(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constParameters.toArray(Class[]::new));
+		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constParameters.toArray(Class[]::new));
 		mh.op(ARETURN);
 	}
 
@@ -75,7 +75,7 @@ public class ClassDef extends MethodDef {
 		if (Modifier.isPublic(field.getModifiers())) {
 			mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
 		} else {
-			mh.visitMethodInsn(INVOKEVIRTUAL, aClass, getGetter(aClass, field.getName()), clazz.getBytecodeClass());
+			mh.callInst(INVOKEVIRTUAL, aClass, getGetter(aClass, field.getName()), clazz.getBytecodeClass());
 		}
 		GenUtil.shouldCastGeneric(mh, clazz);
 	}
