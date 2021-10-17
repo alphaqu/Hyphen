@@ -13,12 +13,15 @@ public class IODef implements SerializerDef {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh) {
+	public void writePut(MethodHandler mh, Runnable alloc) {
+		mh.varOp(ILOAD, "io");
+		alloc.run();
 		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "put" + getName(), Void.TYPE, primitive);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
+		mh.varOp(ILOAD, "io");
 		mh.visitMethodInsn(INVOKEVIRTUAL, mh.ioClass, "get" + getName(), primitive);
 	}
 

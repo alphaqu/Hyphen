@@ -5,6 +5,8 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodInfo;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 
+import static org.objectweb.asm.Opcodes.ILOAD;
+
 public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo getInfo;
 	public final MethodInfo putInfo;
@@ -25,12 +27,15 @@ public abstract class MethodDef implements SerializerDef {
 	public abstract void writeMethodMeasure(MethodHandler mh);
 
 	@Override
-	public void writePut(MethodHandler mh) {
+	public void writePut(MethodHandler mh, Runnable alloc) {
+		mh.varOp(ILOAD, "io");
+		alloc.run();
 		mh.visitMethodInsn(putInfo);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
+		mh.varOp(ILOAD, "io");
 		mh.visitMethodInsn(getInfo);
 	}
 

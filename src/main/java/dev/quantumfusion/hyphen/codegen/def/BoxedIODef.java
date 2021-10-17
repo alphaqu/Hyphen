@@ -20,9 +20,11 @@ public class BoxedIODef extends IODef {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh) {
-		mh.visitMethodInsn(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);
-		super.writePut(mh);
+	public void writePut(MethodHandler mh, Runnable alloc) {
+		super.writePut(mh, () -> {
+			alloc.run();
+			mh.visitMethodInsn(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);
+		});
 	}
 
 	private static Class<?> getPrimitiveFromBoxed(Class<?> boxed) {

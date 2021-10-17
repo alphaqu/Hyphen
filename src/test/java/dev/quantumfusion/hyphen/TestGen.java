@@ -28,7 +28,7 @@ public class TestGen {
 	}
 
 	public static void main(String[] args) {
-		SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.create(ByteBufferIO.class, TestGen.class);
+		SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
 
 		final HyphenSerializer<ByteBufferIO, TestGen> build = factory.build();
 		final TestGen data = new TestGen(new Simple(new int[]{54, 234, 5423}, 69, 5));

@@ -28,7 +28,6 @@ public class ClassDef extends MethodDef {
 		mh.op(DUP);
 		List<Class<?>> constParameters = new ArrayList<>();
 		fields.forEach((fieldEntry, def) -> {
-			mh.varOp(ILOAD,  "io");
 			def.writeGet(mh);
 			// TODO fix constructors
 			constParameters.add(fieldEntry.clazz().getBytecodeClass());
@@ -41,11 +40,12 @@ public class ClassDef extends MethodDef {
 	@Override
 	public void writeMethodPut(MethodHandler mh) {
 		fields.forEach((fieldEntry, def) -> {
-			mh.varOp(ILOAD,  "io", "data");
-			//TODO add get method support / generic support
-			mh.visitFieldInsn(GETFIELD, aClass, fieldEntry.field().getName(), fieldEntry.field().getType());
-			GenUtil.shouldCastGeneric(mh, fieldEntry.clazz());
-			def.writePut(mh);
+			def.writePut(mh, () -> {
+				mh.varOp(ILOAD,   "data");
+				//TODO add get method support / generic support
+				mh.visitFieldInsn(GETFIELD, aClass, fieldEntry.field().getName(), fieldEntry.field().getType());
+				GenUtil.shouldCastGeneric(mh, fieldEntry.clazz());
+			});
 		});
 		mh.op(RETURN);
 	}
