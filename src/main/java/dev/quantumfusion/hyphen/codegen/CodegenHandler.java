@@ -7,6 +7,7 @@ import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +44,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		this.dataClass = dataClass;
 		this.debug = debug;
 		this.options = options;
-		this.self = "UWU";
+		this.self = "\u0D9E";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
 
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -53,6 +54,8 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			mh.visitMethodInsn(INVOKESPECIAL, Object.class, "<init>", Void.TYPE);
 			mh.op(RETURN);
 		}
+
+		cw.visitAnnotation("LSponsored by amogus;", true);
 	}
 
 	public MethodInfo apply(MethodInfo info) {
@@ -88,14 +91,14 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	private String getVarName(Class<?> c) {
-		if(c == ioClass) return "io";
+		if (c == ioClass) return "io";
 		return "data";
 	}
 
 	public void setupSpark(MethodDef spark) {
-		spark.getInfo.setName("get",this);
-		spark.putInfo.setName("put",this);
-		spark.measureInfo.setName("measure",this);
+		spark.getInfo.setName("get", this);
+		spark.putInfo.setName("put", this);
+		spark.measureInfo.setName("measure", this);
 		writeMethod(spark, true);
 	}
 
@@ -108,7 +111,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		}.def();
 
 		try {
-			Files.write(Path.of("./UWU.class"), bytes, StandardOpenOption.CREATE);
+			Files.write(Path.of("./\u0D9E.class"), bytes, StandardOpenOption.CREATE);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

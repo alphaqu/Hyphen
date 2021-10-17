@@ -36,7 +36,7 @@ public final class GenUtil {
 		return Type.getMethodDescriptor(of(returnClass), of(parameters));
 	}
 
-	private static final char[] HYPHEN_METHOD_BASE_CHARS = "_$0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+	private static final char[] HYPHEN_METHOD_BASE_CHARS = "\u0D9EabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$0123456789".toCharArray();
 
 	public static String hyphenShortMethodName(int methodId) {
 //		if (methodId == 0) {
