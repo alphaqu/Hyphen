@@ -16,7 +16,8 @@ public class ClassDefiner extends ClassLoader {
 	}
 
 	private Class<?> defInternal(String name, byte[] bytes) throws ClassNotFoundException {
-		defineClass(name, bytes, 0, bytes.length, null);
-		return loadClass(name);
+		Class<?> aClass = defineClass(name, bytes, 0, bytes.length, null);
+		Class.forName(name, true, this);
+		return aClass;
 	}
 }

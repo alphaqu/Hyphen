@@ -24,13 +24,16 @@ public class TestGen {
 		public final O thign3;
 		public final O thign4;
 		public final Simple2<O> thign5;
+		@DataSubclasses({C1.class, C2.class})
+		public final C1<O> thign6;
 
-		public Simple(int[] thign, int thign2, O thign3, O thign4, Simple2<O> thign5) {
+		public Simple(int[] thign, int thign2, O thign3, O thign4, Simple2<O> thign5, C1<O> thign6) {
 			this.thign = thign;
 			this.thign2 = thign2;
 			this.thign3 = thign3;
 			this.thign4 = thign4;
 			this.thign5 = thign5;
+			this.thign6 = thign6;
 		}
 
 		@Override
@@ -38,34 +41,21 @@ public class TestGen {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
 			Simple<?> simple = (Simple<?>) o;
-			return thign2 == simple.thign2 && Arrays.equals(thign, simple.thign) && Objects.equals(thign3, simple.thign3) && Objects.equals(thign4, simple.thign4) && Objects.equals(thign5, simple.thign5);
+			return thign2 == simple.thign2
+					&& Arrays.equals(thign, simple.thign)
+					&& Objects.equals(thign2, simple.thign2)
+					&& Objects.equals(thign3, simple.thign3)
+					&& Objects.equals(thign4, simple.thign4)
+					&& Objects.equals(thign5, simple.thign5)
+					&& Objects.equals(thign6, simple.thign6)
+					;
 		}
 
 		@Override
 		public int hashCode() {
-			int result = Objects.hash(thign2, thign3, thign4, thign5);
+			int result = Objects.hash(thign2, thign3, thign4, thign5, thign6);
 			result = 31 * result + Arrays.hashCode(thign);
 			return result;
-		}
-
-		public int[] thign() {
-			return thign;
-		}
-
-		public int thign2() {
-			return thign2;
-		}
-
-		public O thign3() {
-			return thign3;
-		}
-
-		public O thign4() {
-			return thign4;
-		}
-
-		public Simple2<O> thign5() {
-			return thign5;
 		}
 
 		@Override
@@ -75,7 +65,8 @@ public class TestGen {
 						   "thign2=" + thign2 + ", " +
 						   "thign3=" + thign3 + ", " +
 						   "thign4=" + thign4 + ", " +
-						   "thign5=" + thign5 + ']';
+						   "thign5=" + thign5 + ", " +
+						   "thign6=" + thign6 + ']';
 		}
 
 	}
@@ -157,21 +148,20 @@ public class TestGen {
 	}
 
 	public static void main(String[] args) {
-		TestGen in = new TestGen(new Simple<Integer>(new int[]{54, 234, 5423}, 69, 5, 4, new Simple2<>(new int[]{54, 234, 5423}, 435, 2, 2345, 23)));
+		TestGen in = new TestGen(new Simple<Integer>(new int[]{54, 234, 5423}, 69, 5, 4, new Simple2<>(new int[]{54, 234, 5423}, 435, 2, 2345, 23), new C2<>(5, 10)));
 
 
 		var serializer = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class).build();
 
-		for (int i = 0; i < 100; i++) {
-			run(false, false);
-			System.out.print(i + "\r");
-		}
-		for (int i = 0; i < 100; i++) {
-			run(false, true);
-			System.out.print(i + "\r");
-		}
-		run(true, true);
-		run(true, false);
+		int measure = serializer.measure(in);
+		ByteBufferIO byteBufferIO = ByteBufferIO.create(measure);
+
+		serializer.put(byteBufferIO, in);
+		byteBufferIO.rewind();
+		TestGen out = serializer.get(byteBufferIO);
+		System.out.println(in.field);
+		System.out.println(out.field);
+		System.out.println(in.equals(out));
 	}
 
 	private static void run(boolean measureTime, boolean fastAlloc) {

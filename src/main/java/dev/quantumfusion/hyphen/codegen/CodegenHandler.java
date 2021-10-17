@@ -46,7 +46,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		this.debug = debug;
 		this.options = options;
 		this.definer = definer;
-		this.self = "uwu";
+		this.self = "HyphenSerializer";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
 
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -126,7 +126,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 		if (debug) {
 			try {
-				Files.write(Path.of("./\u0D9E.class"), bytes, StandardOpenOption.CREATE);
+				Files.write(Path.of("./HyphenSerializer.class"), bytes, StandardOpenOption.CREATE);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
