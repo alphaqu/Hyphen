@@ -15,23 +15,13 @@ public class TestGen {
 	}
 
 	@Data
-	public static class Simple<O> {
-		public int[] thign;
-		public int thign2;
-		public O thign3;
-
-		public Simple(int[] thign, int thign2, O thign3) {
-			this.thign = thign;
-			this.thign2 = thign2;
-			this.thign3 = thign3;
-		}
-
+	public record Simple<O>(int[] thign, int thign2, O thign3) {
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || getClass() != o.getClass()) return false;
-			Simple simple = (Simple) o;
-			return thign2 == simple.thign2 && Objects.equals(thign3, simple.thign3) && Arrays.equals(thign, simple.thign);
+			Simple<?> simple = (Simple<?>) o;
+			return thign2 == simple.thign2 && Arrays.equals(thign, simple.thign) && Objects.equals(thign3, simple.thign3);
 		}
 
 		@Override

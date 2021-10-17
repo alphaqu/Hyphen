@@ -6,7 +6,12 @@ import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
-import java.util.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -41,10 +46,8 @@ public class ClassDef extends MethodDef {
 	public void writeMethodPut(MethodHandler mh) {
 		fields.forEach((fieldEntry, def) -> {
 			def.writePut(mh, () -> {
-				mh.varOp(ILOAD,   "data");
 				//TODO add get method support / generic support
-				mh.visitFieldInsn(GETFIELD, aClass, fieldEntry.field().getName(), fieldEntry.field().getType());
-				GenUtil.shouldCastGeneric(mh, fieldEntry.clazz());
+				allocateField(mh, fieldEntry.field(), fieldEntry.clazz());
 			});
 		});
 		mh.op(RETURN);
@@ -58,11 +61,7 @@ public class ClassDef extends MethodDef {
 			int i = 0;
 			for (var entry : fields.entrySet()) {
 				var field = entry.getKey().field();
-				entry.getValue().writeMeasure(mh, () -> {
-					mh.varOp(ILOAD,  "data");
-					mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
-					GenUtil.shouldCastGeneric(mh, entry.getKey().clazz());
-				});
+				entry.getValue().writeMeasure(mh, () -> allocateField(mh, field, entry.getKey().clazz()));
 				if (i++ != 0) {
 					mh.op(IADD);
 				}
@@ -70,4 +69,30 @@ public class ClassDef extends MethodDef {
 		}
 		mh.op(IRETURN);
 	}
+
+	private void allocateField(MethodHandler mh, Field field, Clazz clazz) {
+		mh.varOp(ILOAD, "data");
+		if (Modifier.isPublic(field.getModifiers())) {
+			mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
+		} else {
+			mh.visitMethodInsn(INVOKEVIRTUAL, aClass, getGetter(aClass, field.getName()), clazz.getBytecodeClass());
+		}
+		GenUtil.shouldCastGeneric(mh, clazz);
+	}
+
+	public String getGetter(Class<?> aClass, String fieldName) {
+		try {
+			final String name = "get" + GenUtil.upperCase(fieldName);
+			aClass.getDeclaredMethod(name);
+			return name;
+		} catch (NoSuchMethodException ignored) {
+		}
+		try {
+			aClass.getDeclaredMethod(fieldName);
+			return fieldName;
+		} catch (NoSuchMethodException ignored) {
+		}
+		throw new RuntimeException("Could not access" + fieldName + " in class " + aClass.getSimpleName());
+	}
+
 }
