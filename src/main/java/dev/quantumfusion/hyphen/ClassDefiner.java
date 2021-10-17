@@ -7,16 +7,13 @@ public class ClassDefiner extends ClassLoader {
 		super(parent);
 	}
 
-	public Class<?> def(String name, byte[] bytes) {
+	public Class<?> def(String name, byte[] bytes)  {
+		final Class<?> aClass = defineClass(name, bytes, 0, bytes.length, null);
 		try {
-			return defInternal(name, bytes);
+			Class.forName(name, true, this);
 		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
 		}
-	}
-
-	private Class<?> defInternal(String name, byte[] bytes) throws ClassNotFoundException {
-		defineClass(name, bytes, 0, bytes.length, null);
-		return loadClass(name);
+		return aClass;
 	}
 }

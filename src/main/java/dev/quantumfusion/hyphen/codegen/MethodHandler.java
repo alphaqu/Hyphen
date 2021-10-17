@@ -79,11 +79,18 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	public void varOp(int op, String... vars) {
-		for (String varName : vars) varOp(op, varName);
+		for (var varName : vars) varOp(op, varName);
 	}
 
-	public void varOp(int op, String varName) {
-		var var = getVar(varName);
+	public void varOp(int op, Variable... vars) {
+		for (var var : vars) varOp(op, var);
+	}
+
+	public void varOp(int op, String var) {
+		varOp(op, getVar(var));
+	}
+
+	public void varOp(int op, Variable var) {
 		this.visitIntInsn(var.type().getOpcode(op), var.pos());
 	}
 
