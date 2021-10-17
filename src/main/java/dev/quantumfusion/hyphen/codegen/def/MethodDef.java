@@ -10,9 +10,12 @@ public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo putInfo;
 	public final MethodInfo measureInfo;
 
-	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz) {
+	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz){
+		this(handler, clazz, clazz.toString());
+	}
+
+	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz, String name) {
 		final Class<?> definedClass = clazz.getDefinedClass();
-		final String name = clazz.toString();
 		this.getInfo = handler.apply(new MethodInfo("get" + name, definedClass, handler.ioClass));
 		this.putInfo = handler.apply(new MethodInfo("put" + name, Void.TYPE, handler.ioClass, definedClass));
 		this.measureInfo = handler.apply(new MethodInfo("measure" + name, int.class, definedClass));

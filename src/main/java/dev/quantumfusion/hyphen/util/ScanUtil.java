@@ -96,6 +96,15 @@ public class ScanUtil {
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T extends Annotation> T getAnnotation(Class<T> cls, Clazz clazz) {
+		for (Annotation annotation : clazz.annotations)
+			if (cls.isInstance(annotation)) return (T) annotation;
+		for (Annotation annotation : clazz.parentClassAnnotations)
+			if (cls.isInstance(annotation)) return (T) annotation;
+		return null;
+	}
+
 	private record AnnotatedWrapped(Type type) implements AnnotatedType {
 
 		@Override

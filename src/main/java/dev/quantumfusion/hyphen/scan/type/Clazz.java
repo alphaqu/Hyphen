@@ -12,7 +12,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Clazz {
 	@NotNull
@@ -52,24 +51,17 @@ public class Clazz {
 		return UnknownClazz.UNKNOWN;
 	}
 
-	public List<FieldEntry> asSub(Class<?> sub) {
+	public Clazz asSub(Class<?> sub) {
 		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, ScanUtil::getInherited);
 		if (path == null)
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
 
-		var fields = new LinkedHashMap<Field, Clazz>();
 		var ctx = this;
 		for (int i = path.length - 1; i >= 0; i--) {
 			ctx = Clazzifier.create(path[i], ctx, Direction.SUB);
-			for (var field : ctx.getFields()) {
-				var f = field.field();
-				var c = field.clazz();
-				if (fields.containsKey(f) && (fields.get(f).defined() > c.defined())) continue;
-				fields.put(f, c);
-			}
 		}
 
-		return fields.entrySet().stream().map(FieldEntry::create).collect(Collectors.toList());
+		return ctx;
 	}
 
 	public List<FieldEntry> getFields() {

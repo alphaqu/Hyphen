@@ -3,8 +3,10 @@ package dev.quantumfusion.hyphen;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.def.*;
 import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -68,6 +70,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
+		DataSubclasses annotation = ScanUtil.getAnnotation(DataSubclasses.class, clazz);
+		if(annotation != null)
+			return new SubclassDef(this, clazz, annotation.value());
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
 		else return new ClassDef(this, clazz);

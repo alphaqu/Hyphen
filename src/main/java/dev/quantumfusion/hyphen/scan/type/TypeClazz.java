@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.AnnotatedTypeVariable;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +46,7 @@ public class TypeClazz extends Clazz {
 	}
 
 	@Override
-	public List<FieldEntry> asSub(Class<?> sub) {
+	public Clazz asSub(Class<?> sub) {
 		return defined.asSub(sub);
 	}
 

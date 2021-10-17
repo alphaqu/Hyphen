@@ -72,6 +72,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, raw, options.get(Options.SHORT_VARIABLE_NAMES))) {
 			for (Class<?> parameter : parameters)
 				mh.addVar(getVarName(parameter) + (raw ? "raw" : ""), raw ? Object.class : parameter);
+			mh.visitCode();
 			if (raw) {
 				for (Class<?> parameter : parameters) {
 					final String varName = getVarName(parameter);
@@ -84,6 +85,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			}
 
 			writer.accept(mh);
+			mh.visitEnd();
 		}
 	}
 

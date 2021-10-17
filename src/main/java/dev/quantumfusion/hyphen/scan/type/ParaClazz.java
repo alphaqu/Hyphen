@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,13 +25,23 @@ public class ParaClazz extends Clazz {
 
 	public static ParaClazz create(AnnotatedType rawAnnotatedType, @Nullable Clazz ctx, Direction dir) {
 		var parameters = new HashMap<String, Clazz>();
-		var annotatedType = (AnnotatedParameterizedType) rawAnnotatedType;
-		var type = (ParameterizedType) annotatedType.getType();
-		var rawType = (Class<?>) type.getRawType();
-		ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
-			parameters.put(internal.getTypeName(), Clazzifier.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
-		});
-		return new ParaClazz(rawType, ScanUtil.parseAnnotations(ctx), annotatedType.getAnnotations(), parameters);
+		var rawType = ScanUtil.getClassFrom(rawAnnotatedType);
+
+
+		if (rawAnnotatedType instanceof AnnotatedParameterizedType annotatedType)
+			ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
+				parameters.put(
+						(dir == Direction.SUB) ? actual.getType().getTypeName() : internal.getTypeName(),
+						Clazzifier.create((dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
+			});
+		else {
+			if (dir != Direction.SUB)
+				throw new IllegalArgumentException("Can only handle raw parameterized classes in sub mode");
+			for (var typeParameter : rawType.getTypeParameters())
+				parameters.put(typeParameter.getTypeName(), Clazzifier.create(ScanUtil.wrap(typeParameter), ctx, dir));
+		}
+
+		return new ParaClazz(rawType, ScanUtil.parseAnnotations(ctx), rawAnnotatedType.getAnnotations(), parameters);
 	}
 
 	@Override
@@ -49,7 +58,7 @@ public class ParaClazz extends Clazz {
 
 	@Override
 	public String toString() {
-			var sj = new StringJoiner(", ", "{", "}");
+		var sj = new StringJoiner(", ", "{", "}");
 		parameters.forEach((s, clazz) -> sj.add(s + " = " + clazz.toString()));
 		return super.toString() + sj;
 	}

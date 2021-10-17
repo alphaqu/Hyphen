@@ -2,6 +2,9 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
+import dev.quantumfusion.hyphen.scan.poly.classes.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -31,7 +34,7 @@ public class TestGen {
 		SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
 
 		final HyphenSerializer<ByteBufferIO, TestGen> build = factory.build();
-		final TestGen data = new TestGen(new Simple(new int[]{54, 234, 5423}, 69, 5));
+		final TestGen data = new TestGen(new Simple(new int[]{54, 234, 5423}, 69, 5, new C2<>(420, 0)));
 		final int measure = build.measure(data);
 		final ByteBufferIO byteBufferIO = ByteBufferIO.create(measure * 10);
 		build.put(byteBufferIO, data);
@@ -53,11 +56,15 @@ public class TestGen {
 		public int thign2;
 		@Data
 		public O thign3;
+		@Data
+		@DataSubclasses({C1.class, C2.class})
+		public final C1<Integer> s;
 
-		public Simple(int[] thign, int thign2, O thign3) {
+		public Simple(int[] thign, int thign2, O thign3, C1<Integer> s) {
 			this.thign = thign;
 			this.thign2 = thign2;
 			this.thign3 = thign3;
+			this.s = s;
 		}
 
 		@Override
