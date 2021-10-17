@@ -160,18 +160,25 @@ public class TestGen {
 		var serializer = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class).build();
 
 		for (int i = 0; i < 100; i++) {
-			run(false, serializer, in);
+			run(false, false);
 			System.out.print(i + "\r");
 		}
-		run(true, serializer, in);
+		for (int i = 0; i < 100; i++) {
+			run(false, true);
+			System.out.print(i + "\r");
+		}
+		run(true, true);
+		run(true, false);
 	}
 
-	private static void run(boolean measureTime, HyphenSerializer<ByteBufferIO, TestGen> serializer, TestGen in) {
+	private static void run(boolean measureTime, boolean fastAlloc) {
 		int iterations = 100;
 
 		profile(measureTime, "Create", () -> {
 			for (int i = 0; i < iterations; i++) {
-				SerializerFactory.create(ByteBufferIO.class, TestGen.class).build();
+				final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.create(ByteBufferIO.class, TestGen.class);
+				factory.setOption(Options.FAST_ALLOC, fastAlloc);
+				factory.build();
 			}
 		});
 

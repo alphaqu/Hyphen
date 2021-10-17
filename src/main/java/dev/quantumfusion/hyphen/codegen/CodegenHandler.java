@@ -46,7 +46,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		this.debug = debug;
 		this.options = options;
 		this.definer = definer;
-		this.self = "\u0D9E";
+		this.self = "uwu";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
 
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -119,7 +119,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized HyphenSerializer<IO, D> export() {
+	public synchronized <O extends HyphenSerializer<IO, D>> HyphenSerializer<IO, D> export() {
 		final byte[] bytes = cw.toByteArray();
 
 		if (debug) {
@@ -129,7 +129,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 				e.printStackTrace();
 			}
 		}
-		final Class<?> def = definer.def(self, bytes);
+		final Class<O> def = (Class<O>) definer.def(self, bytes);
 
 		if (options.get(Options.FAST_ALLOC)) {
 			return (HyphenSerializer<IO, D>) ClassDefiner.SERIALIZER;
@@ -137,7 +137,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			try {
 				var constructor = def.getConstructor();
 				constructor.setAccessible(true);
-				return (HyphenSerializer<IO, D>) constructor.newInstance();
+				return constructor.newInstance();
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}

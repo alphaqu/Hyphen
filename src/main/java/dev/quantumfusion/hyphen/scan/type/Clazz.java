@@ -64,8 +64,9 @@ public class Clazz {
 			for (var field : ctx.getFields()) {
 				var f = field.field();
 				var c = field.clazz();
-				if (fields.containsKey(f) && (fields.get(f).defined() > c.defined())) continue;
-				fields.put(f, c);
+				if (!fields.containsKey(f) || (fields.get(f).defined() <= c.defined())) {
+					fields.put(f, c);
+				}
 			}
 		}
 
