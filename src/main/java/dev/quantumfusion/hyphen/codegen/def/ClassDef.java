@@ -52,16 +52,20 @@ public class ClassDef extends MethodDef {
 
 	@Override
 	public void writeMethodMeasure(MethodHandler mh) {
-		int i = 0;
-		for (var entry : fields.entrySet()) {
-			var field = entry.getKey().field();
-			entry.getValue().writeMeasure(mh, () -> {
-				mh.varOp(ILOAD,  "data");
-				mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
-				GenUtil.shouldCastGeneric(mh, entry.getKey().clazz());
-			});
-			if (i++ != 0) {
-				mh.op(IADD);
+		if (fields.size() == 0) {
+			mh.op(ICONST_0);
+		} else {
+			int i = 0;
+			for (var entry : fields.entrySet()) {
+				var field = entry.getKey().field();
+				entry.getValue().writeMeasure(mh, () -> {
+					mh.varOp(ILOAD,  "data");
+					mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
+					GenUtil.shouldCastGeneric(mh, entry.getKey().clazz());
+				});
+				if (i++ != 0) {
+					mh.op(IADD);
+				}
 			}
 		}
 		mh.op(IRETURN);

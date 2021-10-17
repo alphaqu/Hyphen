@@ -78,8 +78,9 @@ public class Clazz {
 		if (aSuper != null)
 			fieldEntries.addAll(Clazzifier.create(aSuper, this, Direction.SUPER).getFields());
 
+		boolean globalData = aClass.getDeclaredAnnotation(Data.class) != null;
 		for (Field field : aClass.getDeclaredFields()) {
-			if (field.getDeclaredAnnotation(Data.class) != null) {
+			if (globalData || field.getDeclaredAnnotation(Data.class) != null) {
 				fieldEntries.add(new FieldEntry(field, Clazzifier.create(field.getAnnotatedType(), this, Direction.NORMAL)));
 			}
 		}
