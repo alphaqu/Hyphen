@@ -16,21 +16,7 @@ public class RecursiveC<T> extends C1<T> {
 		this.foo = foo;
 	}
 
-	public static <T> Stream<? extends RecursiveC<T>> generate(
-			Supplier<? extends Stream<? extends T>> tSupplier,
-			int depth
-	) {
-		Supplier<? extends Stream<? extends C1<T>>> foos;
-		if(depth <= 0){
-			foos = () -> generate(tSupplier);
-		} else {
-			foos = TestSupplierUtil.subClasses(() -> generate(tSupplier), () -> generate(tSupplier, depth-1));
-		}
 
-		return tSupplier.get().flatMap(t ->
-					foos.get().map(foo -> new RecursiveC<>(t, foo))
-				);
-	}
 
 	@Override
 	public String toString() {

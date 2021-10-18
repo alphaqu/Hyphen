@@ -1,10 +1,10 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.util.TestThis;
 
-import java.util.function.Supplier;
 import java.util.stream.Stream;
-
+@TestThis
 public class C1Pair<A> extends C1<A> {
 	@Data
 	public A second;
@@ -14,8 +14,8 @@ public class C1Pair<A> extends C1<A> {
 		this.second = second;
 	}
 
-	public static <A> Stream<? extends C1Pair<A>> generate(Supplier<? extends Stream<? extends A>> aSupplier){
-		return aSupplier.get().flatMap(a -> aSupplier.get().map(b -> new C1Pair<>(a,b)));
+	public static <A> Stream<? extends C1Pair<A>> generateC1Pair(Stream<? extends A> stream) {
+		return stream.map(a1 -> new C1Pair<>(a1, a1));
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.util.TestThis;
 
-import java.util.function.Supplier;
 import java.util.stream.Stream;
-
+@TestThis
 public class C3Def<E> extends C3<E, String> {
 	@Data
 	public E e;
@@ -14,16 +14,8 @@ public class C3Def<E> extends C3<E, String> {
 		this.e = e1;
 	}
 
-	public static <E> Stream<? extends C3Def<E>> generate(
-			Supplier<? extends Stream<? extends E>> eSupplier
-	) {
-		return eSupplier.get().flatMap(e ->
-				eSupplier.get().flatMap(b1 ->
-						TestSupplierUtil.STRINGS.get().flatMap(s ->
-								eSupplier.get().map(e1 -> new C3Def<>(e, b1, s, e1))
-						)
-				)
-		);
+	public static <E> Stream<? extends C3Def<E>> generateC3Def(Stream<? extends E> stream) {
+		return stream.map(e1 -> new C3Def<>(e1, e1, String.valueOf(e1), e1));
 	}
 
 	@Override

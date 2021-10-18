@@ -2,16 +2,20 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataOption;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+import static dev.quantumfusion.hyphen.Options.*;
+
 @Data
 public class TestGen {
-	public Simple<Integer>[] field;
+	@DataOption(key = ARRAY_LENGTH_TYPE, value = BYTE)
+	public Simple<@DataOption(key = STRING_ENCODING, value = STRING_UTF8) String>[] field;
 
-	public TestGen(Simple<Integer>[] field) {
+	public TestGen(Simple<String>[] field) {
 		this.field = field;
 	}
 
@@ -62,7 +66,7 @@ public class TestGen {
 		final Simple<Integer> integerSimple = new Simple<>(new Integer[]{69, 420}, 432, 123f);
 		TestGen in = new TestGen(new Simple[]{integerSimple, integerSimple, integerSimple});
 		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.create(ByteBufferIO.class, TestGen.class);
-		factory.setOption(Options.FAST_ALLOC, false);
+		factory.setOption(FAST_ALLOC, false);
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, in);
 		serializer.put(byteBufferIO, in);
@@ -77,7 +81,7 @@ public class TestGen {
 		profile(measureTime, "Create", () -> {
 			for (int i = 0; i < iterations; i++) {
 				final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.create(ByteBufferIO.class, TestGen.class);
-				factory.setOption(Options.FAST_ALLOC, fastAlloc);
+				factory.setOption(FAST_ALLOC, fastAlloc);
 				factory.build();
 			}
 		});

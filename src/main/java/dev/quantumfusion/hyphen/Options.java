@@ -1,6 +1,8 @@
 package dev.quantumfusion.hyphen;
 
 public enum Options {
+
+
 	/**
 	 * Disables the {@link HyphenSerializer#put(Object, Object)} Method. Usage will result in a {@link UnsupportedOperationException}
 	 */
@@ -33,6 +35,14 @@ public enum Options {
 	 * Might bring issues if someone is messing with internals.
 	 */
 	FAST_ALLOC(true);
+
+	public static final String STRING_ENCODING = "key.string.encoding";
+	public static final String STRING_UTF8 = "value.string.utf8";
+	public static final String STRING_UTF16 = "value.string.utf16";
+	public static final String ARRAY_LENGTH_TYPE = "value.array.type";
+	public static final String BYTE = "value.byte";
+	public static final String SHORT = "value.short";
+	public static final String INT = "value.int";
 
 	public final boolean defaultValue;
 
