@@ -39,39 +39,32 @@ public class ClassDef extends MethodDef {
 		});
 		//TODO add generic support
 		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constParameters.toArray(Class[]::new));
-		mh.op(ARETURN);
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh) {
-		fields.forEach((fieldEntry, def) -> {
-			def.writePut(mh, () -> {
-				//TODO add get method support / generic support
-				allocateField(mh, fieldEntry.field(), fieldEntry.clazz());
-			});
-		});
-		mh.op(RETURN);
+	public void writeMethodPut(MethodHandler mh, String dataVar) {
+		fields.forEach((fieldEntry, def) -> def.writePut(mh, () -> {
+			//TODO add get method support / generic support
+			allocateField(mh, fieldEntry.field(), fieldEntry.clazz(), dataVar);
+		}));
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh) {
+	public void writeMethodMeasure(MethodHandler mh, String dataVar) {
 		if (fields.size() == 0) {
 			mh.op(ICONST_0);
 		} else {
 			int i = 0;
 			for (var entry : fields.entrySet()) {
 				var field = entry.getKey().field();
-				entry.getValue().writeMeasure(mh, () -> allocateField(mh, field, entry.getKey().clazz()));
-				if (i++ != 0) {
-					mh.op(IADD);
-				}
+				entry.getValue().writeMeasure(mh, () -> allocateField(mh, field, entry.getKey().clazz(), dataVar));
+				if (i++ != 0) mh.op(IADD);
 			}
 		}
-		mh.op(IRETURN);
 	}
 
-	private void allocateField(MethodHandler mh, Field field, Clazz clazz) {
-		mh.varOp(ILOAD, "data");
+	private void allocateField(MethodHandler mh, Field field, Clazz clazz, String dataVar) {
+		mh.varOp(ILOAD, dataVar);
 		if (Modifier.isPublic(field.getModifiers())) {
 			mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
 		} else {
