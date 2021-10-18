@@ -1,10 +1,13 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
-@TestThis
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+
 public class C1Pair<A> extends C1<A> {
 	@Data
 	public A second;
@@ -14,25 +17,25 @@ public class C1Pair<A> extends C1<A> {
 		this.second = second;
 	}
 
-	public static <A> Stream<? extends C1Pair<A>> generateC1Pair(Stream<? extends A> stream) {
-		return stream.map(a1 -> new C1Pair<>(a1, a1));
+	public static <A> Supplier<? extends Stream<? extends C1Pair<A>>> generateC1Pair(
+			Supplier<? extends Stream<? extends A>> aProvider) {
+		return cross(aProvider, aProvider, C1Pair::new);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || this.getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 
 		C1Pair<?> c1Pair = (C1Pair<?>) o;
 
-		return this.second.equals(c1Pair.second);
+		return Objects.equals(this.second, c1Pair.second);
 	}
 
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();
-		result = 31 * result + this.second.hashCode();
+		result = 31 * result + Objects.hashCode(this.second);
 		return result;
 	}
 
