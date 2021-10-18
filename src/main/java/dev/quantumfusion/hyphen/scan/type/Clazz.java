@@ -87,7 +87,7 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		return aClass.getSimpleName();
+		return aClass.getSimpleName() + this.annotations;
 	}
 
 	@Override

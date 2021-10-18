@@ -8,6 +8,12 @@ import dev.quantumfusion.hyphen.scan.poly.classes.D1;
 import dev.quantumfusion.hyphen.scan.poly.classes.D2;
 import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
+
 @Data
 @TestThis
 public class CInD {
@@ -16,5 +22,34 @@ public class CInD {
 
 	public CInD(D1<C1<Integer>> data) {
 		this.data = data;
+	}
+
+	public static Supplier<Stream<? extends CInD>> generateCInD() {
+		var sub = subClasses(
+				C1.generateC1(INTEGERS),
+				C2.generateC2(INTEGERS)
+		);
+
+		return cross(subClasses(D1.generateD1(sub), D2.generateD2(sub)), CInD::new);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || this.getClass() != o.getClass()) return false;
+		CInD cInD = (CInD) o;
+		return Objects.equals(this.data, cInD.data);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.data);
+	}
+
+	@Override
+	public String toString() {
+		return "CInD{" +
+				"data=" + this.data +
+				'}';
 	}
 }

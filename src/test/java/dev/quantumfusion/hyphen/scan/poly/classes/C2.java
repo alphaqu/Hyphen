@@ -17,7 +17,7 @@ public class C2<B> extends C1<B> {
 		this.b = b1;
 	}
 
-	public static <B> Supplier<? extends Stream<? extends C2<B>>> generateC2(
+	public static <B> Supplier<Stream<? extends C2<B>>> generateC2(
 			Supplier<? extends Stream<? extends B>> bProvider) {
 		return cross(bProvider, bProvider, C2::new);
 	}

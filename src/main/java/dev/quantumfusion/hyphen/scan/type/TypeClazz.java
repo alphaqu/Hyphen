@@ -2,7 +2,6 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.util.ScanUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
@@ -34,50 +33,60 @@ public class TypeClazz extends Clazz {
 
 	@Override
 	public Class<?> getDefinedClass() {
-		return defined.getDefinedClass();
+		return this.defined.getDefinedClass();
 	}
 
 	@Override
 	public Class<?> getBytecodeClass() {
-		return bytecodeBound;
+		return this.bytecodeBound;
 	}
 
 	@Override
 	public Clazz define(String typeName) {
-		return defined.define(typeName);
+		return this.defined.define(typeName);
 	}
 
 	@Override
 	public Clazz asSub(Class<?> sub) {
-		return defined.asSub(sub);
+		return this.defined.asSub(sub);
 	}
 
 	@Override
 	public List<FieldEntry> getFields() {
-		return defined.getFields();
+		return this.defined.getFields();
 	}
 
 	@Override
 	public int defined() {
-		return defined.defined();
+		return this.defined.defined();
 	}
 
 	@Override
 	public String toString() {
-		return defined.toString();
+		return this.defined.toString();
+	}
+
+	@Override
+	public <A extends Annotation> A getAnnotation(Class<? extends A> aClass) {
+		return this.defined.getAnnotation(aClass);
+	}
+
+	@Override
+	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
+		return this.defined.containsAnnotation(aClass);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		TypeClazz typeClazz = (TypeClazz) o;
-		return Objects.equals(bytecodeBound, typeClazz.bytecodeBound);
+		return Objects.equals(this.bytecodeBound, typeClazz.bytecodeBound);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), bytecodeBound);
+		return Objects.hash(super.hashCode(), this.bytecodeBound);
 	}
 }
