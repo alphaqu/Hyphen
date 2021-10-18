@@ -21,6 +21,10 @@ public class ClassCache {
 
 	public static AnnotatedType[] getInherited(Class<?> clazz) {
 		return cache(INHERITED_CACHE, clazz, (c) -> {
+			if (c.isArray())
+				return ArrayUtil.map(getInherited(clazz.componentType()), AnnotatedType[]::new, annotatedType ->
+						ScanUtil.wrap(ScanUtil.getClassFrom(annotatedType).arrayType()));
+
 			var classInterface = ClassCache.getInterfaces(clazz);
 			var classSuper = ClassCache.getSuperClass(clazz);
 			if (classSuper != null) return ScanUtil.append(classInterface, classSuper);

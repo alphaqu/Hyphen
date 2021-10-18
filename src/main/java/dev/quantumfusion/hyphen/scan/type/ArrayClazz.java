@@ -21,8 +21,14 @@ public class ArrayClazz extends Clazz {
 	}
 
 	public static ArrayClazz create(AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
-		final Clazz component = Clazzifier.create(((AnnotatedArrayType) array).getAnnotatedGenericComponentType(), ctx, dir);
+		final Clazz component = Clazzifier.create(getAnnotatedGenericComponentType(array), ctx, dir);
 		return new ArrayClazz(component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(array, ctx), component);
+	}
+
+	private static AnnotatedType getAnnotatedGenericComponentType(AnnotatedType array) {
+		if(array instanceof AnnotatedArrayType annotatedArrayType)
+			return annotatedArrayType.getAnnotatedGenericComponentType();
+		else return ScanUtil.wrap(ScanUtil.getClassFrom(array).componentType());
 	}
 
 	@Override

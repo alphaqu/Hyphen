@@ -6,6 +6,12 @@ import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
+
 @Data
 @TestThis
 public class SingleStepTest {
@@ -15,5 +21,29 @@ public class SingleStepTest {
 
 	public SingleStepTest(C1<Integer> integer) {
 		this.integer = integer;
+	}
+
+	public static Supplier<Stream<? extends SingleStepTest>> generateSingleStepTest() {
+		return cross(subClasses(C1.generateC1(INTEGERS), C2.generateC2(INTEGERS) ), SingleStepTest::new);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || this.getClass() != o.getClass()) return false;
+		SingleStepTest that = (SingleStepTest) o;
+		return Objects.equals(this.integer, that.integer);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.integer);
+	}
+
+	@Override
+	public String toString() {
+		return "SingleStepTest{" +
+				"integer=" + this.integer +
+				'}';
 	}
 }

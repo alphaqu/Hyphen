@@ -21,8 +21,8 @@ public class NumberC1 {
 		this.data = data;
 	}
 
-	public static Supplier<Stream<? extends NumberC>> generateNumberC() {
-		return cross(C1.generateC1(NUMBERS_IF), NumberC::new);
+	public static Supplier<Stream<? extends NumberC1>> generateNumberC1() {
+		return cross(C1.generateC1(NUMBERS_IF), NumberC1::new);
 	}
 
 	@Override
