@@ -18,8 +18,8 @@ import java.util.StringJoiner;
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
 
-	public ParaClazz(@NotNull Class<?> aClass, Annotation[] sourceAnnotations, Annotation[] annotations, Map<String, Clazz> parameters) {
-		super(aClass, sourceAnnotations, annotations);
+	public ParaClazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Annotation> annotations, Map<String, Clazz> parameters) {
+		super(aClass, annotations);
 		this.parameters = parameters;
 	}
 
@@ -41,7 +41,7 @@ public class ParaClazz extends Clazz {
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(ScanUtil.wrap(typeParameter), ctx, dir));
 		}
 
-		return new ParaClazz(rawType, ScanUtil.parseAnnotations(ctx), rawAnnotatedType.getAnnotations(), parameters);
+		return new ParaClazz(rawType, ScanUtil.acquireAnnotations(rawAnnotatedType, ctx), parameters);
 	}
 
 	@Override

@@ -27,7 +27,6 @@ public class For implements AutoCloseable {
 	}
 
 	public static For create(MethodHandler mh) {
-
 		return new For(mh);
 	}
 }

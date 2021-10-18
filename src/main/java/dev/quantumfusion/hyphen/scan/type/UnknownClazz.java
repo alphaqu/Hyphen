@@ -4,12 +4,13 @@ import dev.quantumfusion.hyphen.scan.FieldEntry;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Map;
 
 public class UnknownClazz extends Clazz {
 	public static final Clazz UNKNOWN = new UnknownClazz();
 
 	private UnknownClazz() {
-		super(UnknownClazz.class, new Annotation[0], new Annotation[0]);
+		super(UnknownClazz.class, Map.of());
 	}
 
 	@Override

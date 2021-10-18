@@ -61,7 +61,9 @@ public class TestGen {
 	public static void main(String[] args) {
 		final Simple<Integer> integerSimple = new Simple<>(new Integer[]{69, 420}, 432, 123f);
 		TestGen in = new TestGen(new Simple[]{integerSimple, integerSimple, integerSimple});
-		var serializer = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class).build();
+		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.create(ByteBufferIO.class, TestGen.class);
+		factory.setOption(Options.FAST_ALLOC, false);
+		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, in);
 		serializer.put(byteBufferIO, in);
 		byteBufferIO.rewind();

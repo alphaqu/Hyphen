@@ -10,29 +10,36 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class Clazz {
 	@NotNull
 	public final Class<?> aClass;
-	public final Annotation[] annotations;
-	public final Annotation[] parentClassAnnotations;
+	private final Map<Class<? extends Annotation>, Annotation> annotations;
 
-	protected Clazz(@NotNull Class<?> aClass, Annotation[] sourceAnnotations, Annotation[] annotations) {
+	protected Clazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Annotation> annotations) {
 		this.aClass = aClass;
 		this.annotations = annotations;
-		this.parentClassAnnotations = sourceAnnotations;
 	}
 
 	public Clazz(@NotNull Class<?> aClass) {
 		this.aClass = aClass;
-		this.annotations = new Annotation[0];
-		this.parentClassAnnotations = new Annotation[0];
+		this.annotations = Map.of();
 	}
 
 	public static Clazz create(AnnotatedType type, @Nullable Clazz ctx) {
-		return new Clazz((Class<?>) type.getType(), ScanUtil.parseAnnotations(ctx), type.getDeclaredAnnotations());
+		return new Clazz((Class<?>) type.getType(), ScanUtil.acquireAnnotations(type, ctx));
+	}
+
+	public <A extends Annotation> A getAnnotation(Class<? extends A> aClass) {
+		return (A) annotations.get(aClass);
+	}
+
+	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
+		return annotations.containsKey(aClass);
 	}
 
 	public Class<?> getDefinedClass() {
@@ -88,14 +95,11 @@ public class Clazz {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Clazz clazz = (Clazz) o;
-		return aClass.equals(clazz.aClass) && Arrays.equals(annotations, clazz.annotations) && Arrays.equals(parentClassAnnotations, clazz.parentClassAnnotations);
+		return aClass.equals(clazz.aClass) && Objects.equals(annotations, clazz.annotations);
 	}
 
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(aClass);
-		result = 31 * result + Arrays.hashCode(annotations);
-		result = 31 * result + Arrays.hashCode(parentClassAnnotations);
-		return result;
+		return Objects.hash(aClass, annotations);
 	}
 }

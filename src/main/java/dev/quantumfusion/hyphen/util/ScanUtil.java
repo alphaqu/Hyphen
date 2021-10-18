@@ -1,14 +1,14 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayDeque;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -52,9 +52,20 @@ public class ScanUtil {
 		return out;
 	}
 
-	public static Annotation[] parseAnnotations(@Nullable Clazz clazz) {
-		if (clazz == null) return new Annotation[0];
-		return clazz.aClass.getDeclaredAnnotations();
+	public static Map<Class<? extends  Annotation>, Annotation> acquireAnnotations(@NotNull AnnotatedType self, @Nullable Clazz parent) {
+		if (parent != null) {
+			var parentAnnotations = mapAnnotations(parent.getDefinedClass().getDeclaredAnnotations(), new HashMap<>());
+			// self annotations have priority
+			return 	mapAnnotations(self.getDeclaredAnnotations(), parentAnnotations);
+		}
+		return mapAnnotations(self.getDeclaredAnnotations(), new HashMap<>());
+	}
+
+	private static Map<Class<? extends Annotation>, Annotation> mapAnnotations(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation>  map) {
+		for (Annotation annotation : annotations) {
+			map.put(annotation.annotationType(), annotation);
+		}
+		return map;
 	}
 
 	public static AnnotatedType wrap(Type clazz) {
@@ -70,15 +81,6 @@ public class ScanUtil {
 		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
 
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <T extends Annotation> T getAnnotation(Class<T> cls, Clazz clazz) {
-		for (Annotation annotation : clazz.annotations)
-			if (cls.isInstance(annotation)) return (T) annotation;
-		for (Annotation annotation : clazz.parentClassAnnotations)
-			if (cls.isInstance(annotation)) return (T) annotation;
-		return null;
 	}
 
 	private record AnnotatedWrapped(Type type) implements AnnotatedType {

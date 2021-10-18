@@ -2,12 +2,14 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.util.ScanUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class TypeClazz extends Clazz {
@@ -15,8 +17,8 @@ public class TypeClazz extends Clazz {
 	private final Class<?> bytecodeBound;
 	private final String typeName;
 
-	public TypeClazz(Annotation[] sourceAnnotations, Annotation[] annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
-		super(bytecodeBound, sourceAnnotations, annotations);
+	public TypeClazz(Map<Class<? extends Annotation>, Annotation> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
+		super(bytecodeBound, annotations);
 		this.defined = defined;
 		this.bytecodeBound = bytecodeBound;
 		this.typeName = typeName;
@@ -27,7 +29,7 @@ public class TypeClazz extends Clazz {
 		var typeName = type.getTypeName();
 
 		if (ctx == null) throw new RuntimeException("Type Knowledge Required");
-		return new TypeClazz(ScanUtil.parseAnnotations(ctx), typeVariable.getDeclaredAnnotations(), ctx.define(typeName), Object.class, typeName);
+		return new TypeClazz(ScanUtil.acquireAnnotations(typeVariable, ctx), ctx.define(typeName), Object.class, typeName);
 	}
 
 	@Override

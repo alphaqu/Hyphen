@@ -73,9 +73,8 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
-		DataSubclasses annotation = ScanUtil.getAnnotation(DataSubclasses.class, clazz);
-		if(annotation != null)
-			return new SubclassDef(this, clazz, annotation.value());
+		if(clazz.containsAnnotation(DataSubclasses.class))
+			return new SubclassDef(this, clazz, clazz.getAnnotation(DataSubclasses.class).value());
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
 		else return new ClassDef(this, clazz);
