@@ -28,7 +28,7 @@ public class DoubleC {
 				C2.generateC2(INTEGERS)
 		);
 
-		return cross(subClasses(C1.generateC1(sub), C2.generateC2(sub)), DoubleC::new);
+		return cross(subClasses(C1.generateC1(sub), C2.generateC2Reduce(sub, 1)), DoubleC::new);
 	}
 
 	@Override

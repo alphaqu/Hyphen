@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -97,8 +98,9 @@ public class TestUtil {
 				throw Assertions.<RuntimeException>fail("missing generate method", e);
 			}
 
+			AtomicInteger errorCount = new AtomicInteger();
 			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
-					datas.map(data -> {
+					datas.limit(10000).map(data -> {
 						String displayName;
 						try {
 							displayName = data.toString();
@@ -108,84 +110,90 @@ public class TestUtil {
 							});
 						}
 						return DynamicTest.dynamicTest(displayName, () -> {
+							Assumptions.assumeFalse(errorCount.get() > 100);
 							List<Object> errors = new ArrayList<>();
 
-							// measure
-							var measuredSize = serializer.measure(data);
-							boolean doSizeCheck = true;
-							if (measuredSize < 0) {
-								errors.add("measured size is negative: " + measuredSize);
-								measuredSize = 64;
-								doSizeCheck = false;
-							} else if (measuredSize > 0xFFFF) {
-								errors.add("measured size more than the test max of 0xFFFF: " + measuredSize);
-								measuredSize = 0xFFFF;
-								doSizeCheck = false;
-							}
-
-							// adding extra room
-							var io = ByteBufferIO.create((measuredSize + 64) * 4);
-
-							// put
-							serializer.put(io, data);
-
-							// measure check
-							final int writtenSize = io.pos();
-
-							// rewind to 0
-							io.rewind();
-
-							// get
-							var dataOut = serializer.get(io);
-
-							// read check
-							final int readSize = io.pos();
-							if (doSizeCheck) {
-								switch ((readSize != writtenSize ? 4 : 0) + (readSize != measuredSize ? 2 : 0) + (measuredSize != writtenSize ? 1 : 0)) {
-									case 0b000 -> {
-									}
-									case 0b011 -> { // measure is wrong
-										if (measuredSize < readSize)
-											errors.add("Measured size is too small. " + measuredSize + " < " + readSize);
-										else
-											errors.add("Measured size is too big. " + measuredSize + " > " + readSize);
-									}
-									case 0b101 -> { // written size is wrong
-										if (writtenSize < readSize)
-											errors.add("Written size is too small. " + writtenSize + " < " + readSize);
-										else
-											errors.add("Written size is too big. " + writtenSize + " > " + readSize);
-									}
-									case 0b110 -> { // measure is wrong
-										if (readSize < writtenSize)
-											errors.add("Read size is too small. " + readSize + " < " + writtenSize);
-										else
-											errors.add("Read size is too big. " + readSize + " > " + writtenSize);
-									}
-									case 0b111 -> { // all 3 differ
-										errors.add("All sizes are different!");
-										errors.add("\tMeasure: " + measuredSize);
-										errors.add("\tWrite: " + writtenSize);
-										errors.add("\tRead: " + readSize);
-									}
-									default -> {
-										errors.add(new AssertionError("Mathematical unreachable code reached"));
-									}
+							try {
+								// measure
+								var measuredSize = serializer.measure(data);
+								boolean doSizeCheck = true;
+								if (measuredSize < 0) {
+									errors.add("measured size is negative: " + measuredSize);
+									measuredSize = 64;
+									doSizeCheck = false;
+								} else if (measuredSize > 0xFFFF) {
+									errors.add("measured size more than the test max of 0xFFFF: " + measuredSize);
+									measuredSize = 0xFFFF;
+									doSizeCheck = false;
 								}
-							} else {
-								if (writtenSize < readSize)
-									errors.add("Written size is smaller than read size. " + writtenSize + " < " + readSize);
-								else if (writtenSize > readSize)
-									errors.add("Written size is bigger than read size. " + writtenSize + " > " + readSize);
-								else
-									errors.add("Actual size = " + writtenSize);
-							}
 
-							// result check
-							if (!data.equals(dataOut))
-								errors.add(new AssertionFailedError("Objects do not match\n" + data + "\n != \n" + dataOut, data, dataOut));
+								// adding extra room
+								var io = ByteBufferIO.create((measuredSize + 64) * 4);
+
+								// put
+								serializer.put(io, data);
+
+								// measure check
+								final int writtenSize = io.pos();
+
+								// rewind to 0
+								io.rewind();
+
+								// get
+								var dataOut = serializer.get(io);
+
+								// read check
+								final int readSize = io.pos();
+								if (doSizeCheck) {
+									switch ((readSize != writtenSize ? 4 : 0) + (readSize != measuredSize ? 2 : 0) + (measuredSize != writtenSize ? 1 : 0)) {
+										case 0b000 -> {
+										}
+										case 0b011 -> { // measure is wrong
+											if (measuredSize < readSize)
+												errors.add("Measured size is too small. " + measuredSize + " < " + readSize);
+											else
+												errors.add("Measured size is too big. " + measuredSize + " > " + readSize);
+										}
+										case 0b101 -> { // written size is wrong
+											if (writtenSize < readSize)
+												errors.add("Written size is too small. " + writtenSize + " < " + readSize);
+											else
+												errors.add("Written size is too big. " + writtenSize + " > " + readSize);
+										}
+										case 0b110 -> { // measure is wrong
+											if (readSize < writtenSize)
+												errors.add("Read size is too small. " + readSize + " < " + writtenSize);
+											else
+												errors.add("Read size is too big. " + readSize + " > " + writtenSize);
+										}
+										case 0b111 -> { // all 3 differ
+											errors.add("All sizes are different!");
+											errors.add("\tMeasure: " + measuredSize);
+											errors.add("\tWrite: " + writtenSize);
+											errors.add("\tRead: " + readSize);
+										}
+										default -> {
+											errors.add(new AssertionError("Mathematical unreachable code reached"));
+										}
+									}
+								} else {
+									if (writtenSize < readSize)
+										errors.add("Written size is smaller than read size. " + writtenSize + " < " + readSize);
+									else if (writtenSize > readSize)
+										errors.add("Written size is bigger than read size. " + writtenSize + " > " + readSize);
+									else
+										errors.add("Actual size = " + writtenSize);
+								}
+
+								// result check
+								if (!data.equals(dataOut))
+									errors.add(new AssertionFailedError("Objects do not match\n" + data + "\n != \n" + dataOut, data, dataOut));
+							} catch (Throwable t) {
+								errors.add(t);
+							}
 
 							if (!errors.isEmpty()) {
+								Assumptions.assumeFalse(errorCount.incrementAndGet() > 10);
 								// errors happened
 								if (errors.size() == 1 && errors.get(0) instanceof Throwable t)
 									throw t;

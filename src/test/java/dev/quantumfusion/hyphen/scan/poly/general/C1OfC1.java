@@ -25,7 +25,9 @@ public class C1OfC1 {
 
 	public static Supplier<? extends Stream<? extends C1OfC1>> generateC1OfC1() {
 		return cross(
-				TestSupplierUtil.<C1<C1<Integer>>>subClasses(C1.generateC1(C1.generateC1(INTEGERS)), WrappedC1.generateWrappedC1(C1.generateC1(INTEGERS))),
+				TestSupplierUtil.subClasses(
+						C1.generateC1(C1.generateC1(INTEGERS)),
+						WrappedC1.generateWrappedC1(C1.generateC1(INTEGERS))),
 				C1OfC1::new);
 	}
 

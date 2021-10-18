@@ -1,9 +1,12 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public final class TestSupplierUtil {
@@ -16,28 +19,61 @@ public final class TestSupplierUtil {
 			// , "☃️"
 	});
 
-	public static final Supplier<? extends Stream<? extends Integer>> INTEGERS = () -> Arrays.stream(new Integer[]{
+	public static final Supplier<? extends IntStream> INTS = () -> IntStream.of(
 			0, 1, 2,
 			-1, -2,
-			/*
-			100, 420, 69_420, 500_000, 123_456_789,
-			-100, -420, -69_420, -500_000, -123_456_789,
-			(int) Byte.MAX_VALUE,
-			(int) Byte.MIN_VALUE,
-			(int) Short.MAX_VALUE,
-			(int) Short.MIN_VALUE,*/
 			Integer.MAX_VALUE,
-			Integer.MIN_VALUE
+			Integer.MIN_VALUE);
+
+	public static final Supplier<? extends Stream<? extends Integer>> INTEGERS = () -> INTS.get().mapToObj(i -> i);
+
+	public static final Supplier<Stream<? extends Float>> FLOATS = () -> Arrays.stream(new Float[]{
+			0.0f, 0.5f, 1.0f, 2.0f,
+			-0.0f, -0.5f, -1.0f, -2.0f,
+			Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_NORMAL,
+			-Float.MAX_VALUE, -Float.MIN_VALUE, -Float.MIN_NORMAL,
+			Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY
 	});
 
+	public static final Supplier<Stream<? extends Number>> NUMBERS_IF = TestSupplierUtil.subClasses(INTEGERS, FLOATS);
+
+	/**
+	 * given a stream, will limit the length to approx sqrt(stream.count)
+	 */
+	public static <T> Supplier<Stream<? extends T>> reduce(Supplier<? extends Stream<? extends T>> stream, int seed) {
+		Random random = new Random(seed);
+		return () -> {
+			// reset the count for each stream
+			AtomicInteger ai = new AtomicInteger();
+			return stream.get().filter(i -> {
+				double v = random.nextDouble();
+				return v * v * ai.incrementAndGet() < 1;
+			});
+		};
+	}
+
+	/**
+	 * given a stream, will limit the length to approx powth-rooth(stream.count)
+	 */
+	public static <T> Supplier<Stream<? extends T>> reduce(Supplier<? extends Stream<? extends T>> stream, int seed, int pow) {
+		Random random = new Random(seed);
+		return () -> {
+			// reset the count for each stream
+			AtomicInteger ai = new AtomicInteger();
+			return stream.get().filter(i -> {
+				double v = random.nextDouble();
+				return Math.pow(v, pow) * ai.incrementAndGet() < 1;
+			});
+		};
+	}
 
 	@SafeVarargs
-	public static <T> Supplier<? extends Stream<? extends T>> subClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
+	public static <T> Supplier<Stream<? extends T>> subClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
 		return () -> Arrays.stream(subclasses).flatMap(Supplier::get);
 	}
 
 	@SafeVarargs
-	public static <T> Supplier<? extends Stream<? extends T>> nullableSubClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
+	public static <T> Supplier<Stream<? extends T>> nullableSubClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
 		return () -> Stream.concat(Stream.of((T) null), Arrays.stream(subclasses).flatMap(Supplier::get));
 	}
 

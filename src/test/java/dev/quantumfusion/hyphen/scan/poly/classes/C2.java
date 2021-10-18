@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.reduce;
 
 public class C2<B> extends C1<B> {
 	@Data
@@ -20,6 +21,12 @@ public class C2<B> extends C1<B> {
 	public static <B> Supplier<Stream<? extends C2<B>>> generateC2(
 			Supplier<? extends Stream<? extends B>> bProvider) {
 		return cross(bProvider, bProvider, C2::new);
+	}
+
+	public static <B> Supplier<Stream<? extends C2<B>>> generateC2Reduce(
+			Supplier<? extends Stream<? extends B>> bProvider,
+			int seed) {
+		return cross(reduce(bProvider, seed), reduce(bProvider, 31 * seed + 5), C2::new);
 	}
 
 	@Override

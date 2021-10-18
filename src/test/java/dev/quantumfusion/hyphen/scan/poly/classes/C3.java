@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.reduce;
 
 
 public class C3<C, D> extends C2<C> {
@@ -23,6 +24,16 @@ public class C3<C, D> extends C2<C> {
 			Supplier<? extends Stream<? extends D>> dProvider
 	) {
 		return cross(cProvider, cProvider, dProvider, C3::new);
+	}
+
+	public static <C, D> Supplier<? extends Stream<? extends C3<C, D>>> generateC3Reduce(
+			Supplier<? extends Stream<? extends C>> cProvider,
+			Supplier<? extends Stream<? extends D>> dProvider,
+			int seed) {
+		return cross(
+				reduce(cProvider, seed, 3),
+				reduce(cProvider, seed * 31 + 5, 3),
+				reduce(dProvider, seed * 127 - 7, 3), C3::new);
 	}
 
 	@Override
