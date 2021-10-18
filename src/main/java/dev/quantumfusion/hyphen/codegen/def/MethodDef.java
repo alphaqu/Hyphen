@@ -25,11 +25,11 @@ public abstract class MethodDef implements SerializerDef {
 		this.measureInfo = handler.apply(new MethodInfo("measure" + name, int.class, definedClass));
 	}
 
+	public abstract void writeMethodPut(MethodHandler mh, String dataVar);
+
 	public abstract void writeMethodGet(MethodHandler mh);
 
-	public abstract void writeMethodPut(MethodHandler mh);
-
-	public abstract void writeMethodMeasure(MethodHandler mh);
+	public abstract void writeMethodMeasure(MethodHandler mh, String dataVar);
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable alloc) {

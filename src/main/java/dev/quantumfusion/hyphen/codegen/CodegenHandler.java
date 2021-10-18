@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -84,8 +85,8 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 	public void writeMethod(MethodDef def, boolean raw) {
 		writeMethodInternal(def.getInfo, raw, def::writeMethodGet);
-		writeMethodInternal(def.putInfo, raw, def::writeMethodPut);
-		writeMethodInternal(def.measureInfo, raw, def::writeMethodMeasure);
+		writeMethodInternal(def.putInfo, raw, mh -> def.writeMethodPut(mh, "data"));
+		writeMethodInternal(def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, "data"));
 	}
 
 	private void writeMethodInternal(MethodInfo methodInfo, boolean raw, Consumer<MethodHandler> writer) {
@@ -106,7 +107,10 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			}
 
 			writer.accept(mh);
+			mh.op(Type.getType(methodInfo.returnClass).getOpcode(IRETURN));
 			mh.visitEnd();
+		} catch (Throwable throwable) {
+			throw new RuntimeException(methodInfo.getName(), throwable);
 		}
 	}
 

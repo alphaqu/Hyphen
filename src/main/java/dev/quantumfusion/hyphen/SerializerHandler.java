@@ -6,10 +6,12 @@ import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -57,6 +59,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 			return scanDeduplicationMap.get(clazz);
 
 		var out = acquireDefNew(clazz);
+		if (out instanceof MethodDef methodDef)
+			methods.put(clazz, methodDef);
+
 		scanDeduplicationMap.put(clazz, out);
 		return out;
 	}
@@ -67,9 +72,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		if (definitions.containsKey(definedClass))
 			return definitions.get(definedClass).create(clazz, this);
 
-		final MethodDef methodDef = acquireDefNewMethod(clazz);
-		methods.put(clazz, methodDef);
-		return methodDef;
+		return acquireDefNewMethod(clazz);
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
@@ -99,6 +102,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
+		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
 	}
 
 	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {

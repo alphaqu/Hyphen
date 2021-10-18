@@ -36,13 +36,13 @@ public class SubclassDef extends MethodDef {
 
 			tableSwitch.defaultLabel();
 		}
-		mh.op(ACONST_NULL, ARETURN);
+		mh.op(ACONST_NULL);
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh) {
+	public void writeMethodPut(MethodHandler mh, String dataVar) {
 		mh.addVar("clz", Class.class);
-		mh.varOp(ILOAD, "data");
+		mh.varOp(ILOAD, dataVar);
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
 		mh.varOp(ISTORE, "clz");
 		ArrayUtil.dualForEach(this.subClasses, this.subDefs, (clz, serializerDef, i) -> {
@@ -54,20 +54,19 @@ public class SubclassDef extends MethodDef {
 				mh.putIO(byte.class);
 
 				serializerDef.writePut(mh, () -> {
-					mh.varOp(ILOAD, "data");
+					mh.varOp(ILOAD, dataVar);
 					GenUtil.shouldCastGeneric(mh ,clz, this.clazz.getBytecodeClass());
 				});
 				mh.op(RETURN);
 			}
 		});
 		// TODO: throw
-		mh.op(RETURN);
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh) {
+	public void writeMethodMeasure(MethodHandler mh, String dataVar) {
 		mh.addVar("clz", Class.class);
-		mh.varOp(ILOAD, "data");
+		mh.varOp(ILOAD, dataVar);
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
 		mh.varOp(ISTORE, "clz");
 
@@ -77,13 +76,12 @@ public class SubclassDef extends MethodDef {
 			mh.visitLdcInsn(Type.getType(clz));
 			try (var anIf = new If(mh, IF_ACMPNE)) {
 				serializerDef.writeMeasure(mh, () -> {
-					mh.varOp(ILOAD, "data");
+					mh.varOp(ILOAD, dataVar);
 					GenUtil.shouldCastGeneric(mh ,clz, this.clazz.getBytecodeClass());
 				});
 				mh.op(IADD, IRETURN);
 			}
 		});
 		// TODO: throw
-		mh.op(IRETURN);
 	}
 }
