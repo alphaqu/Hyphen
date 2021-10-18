@@ -2,61 +2,81 @@ package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.opentest4j.AssertionFailedError;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 
 public class TestUtil {
-	public static Set<Class<?>> findAllClassesUsingClassLoader(String packageName) {
+	public static Stream<? extends Class<?>> findAllClassesUsingClassLoader(String packageName) {
 		InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(packageName.replaceAll("[.]", "/"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 		return reader.lines()
 				.filter(line -> line.endsWith(".class"))
-				.map(line -> getClass(line, packageName))
-				.collect(Collectors.toSet());
+				.map(line -> getClass(line, packageName));
+	}
+
+	public static Stream<? extends Class<?>> findTestClasses(String packageName) {
+		return findAllClassesUsingClassLoader(packageName).filter(c -> c.isAnnotationPresent(TestThis.class));
 	}
 
 	private static Class<?> getClass(String className, String packageName) {
+		String name = packageName + "." + className.substring(0, className.lastIndexOf('.'));
 		try {
-			return Class.forName(packageName + "."
-										 + className.substring(0, className.lastIndexOf('.')));
+			return Class.forName(name);
 		} catch (ClassNotFoundException e) {
-			// handle the exception
+			throw new RuntimeException("Failed to load class " + name, e);
 		}
-		return null;
 	}
 
-	@Test
-	void test() {
+	@TestFactory
+	DynamicNode testPolyExtractWrapped() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrapped");
+	}
+
+	@TestFactory
+	DynamicNode testPolyExtractWrappedExtends() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrappedExtends");
+	}
+
+	@TestFactory
+	DynamicNode testPolyExtractWrappedSuper() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrappedSuper");
+	}
+
+	@TestFactory
+	DynamicNode testPolyGeneral() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.general");
+	}
+
+	@TestFactory
+	DynamicNode testPolyWildcards() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.wildcards");
+	}
+
+	@TestFactory
+	DynamicNode testSimple() {
+		return testAll("dev.quantumfusion.hyphen.scan.simple");
+	}
+
+	public static DynamicNode testAll(String packageName) {
+		return DynamicContainer.dynamicContainer(
+				packageName,
+				findTestClasses(packageName).map(TestUtil::test)
+		);
+	}
+
+
+	public static <O> DynamicNode test(Class<O> clazz) {
 		try {
-			testAll("dev.quantumfusion.hyphen.scan.poly.classes");
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void testAll(String packageName) throws InvocationTargetException, IllegalAccessException {
-		final Set<Class<?>> allClassesUsingClassLoader = findAllClassesUsingClassLoader(packageName);
-		for (Class<?> aClass : allClassesUsingClassLoader) {
-			test(aClass);
-		}
-	}
-
-
-	public static <O> void test(Class<O> clazz) throws InvocationTargetException, IllegalAccessException {
-		if (clazz.getDeclaredAnnotation(TestThis.class) != null) {
-			System.out.println("Testing " + clazz.getSimpleName());
 			// generation
 			var factory = SerializerFactory.create(ByteBufferIO.class, clazz);
 			var serializer = factory.build();
@@ -68,42 +88,124 @@ public class TestUtil {
 			}
 
 			// create data
-			Stream<O> datas;
+			Stream<? extends O> datas;
 			try {
-
-				datas = (Stream<O>) clazz.getDeclaredMethod("generate" + clazz.getSimpleName(), Stream.class).invoke(null, Stream.of(432,24343,3142,314));
+				//noinspection unchecked
+				datas = ((Supplier<? extends Stream<? extends O>>) clazz.getDeclaredMethod("generate" + clazz.getSimpleName()).invoke(null)).get();
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-				return;
+				Assumptions.assumeFalse(true, "missing generate method");
+				throw Assertions.<RuntimeException>fail("missing generate method", e);
 			}
 
-			datas.forEach(data -> {
-				// measure
-				var measuredSize = serializer.measure(data);
-				var io = ByteBufferIO.create(measuredSize * 2);
+			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
+					datas.map(data -> {
+						String displayName;
+						try {
+							displayName = data.toString();
+						} catch (Throwable t) {
+							return DynamicTest.dynamicTest("<unknown>", () -> {
+								throw t;
+							});
+						}
+						return DynamicTest.dynamicTest(displayName, () -> {
+							List<Object> errors = new ArrayList<>();
 
-				// put
-				serializer.put(io, data);
+							// measure
+							var measuredSize = serializer.measure(data);
+							boolean doSizeCheck = true;
+							if (measuredSize < 0) {
+								errors.add("measured size is negative: " + measuredSize);
+								measuredSize = 64;
+								doSizeCheck = false;
+							} else if (measuredSize > 0xFFFF) {
+								errors.add("measured size more than the test max of 0xFFFF: " + measuredSize);
+								measuredSize = 0xFFFF;
+								doSizeCheck = false;
+							}
 
-				// measure check
-				final int actualSize = io.pos();
-				if (actualSize > measuredSize)
-					fail("Actual size is bigger than measured size. " + actualSize + " > " + measuredSize);
-				else if (measuredSize > actualSize)
-					fail("Measured size is bigger than actual size. " + measuredSize + " > " + actualSize);
+							// adding extra room
+							var io = ByteBufferIO.create((measuredSize + 64) * 4);
 
-				// rewind to 0
-				io.rewind();
+							// put
+							serializer.put(io, data);
 
-				// get
-				var dataOut = serializer.get(io);
+							// measure check
+							final int writtenSize = io.pos();
 
-				// result check
-				if (!data.equals(dataOut))
-					fail("Objects do not match\n" + data + "\n != \n" + dataOut);
+							// rewind to 0
+							io.rewind();
+
+							// get
+							var dataOut = serializer.get(io);
+
+							// read check
+							final int readSize = io.pos();
+							if (doSizeCheck) {
+								switch ((readSize != writtenSize ? 4 : 0) + (readSize != measuredSize ? 2 : 0) + (measuredSize != writtenSize ? 1 : 0)) {
+									case 0b000 -> {
+									}
+									case 0b011 -> { // measure is wrong
+										if (measuredSize < readSize)
+											errors.add("Measured size is too small. " + measuredSize + " < " + readSize);
+										else
+											errors.add("Measured size is too big. " + measuredSize + " > " + readSize);
+									}
+									case 0b101 -> { // written size is wrong
+										if (writtenSize < readSize)
+											errors.add("Written size is too small. " + writtenSize + " < " + readSize);
+										else
+											errors.add("Written size is too big. " + writtenSize + " > " + readSize);
+									}
+									case 0b110 -> { // measure is wrong
+										if (readSize < writtenSize)
+											errors.add("Read size is too small. " + readSize + " < " + writtenSize);
+										else
+											errors.add("Read size is too big. " + readSize + " > " + writtenSize);
+									}
+									case 0b111 -> { // all 3 differ
+										errors.add("All sizes are different!");
+										errors.add("\tMeasure: " + measuredSize);
+										errors.add("\tWrite: " + writtenSize);
+										errors.add("\tRead: " + readSize);
+									}
+									default -> {
+										errors.add(new AssertionError("Mathematical unreachable code reached"));
+									}
+								}
+							} else {
+								if (writtenSize < readSize)
+									errors.add("Written size is smaller than read size. " + writtenSize + " < " + readSize);
+								else if (writtenSize > readSize)
+									errors.add("Written size is bigger than read size. " + writtenSize + " > " + readSize);
+								else
+									errors.add("Actual size = " + writtenSize);
+							}
+
+							// result check
+							if (!data.equals(dataOut))
+								errors.add(new AssertionFailedError("Objects do not match\n" + data + "\n != \n" + dataOut, data, dataOut));
+
+							if (!errors.isEmpty()) {
+								// errors happened
+								if (errors.size() == 1 && errors.get(0) instanceof Throwable t)
+									throw t;
+
+								String msg = errors.stream().map(Object::toString).collect(Collectors.joining("\n"));
+
+								AssertionError error = new AssertionError(msg);
+
+								for (Object o : errors)
+									if (o instanceof Throwable t)
+										error.addSuppressed(t);
+
+								throw error;
+							}
+						});
+					}));
+		} catch (Throwable t) {
+			return DynamicTest.dynamicTest(clazz.getSimpleName(), () -> {
+				throw t;
 			});
-		} else {
-			System.out.println("Skipped " + clazz.getSimpleName());
 		}
 	}
 }

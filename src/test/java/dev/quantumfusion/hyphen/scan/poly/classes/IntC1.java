@@ -1,6 +1,10 @@
 package dev.quantumfusion.hyphen.scan.poly.classes;
 
+import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.INTEGERS;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class IntC1 extends C1<Integer> {
 	public IntC1(Integer integer) {
@@ -12,7 +16,14 @@ public class IntC1 extends C1<Integer> {
 		super((Integer) integer);
 	}
 
-	public static Stream<? extends IntC1> generate(){
-		return TestSupplierUtil.INTEGERS.get().map(IntC1::new);
+	public static Supplier<? extends Stream<? extends IntC1>> generateIntC1() {
+		return cross(INTEGERS, IntC1::new);
+	}
+
+	@Override
+	public String toString() {
+		return "IntC1{" +
+				"a=" + this.a +
+				'}';
 	}
 }

@@ -2,8 +2,11 @@ package dev.quantumfusion.hyphen.scan.poly.classes;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class CoWrappedC1Extends<A, CA extends C1<? extends A>> extends C1<CA> {
 	@Data
@@ -14,12 +17,31 @@ public class CoWrappedC1Extends<A, CA extends C1<? extends A>> extends C1<CA> {
 		this.selfA = selfA;
 	}
 
-	public static <A, CA extends C1<? extends A>> Stream<? extends CoWrappedC1Extends<A, CA>> generate(
+	public static <A, CA extends C1<? extends A>> Supplier<? extends Stream<? extends CoWrappedC1Extends<A, CA>>> generateCoWrappedC1Extends(
 			Supplier<? extends Stream<? extends A>> aSupplier,
 			Supplier<? extends Stream<? extends CA>> caSupplier
 	) {
-		return caSupplier.get().flatMap(ca ->
-				aSupplier.get().map(selfA -> new CoWrappedC1Extends<>(ca, selfA))
-		);
+		return cross(caSupplier, aSupplier, CoWrappedC1Extends::new);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!super.equals(o)) return false;
+		CoWrappedC1Extends<?, ?> that = (CoWrappedC1Extends<?, ?>) o;
+		return Objects.equals(this.selfA, that.selfA);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode(), this.selfA);
+	}
+
+	@Override
+	public String toString() {
+		return "CoWrappedC1Extends{" +
+				"a=" + this.a +
+				", selfA=" + this.selfA +
+				'}';
 	}
 }
