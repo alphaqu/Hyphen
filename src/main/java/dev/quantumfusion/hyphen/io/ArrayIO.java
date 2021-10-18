@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.io;
 
+import dev.quantumfusion.hyphen.HyphenSerializer;
+
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -17,6 +19,10 @@ public final class ArrayIO implements IOInterface {
 
 	public static final ArrayIO create(final int size) {
 		return new ArrayIO(new byte[size], 0);
+	}
+
+	public static final <O> ArrayIO create(final HyphenSerializer<ArrayIO, O> serializer, final O data) {
+		return create(serializer.measure(data));
 	}
 
 

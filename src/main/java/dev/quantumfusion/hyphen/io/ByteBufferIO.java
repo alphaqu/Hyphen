@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.io;
 
+import dev.quantumfusion.hyphen.HyphenSerializer;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +23,14 @@ public final class ByteBufferIO implements IOInterface {
 
 	public static final ByteBufferIO createDirect(final int size) {
 		return new ByteBufferIO(ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN));
+	}
+
+	public static final <O> ByteBufferIO create(final HyphenSerializer<ByteBufferIO, O> serializer, final O data) {
+		return create(serializer.measure(data));
+	}
+
+	public static final <O> ByteBufferIO createDirect(final HyphenSerializer<ByteBufferIO, O> serializer, final O data) {
+		return createDirect(serializer.measure(data));
 	}
 
 	// ======================================= FUNC ======================================= //

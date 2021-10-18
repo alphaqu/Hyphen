@@ -1,13 +1,15 @@
 package dev.quantumfusion.hyphen.io;
 
 
+import dev.quantumfusion.hyphen.HyphenSerializer;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
  * <h2>This is the créme de la créme of all IO. Highly unsafe but really fast.</h2>
  */
-@SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused"})
+@SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused", "FinalStaticMethod"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
 public final class UnsafeIO implements IOInterface {
 	private static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
@@ -60,9 +62,12 @@ public final class UnsafeIO implements IOInterface {
 		throw new IllegalStateException("Unsafe is unavailable.");
 	}
 
-	@SuppressWarnings("FinalStaticMethod")
 	public static final UnsafeIO create(final int size) {
 		return new UnsafeIO(UNSAFE.allocateMemory(size));
+	}
+
+	public static final <O> UnsafeIO create(final HyphenSerializer<UnsafeIO, O> serializer, final O data) {
+		return create(serializer.measure(data));
 	}
 
 	// ======================================= FUNC ======================================= //
