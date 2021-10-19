@@ -69,6 +69,11 @@ public class ClassCache {
 	}
 
 	public record FieldInfo(Field field, AnnotatedType type) {
+
+		@Override
+		public String toString() {
+			return field.getName() + " : " + type;
+		}
 	}
 
 }

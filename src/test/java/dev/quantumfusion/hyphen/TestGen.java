@@ -2,37 +2,30 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 @Data
 public class TestGen {
 	@Data
-	@DataSubclasses(Float.class)
-	public Number[] field;
+	public Test field;
 
 
-	public TestGen(@DataSubclasses(Float.class) Number[] field) {
+	public TestGen(Test field) {
 		this.field = field;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		TestGen testGen = (TestGen) o;
-		return Arrays.equals(field, testGen.field);
+
+	public static class Test {
+		@Data
+		public Test2 testing;
 	}
 
-	@Override
-	public int hashCode() {
-		return Arrays.hashCode(field);
+	public static class Test2<K> {
+		@Data
+		public K test;
 	}
 
 	public static void main(String[] args) {
-		TestGen test = new TestGen( new Number[]{4f,2f,7f,5f});
+		TestGen test = new TestGen(new Test());
 		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
 
 

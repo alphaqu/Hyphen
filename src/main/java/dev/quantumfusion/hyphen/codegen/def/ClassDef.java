@@ -4,6 +4,8 @@ import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.thr.HyphenException;
+import dev.quantumfusion.hyphen.util.Style;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.lang.reflect.Field;
@@ -22,8 +24,16 @@ public class ClassDef extends MethodDef {
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler.codegenHandler, clazz);
 		this.aClass = clazz.getDefinedClass();
-		for (FieldEntry field : clazz.getFields()) {
-			fields.put(field, handler.acquireDef(field.clazz()));
+		try {
+			for (FieldEntry field : clazz.getFields()) {
+				try {
+					fields.put(field, handler.acquireDef(field.clazz()));
+				} catch (Throwable throwable) {
+					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
+				}
+			}
+		} catch (Throwable throwable) {
+			throw HyphenException.thr("class", Style.LINE_DOWN, clazz, throwable);
 		}
 	}
 

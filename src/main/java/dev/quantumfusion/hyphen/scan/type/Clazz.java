@@ -3,17 +3,16 @@ package dev.quantumfusion.hyphen.scan.type;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
+import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.ClassCache;
+import dev.quantumfusion.hyphen.util.Style;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class Clazz {
 	@NotNull
@@ -75,7 +74,11 @@ public class Clazz {
 
 
 		for (var field : ClassCache.getFields(aClass)) {
-			fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(field.type(), this, Direction.NORMAL)));
+			try {
+				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(field.type(), this, Direction.NORMAL)));
+			} catch (Throwable throwable) {
+				throw HyphenException.thr("field", Style.LINE_RIGHT , field, throwable);
+			}
 		}
 
 		return fieldEntries;
@@ -87,7 +90,9 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		return aClass.getSimpleName() + this.annotations;
+		StringJoiner annotationJoiner = new StringJoiner(" ", "{", "}");
+		this.annotations.forEach((aClass1, annotation) -> annotationJoiner.add('@' + annotation.annotationType().getSimpleName()));
+		return aClass.getSimpleName() + " " + annotationJoiner;
 	}
 
 	@Override
