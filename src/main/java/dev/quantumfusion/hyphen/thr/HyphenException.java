@@ -12,9 +12,19 @@ public class HyphenException extends RuntimeException {
 	@Nullable
 	private final String possibleSolution;
 
+	public HyphenException() {
+		super();
+		this.possibleSolution = null;
+	}
+
+	public HyphenException(String message, @Nullable String possibleSolution) {
+		super(message);
+		this.possibleSolution = possibleSolution;
+	}
+
 	public HyphenException(Throwable cause, @Nullable String possibleSolution) {
 		super(cause.getMessage(), cause);
-		setStackTrace(cause.getStackTrace());
+		this.setStackTrace(cause.getStackTrace());
 		this.possibleSolution = possibleSolution;
 	}
 
@@ -26,7 +36,7 @@ public class HyphenException extends RuntimeException {
 	}
 
 	public HyphenException append(String type, String separator, Object clazz) {
-		path.add(new Entry(type, separator, clazz));
+		this.path.add(new Entry(type, separator, clazz));
 		return this;
 	}
 
@@ -59,7 +69,7 @@ public class HyphenException extends RuntimeException {
 
 	@Override
 	public void printStackTrace(PrintStream s) {
-		s.println(niceException());
+		s.println(this.niceException());
 	}
 
 	public String niceException() {
@@ -67,19 +77,20 @@ public class HyphenException extends RuntimeException {
 		sb.append('\n');
 		sb.append('\n');
 		printTitle(sb, "Exception");
-		printEntry(" - ", sb, new Entry("reason", "|>", getMessage()), true);
-		printEntry(" - ", sb, new Entry("reason", "|>", getCause().getClass().getSimpleName()));
+		printEntry(" - ", sb, new Entry("reason", "|>", this.getMessage()), true);
+		if (this.getCause() != null)
+			printEntry(" - ", sb, new Entry("reason", "|>", this.getCause().getClass().getSimpleName()));
 		sb.append('\n');
 
-		if (possibleSolution != null) {
+		if (this.possibleSolution != null) {
 			printTitle(sb, "Possible solution");
-			printEntry(" #! ", sb, new Entry("suggestion", Style.LINE_DOWN, possibleSolution));
+			printEntry(" #! ", sb, new Entry("suggestion", Style.LINE_DOWN, this.possibleSolution));
 			sb.append('\n');
 		}
 
 		printTitle(sb, "Path");
 		boolean first = true;
-		for (Entry clazz : path) {
+		for (Entry clazz : this.path) {
 			if (first) {
 				printEntry(" -> ", sb, clazz, true);
 			} else {
@@ -91,7 +102,7 @@ public class HyphenException extends RuntimeException {
 
 		printTitle(sb, "Stacktrace");
 		first = true;
-		for (var element : getStackTrace()) {
+		for (var element : this.getStackTrace()) {
 			printEntry(" -> ", sb, Entry.create(element), first);
 			first = false;
 		}

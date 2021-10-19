@@ -1,7 +1,9 @@
 package dev.quantumfusion.hyphen.thr;
 
-public class UnknownTypeException extends RuntimeException {
-	public UnknownTypeException(String message) {
-		super(message);
+import org.jetbrains.annotations.Nullable;
+
+public class UnknownTypeException extends HyphenException {
+	public UnknownTypeException(String message, @Nullable String possibleFix) {
+		super(message, possibleFix);
 	}
 }

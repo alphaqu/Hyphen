@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
@@ -99,6 +100,8 @@ public class TestUtil {
 				Assumptions.assumeFalse(true, "missing generate method");
 				throw Assertions.<RuntimeException>fail("missing generate method", e);
 			}
+
+			Assertions.assertFalse(clazz.isAnnotationPresent(FailTest.class), "Expected test to fail");
 
 			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
 					datas.limit(10000).map(data -> {
@@ -211,7 +214,16 @@ public class TestUtil {
 					}));
 		} catch (Throwable t) {
 			return DynamicTest.dynamicTest(clazz.getSimpleName(), () -> {
-				throw t;
+				if (clazz.isAnnotationPresent(FailTest.class)) {
+					t.printStackTrace();
+					FailTest failTest = clazz.getDeclaredAnnotation(FailTest.class);
+					if (failTest.value() != Throwable.class)
+						Assertions.assertTrue(failTest.value().isInstance(t), "Expected a different error type: " +
+								failTest.value().getSimpleName() + ", got " + t.getClass().getSimpleName());
+					if (!failTest.msg().isEmpty())
+						Assertions.assertEquals(failTest.msg(), t.getMessage(), "Expected a different error msg");
+				} else
+					throw t;
 			});
 		}
 	}

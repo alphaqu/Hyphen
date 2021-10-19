@@ -2,7 +2,6 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
-import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
@@ -38,7 +37,7 @@ public class ParaClazz extends Clazz {
 			});
 		else {
 			if (dir != Direction.SUB)
-				throw new HyphenException(new UnknownTypeException("Class with parameters comes from a non parameterized source."),
+				throw new UnknownTypeException("Class with parameters comes from a non parameterized source.",
 										  "Check if you forgot to declare the parameters and left the type raw in any of the fields.");
 			for (var typeParameter : rawType.getTypeParameters())
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(ScanUtil.wrap(typeParameter), ctx, dir));

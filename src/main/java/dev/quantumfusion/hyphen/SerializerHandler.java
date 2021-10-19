@@ -92,11 +92,11 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	private void checkDefined(Clazz clazz) {
 		if (clazz == UnknownClazz.UNKNOWN)
-			throw new HyphenException(new UnknownTypeException("Type could not be identified"),
+			throw new UnknownTypeException("Type could not be identified",
 									  "Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
 
 		if ((clazz instanceof TypeClazz t && (t.defined == UnknownClazz.UNKNOWN))) {
-			throw new HyphenException(new UnknownTypeException("Type " + t.typeName + " could not be identified"),
+			throw new UnknownTypeException("Type " + t.typeName + " could not be identified",
 									  "Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
 		}
 	}

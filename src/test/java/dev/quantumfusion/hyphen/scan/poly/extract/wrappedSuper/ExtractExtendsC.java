@@ -6,12 +6,14 @@ import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1Super;
+import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 // Tracking issue #6
 @Data
 @TestThis
-@FailTest(/*NotYetImplementedException.class*/)
+// TODO: fix
+@FailTest(UnknownTypeException.class)
 public class ExtractExtendsC {
 	@DataSubclasses({C1.class, CoWrappedC1Super.class})
 	public C1<C2<Integer>> data;
