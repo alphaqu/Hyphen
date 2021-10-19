@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,7 +100,6 @@ public class TestUtil {
 				throw Assertions.<RuntimeException>fail("missing generate method", e);
 			}
 
-			AtomicInteger errorCount = new AtomicInteger();
 			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
 					datas.limit(10000).map(data -> {
 						String displayName;
@@ -113,7 +111,6 @@ public class TestUtil {
 							});
 						}
 						return DynamicTest.dynamicTest(displayName, () -> {
-							Assumptions.assumeFalse(errorCount.get() > 100);
 							List<Object> errors = new ArrayList<>();
 
 							try {
@@ -196,7 +193,6 @@ public class TestUtil {
 							}
 
 							if (!errors.isEmpty()) {
-								Assumptions.assumeFalse(errorCount.incrementAndGet() > 10);
 								// errors happened
 								if (errors.size() == 1 && errors.get(0) instanceof Throwable t)
 									throw t;
