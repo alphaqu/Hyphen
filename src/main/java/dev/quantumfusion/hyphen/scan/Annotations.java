@@ -9,10 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class Annotations {
 	private final Class<?> containingClass;
@@ -99,7 +96,7 @@ public class Annotations {
 
 	private static String getString(Annotation value) {
 		try {
-			String simpleName = value.annotationType().getSimpleName();
+			String simpleName = "@" + value.annotationType().getSimpleName();
 			StringJoiner inner = new StringJoiner(", ", simpleName + "(", ")");
 			inner.setEmptyValue(simpleName);
 
@@ -111,8 +108,12 @@ public class Annotations {
 
 				Object invoke = method.invoke(value);
 
-				if (!Objects.deepEquals(def, invoke))
-					inner.add(method.getName() + " = " + invoke);
+				if (!Objects.deepEquals(def, invoke)) {
+					if (invoke instanceof Object[] objects)
+						inner.add(method.getName() + " = " + Arrays.deepToString(objects));
+					else
+						inner.add(method.getName() + " = " + invoke);
+				}
 			}
 
 			return inner.toString();
