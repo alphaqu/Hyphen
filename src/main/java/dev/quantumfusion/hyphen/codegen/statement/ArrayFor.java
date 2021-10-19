@@ -9,18 +9,19 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ArrayFor extends For implements AutoCloseable {
 	private final Variable i;
-	private final Variable array;
+	private final Runnable arrayLoad;
 	private final Runnable getterFunc;
 
-	protected ArrayFor(MethodHandler mh, Variable array, Variable i, Runnable getterFunc) {
+	protected ArrayFor(MethodHandler mh, Runnable arrayLoad, Variable i, Runnable getterFunc) {
 		super(mh);
 		this.i = i;
-		this.array = array;
+		this.arrayLoad = arrayLoad;
 		this.getterFunc = getterFunc;
 	}
 
 	public void getElement() {
-		mh.varOp(ILOAD, array, i);
+		arrayLoad.run();
+		mh.varOp(ILOAD, i);
 		getterFunc.run();
 	}
 
@@ -31,11 +32,11 @@ public class ArrayFor extends For implements AutoCloseable {
 	}
 
 	public static ArrayFor createArray(MethodHandler mh, Variable array, Variable i, Variable length) {
-		return create(mh, array, i, length, () -> mh.op(AALOAD), () -> mh.op(ARRAYLENGTH));
+		return create(mh, () -> mh.varOp(ILOAD, array), i, length, () -> mh.op(AALOAD), () -> mh.op(ARRAYLENGTH));
 	}
 
 
-	public static ArrayFor create(MethodHandler mh, Variable array, Variable i, Variable length, Runnable getterFunc, Runnable lengthFunc) {
+	public static ArrayFor create(MethodHandler mh, Runnable arrayLoad, Variable i, Variable length, Runnable getterFunc, Runnable lengthFunc) {
 		if (i == null) {
 			i = mh.addVar("i", int.class);
 			mh.op(ICONST_0);
@@ -43,11 +44,11 @@ public class ArrayFor extends For implements AutoCloseable {
 		}
 		if (length == null) {
 			length = mh.addVar("length", int.class);
-			mh.varOp(ILOAD, array);
+			arrayLoad.run();
 			lengthFunc.run();
 			mh.varOp(ISTORE, length);
 		}
-		final ArrayFor array1 = new ArrayFor(mh, array, i, getterFunc);
+		final ArrayFor array1 = new ArrayFor(mh, arrayLoad, i, getterFunc);
 		mh.varOp(ILOAD, i, length);
 		array1.exit(IF_ICMPGE);
 		return array1;

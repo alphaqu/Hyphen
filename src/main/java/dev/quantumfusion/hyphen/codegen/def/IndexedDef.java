@@ -46,15 +46,15 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh, String dataVar) {
+	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		final Variable length = mh.addVar("length", int.class);
-		final Variable data = mh.getVar(dataVar);
-		mh.varOp(ILOAD, "io", dataVar);
+		mh.varOp(ILOAD, "io");
+		valueLoad.run();
 		lengthFunc.accept(mh);
 		mh.op(DUP);
 		mh.varOp(ISTORE, length);
 		mh.putIO(int.class);
-		try (var array = ArrayFor.create(mh, data, null, length, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {
+		try (var array = ArrayFor.create(mh, valueLoad, null, length, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {
 			componentDef.writePut(mh, () -> {
 				array.getElement();
 				GenUtil.shouldCastGeneric(mh, component);
@@ -63,11 +63,9 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh, String dataVar) {
-		final Variable data = mh.getVar(dataVar);
-
+	public void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		mh.op(ICONST_4);
-		try (var array = ArrayFor.create(mh, data, null, null, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {
+		try (var array = ArrayFor.create(mh, valueLoad, null, null, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {
 			componentDef.writeMeasure(mh, () -> {
 				array.getElement();
 				GenUtil.shouldCastGeneric(mh, component);

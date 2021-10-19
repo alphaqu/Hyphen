@@ -2,21 +2,30 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 @Data
 public class TestGen {
 	@Data
-	@DataSubclasses(Float.class)
-	public Number field;
+	public Test field;
 
 
-	public TestGen(@DataSubclasses(Float.class) Number field) {
+	public TestGen(Test field) {
 		this.field = field;
 	}
 
+
+	public static class Test {
+		@Data
+		public Test2 testing;
+	}
+
+	public static class Test2<K> {
+		@Data
+		public K test;
+	}
+
 	public static void main(String[] args) {
-		TestGen test = new TestGen(3f);
+		TestGen test = new TestGen(new Test());
 		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
 
 

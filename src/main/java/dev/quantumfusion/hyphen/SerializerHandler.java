@@ -8,6 +8,9 @@ import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.scan.type.TypeClazz;
+import dev.quantumfusion.hyphen.scan.type.*;
+import dev.quantumfusion.hyphen.thr.HyphenException;
+import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -55,6 +58,8 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	public SerializerDef acquireDef(Clazz clazz) {
+		checkDefined(clazz);
+
 		if (clazz instanceof TypeClazz t)
 			return this.acquireDef(t.getDefined());
 
@@ -85,23 +90,41 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		else return new ClassDef(this, clazz);
 	}
 
+	private void checkDefined(Clazz clazz) {
+		if (clazz == UnknownClazz.UNKNOWN)
+			throw new HyphenException(new UnknownTypeException("Type could not be identified"),
+									  "Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
+
+		if ((clazz instanceof TypeClazz t && (t.defined == UnknownClazz.UNKNOWN))) {
+			throw new HyphenException(new UnknownTypeException("Type " + t.typeName + " could not be identified"),
+									  "Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
+		}
+	}
+
 	private MethodDef scan() {
 		return acquireDefNewMethod(new Clazz(dataClass));
 	}
 
 	public HyphenSerializer<IO, D> build() {
-		this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options, definer);
-		codegenHandler.setupSpark(this.scan());
-		codegenHandler.writeMethods(methods.values());
-		return codegenHandler.export();
+		try {
+			this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options, definer);
+			codegenHandler.setupSpark(this.scan());
+			codegenHandler.writeMethods(methods.values());
+			return codegenHandler.export();
+		} catch (Throwable throwable) {
+			HyphenException hyphenException;
+			if (throwable instanceof HyphenException he) hyphenException = he;
+			else hyphenException = new HyphenException(throwable, null);
+			throw hyphenException;
+		}
 	}
 
 	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
 
 	static {
 		addStaticDef(IODef::new,
-				boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class,
-				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class,
+					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));

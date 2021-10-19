@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class TypeClazz extends Clazz {
-	private final Clazz defined;
+	public final Clazz defined;
+	public final String typeName;
 	private final Class<?> bytecodeBound;
-	private final String typeName;
 
 	public TypeClazz(Map<Class<? extends Annotation>, Annotation> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
 		super(bytecodeBound, annotations);

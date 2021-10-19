@@ -10,8 +10,8 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class StringIODef implements SerializerDef {
 	@Override
-	public void writePut(MethodHandler mh, Runnable alloc) {
-		alloc.run();
+	public void writePut(MethodHandler mh, Runnable valueLoad) {
+		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
 	}
 
@@ -22,11 +22,11 @@ public class StringIODef implements SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable alloc) {
+	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
 		if (mh.ioClass == UnsafeIO.class) {
 			//TODO unsafeStringMeasure
 		} else {
-			alloc.run();
+			valueLoad.run();
 			// kinda bad for speed, but it's kinda our only option here
 			mh.visitFieldInsn(GETSTATIC, StandardCharsets.class, "UTF_8", Charset.class);
 			mh.callInst(INVOKESTATIC, String.class, "getBytes", byte[].class, Charset.class);
