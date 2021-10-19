@@ -25,16 +25,16 @@ public abstract class MethodDef implements SerializerDef {
 		this.measureInfo = handler.apply(new MethodInfo("measure" + name, int.class, definedClass));
 	}
 
-	public abstract void writeMethodPut(MethodHandler mh, String dataVar);
+	public abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
 
 	public abstract void writeMethodGet(MethodHandler mh);
 
-	public abstract void writeMethodMeasure(MethodHandler mh, String dataVar);
+	public abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable alloc) {
+	public void writePut(MethodHandler mh, Runnable valueLoad) {
 		mh.varOp(ILOAD, "io");
-		alloc.run();
+		valueLoad.run();
 		mh.callInst(putInfo);
 	}
 
@@ -45,8 +45,8 @@ public abstract class MethodDef implements SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable alloc) {
-		alloc.run();
+	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+		valueLoad.run();
 		mh.callInst(measureInfo);
 	}
 }

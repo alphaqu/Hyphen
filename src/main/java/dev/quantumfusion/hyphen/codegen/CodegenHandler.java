@@ -84,8 +84,8 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 	public void writeMethod(MethodDef def, boolean raw) {
 		writeMethodInternal(def.getInfo, raw, def::writeMethodGet);
-		writeMethodInternal(def.putInfo, raw, mh -> def.writeMethodPut(mh, "data"));
-		writeMethodInternal(def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, "data"));
+		writeMethodInternal(def.putInfo, raw, mh -> def.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+		writeMethodInternal(def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
 	}
 
 	private void writeMethodInternal(MethodInfo methodInfo, boolean raw, Consumer<MethodHandler> writer) {
