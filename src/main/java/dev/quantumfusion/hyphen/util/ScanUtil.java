@@ -1,18 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.scan.annotations.InheritableAnnotation;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayDeque;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -54,30 +47,6 @@ public class ScanUtil {
 		System.arraycopy(oldArray, 0, out, 0, length);
 		out[length] = value;
 		return out;
-	}
-
-	public static Map<Class<? extends Annotation>, Annotation> acquireAnnotations(@NotNull AnnotatedType self, @Nullable Clazz parent) {
-		if (parent != null) {
-			var parentAnnotations = mapAnnotations(parent.getDefinedClass().getDeclaredAnnotations(), new HashMap<>(), (t) -> t.isAnnotationPresent(InheritableAnnotation.class));
-			// self annotations have priority
-			return mapAnnotations(self.getDeclaredAnnotations(), parentAnnotations);
-		}
-		return mapAnnotations(self.getDeclaredAnnotations(), new HashMap<>());
-	}
-
-	private static Map<Class<? extends Annotation>, Annotation> mapAnnotations(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation> map) {
-		for (Annotation annotation : annotations) {
-			map.put(annotation.annotationType(), annotation);
-		}
-		return map;
-	}
-
-	private static Map<Class<? extends Annotation>, Annotation> mapAnnotations(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation> map, Predicate<? super Class<? extends Annotation>> predicate) {
-		for (Annotation annotation : annotations) {
-			if (predicate.test(annotation.annotationType()))
-				map.put(annotation.annotationType(), annotation);
-		}
-		return map;
 	}
 
 	public static AnnotatedType wrap(Type clazz) {
