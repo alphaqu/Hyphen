@@ -73,12 +73,4 @@ public final class GenUtil {
 				.replace(';', '\u037E') // greek question mark, intellij "fixes" it for you
 				.replace(':', 'ː');
 	}
-
-	public static void main(String[] args) {
-		test("myLittlePony", DataSubclasses.class, new Class[]{int.class, Integer.class});
-	}
-
-	public static void test(String id, Class<? extends Annotation> thing, Object value) {
-
-	}
 }
