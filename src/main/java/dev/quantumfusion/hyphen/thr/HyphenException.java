@@ -5,7 +5,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HyphenException extends RuntimeException {
 	private final List<Entry> path = new ArrayList<>();
@@ -40,80 +43,62 @@ public class HyphenException extends RuntimeException {
 		return this;
 	}
 
-	private static void printTitle(StringBuilder sb, String name) {
-		sb.append('\t').append(Style.GREEN).append(name).append(Style.RESET).append('\n');
-	}
-
-	private static void printEntry(String separator, StringBuilder sb, Entry test) {
-		printEntry(separator, sb, test, false);
-	}
-
-	private static void printEntry(String separator, StringBuilder sb, Entry test, boolean error) {
-		String backgroundStyle;
-		String separatorStyle;
-		if (error) {
-			backgroundStyle = Style.RED_BACKGROUND + Style.BLACK;
-			separatorStyle = Style.BLACK;
-		} else {
-			backgroundStyle = Style.RESET;
-			separatorStyle = Style.PURPLE;
-		}
-
-		sb.append("\t\t");
-		sb.append(backgroundStyle).append(' ').append(separatorStyle).append(separator);
-		sb.append(backgroundStyle).append(test.type);
-		sb.append(backgroundStyle).append(' ').append(separatorStyle).append(test.separator).append(' ');
-		sb.append(backgroundStyle).append(test.object);
-		sb.append(Style.RESET).append('\n');
-	}
-
 	@Override
 	public void printStackTrace(PrintStream s) {
 		s.println(this.niceException());
 	}
 
 	public String niceException() {
-		StringBuilder sb = new StringBuilder(Style.YELLOW + "" + "\n\t <$ Hyphen Fatal Exception $> " + Style.RESET);
-		sb.append('\n');
-		sb.append('\n');
-		printTitle(sb, "Exception");
-		printEntry(" - ", sb, new Entry("reason", "|>", this.getMessage()), true);
-		if (this.getCause() != null)
-			printEntry(" - ", sb, new Entry("reason", "|>", this.getCause().getClass().getSimpleName()));
-		sb.append('\n');
+		StringBuilder sb = new StringBuilder("now handled as a " + Style.YELLOW + "<$ Hyphen Fatal Exception $>" + Style.RESET + "\n\n");
+		List<Entry> main = new ArrayList<>();
+		main.add(new Entry(null, null, this.getMessage()));
+		if (getCause() != null)
+			main.add(new Entry("cause: ", null, getCause().getClass().getSimpleName()));
 
-		if (this.possibleSolution != null) {
-			printTitle(sb, "Possible solution");
-			printEntry(" #! ", sb, new Entry("suggestion", Style.LINE_DOWN, this.possibleSolution));
-			sb.append('\n');
-		}
+		new Group(this.getClass().getSimpleName() + " Reason", null, main).append(sb);
 
-		printTitle(sb, "Path");
-		boolean first = true;
-		for (Entry clazz : this.path) {
-			if (first) {
-				printEntry(" -> ", sb, clazz, true);
-			} else {
-				printEntry(" ↑  ", sb, clazz);
-			}
-			first = false;
-		}
-		sb.append('\n');
+		if (possibleSolution != null)
+			new Group("Dev Notice", null, Collections.singletonList(new Entry(null, null, possibleSolution))).append(sb);
 
-		printTitle(sb, "Stacktrace");
-		first = true;
-		for (var element : this.getStackTrace()) {
-			printEntry(" -> ", sb, Entry.create(element), first);
-			first = false;
-		}
-		sb.append('\n');
-
+		new Group("Path", Style.RED_BACKGROUND, this.path).append(sb);
+		new Group("Stacktrace", Style.RED_BACKGROUND, Arrays.stream(this.getStackTrace()).map(Entry::create).collect(Collectors.toList())).append(sb);
 		return sb.toString();
 	}
 
 	public record Entry(String type, String separator, Object object) {
 		public static Entry create(StackTraceElement object) {
 			return new Entry((object.isNativeMethod() ? "native" : "java") + ":" + object.getLineNumber(), Style.LINE_DOWN, object);
+		}
+	}
+
+	public record Group(String name, String topBackground, List<Entry> entries) {
+		public void append(StringBuilder sb) {
+			sb.append('\t').append(Style.GREEN).append(name).append(Style.RESET).append('\n');
+			boolean first = true;
+			for (Entry entry : entries) {
+				String path = " ↑  ";
+				String style = Style.RESET;
+				String accents = Style.PURPLE;
+				if (first) {
+					path = " -> ";
+					if (topBackground != null) {
+						style = Style.BLACK + topBackground;
+						accents = Style.BLACK;
+					}
+				}
+				sb.append("\t\t").append(style).append(accents).append(path);
+				if (entry.type != null) {
+					sb.append(style).append(entry.type);
+				}
+				if (entry.separator != null) {
+					sb.append(accents).append(' ').append(entry.separator).append(' ');
+				}
+				sb.append(style).append(entry.object);
+				sb.append(Style.RESET).append('\n');
+				first = false;
+			}
+
+			sb.append('\n');
 		}
 	}
 
