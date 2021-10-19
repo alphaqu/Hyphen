@@ -3,6 +3,11 @@ package dev.quantumfusion.hyphen.scan.simple;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+
 @Data
 @TestThis
 public class ExtendTest extends PrimitiveTest {
@@ -11,5 +16,10 @@ public class ExtendTest extends PrimitiveTest {
 	public ExtendTest(int primitive, ObjectTest objectTest) {
 		super(primitive);
 		this.objectTest = objectTest;
+	}
+
+
+	public static Supplier<Stream<? extends ExtendTest>> generateExtendTest() {
+		return cross(PrimitiveTest.generatePrimitiveTest(), ObjectTest.generateObjectTest(), (a, b) -> new ExtendTest(a.primitive, b));
 	}
 }

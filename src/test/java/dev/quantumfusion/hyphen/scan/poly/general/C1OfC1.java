@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.general;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
@@ -15,6 +16,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
+@FailTest
 public class C1OfC1 {
 	@DataSubclasses({C1.class, WrappedC1.class})
 	public C1<C1<Integer>> data;

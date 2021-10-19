@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.general;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
@@ -7,7 +8,7 @@ import dev.quantumfusion.hyphen.scan.poly.classes.IntC1;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 
-// @FailTest(IncompatibleTypeException.class)
+@FailTest(/*IncompatibleTypeException.class*/)
 @Data
 @TestThis
 public class IncompatibleTypeFail {

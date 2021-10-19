@@ -6,6 +6,7 @@ import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -26,5 +27,25 @@ public class TrippleC {
 		var middle = subClasses(C1.generateC1(inner), C2.generateC1(inner));
 		var outer = subClasses(C1.generateC1(middle), C2.generateC1(middle));
 		return cross(outer, TrippleC::new);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || this.getClass() != o.getClass()) return false;
+		TrippleC trippleC = (TrippleC) o;
+		return Objects.equals(this.data, trippleC.data);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.data);
+	}
+
+	@Override
+	public String toString() {
+		return "TrippleC{" +
+				"data=" + this.data +
+				'}';
 	}
 }

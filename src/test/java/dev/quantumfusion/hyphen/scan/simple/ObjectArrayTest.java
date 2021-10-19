@@ -1,9 +1,14 @@
 package dev.quantumfusion.hyphen.scan.simple;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.util.TestSupplierUtil;
 import dev.quantumfusion.hyphen.util.TestThis;
 
-import java.util.Arrays;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.array;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 @Data
 @TestThis
@@ -14,16 +19,27 @@ public class ObjectArrayTest {
 		this.objectArray = objectArray;
 	}
 
+	public static Supplier<Stream<? extends ObjectArrayTest>> generateObjectArrayTest() {
+		return cross(array(ObjectTest.generateObjectTest(), 9852145, 32, ObjectTest.class), ObjectArrayTest::new);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ObjectArrayTest)) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 		ObjectArrayTest that = (ObjectArrayTest) o;
-		return Arrays.equals(objectArray, that.objectArray);
+		return TestSupplierUtil.arrayDeepEquals(this.objectArray, that.objectArray);
 	}
 
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(objectArray);
+		return TestSupplierUtil.arrayDeepHashCode(this.objectArray);
+	}
+
+	@Override
+	public String toString() {
+		return "ObjectArrayTest{" +
+				"objectArray=" + TestSupplierUtil.arrayToString(this.objectArray) +
+				'}';
 	}
 }

@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.util;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -214,6 +215,40 @@ public final class TestSupplierUtil {
 		return Arrays.equals(a, a2);
 	}
 
+	public static boolean arrayDeepEquals(Object[] a1, Object[] a2) {
+		if (a1 == a2)
+			return true;
+		if (a1 == null || a2 == null || a1.getClass() != a2.getClass())
+			return false;
+		int length = a1.length;
+		if (a2.length != length)
+			return false;
+
+		for (int i = 0; i < length; i++) {
+			Object e1 = a1[i];
+			Object e2 = a2[i];
+
+			if (e1 == e2)
+				continue;
+			if (e1 == null || e2 == null) return false;
+
+			Class<?> e1Class = e1.getClass();
+			boolean eq;
+			if (e1Class.isArray()) {
+				if (e1Class != e2.getClass()) return false;
+				if (e1Class.componentType().isArray())
+					eq = arrayDeepEquals((Object[]) e1, (Object[]) e2);
+				else if (e1 instanceof Object[])
+					eq = arrayEquals((Object[]) e1, (Object[]) e2);
+				else
+					eq = Arrays.deepEquals(new Object[]{e1}, new Object[]{e2});
+			} else
+				eq = Objects.equals(e1, e2);
+			if (!eq) return false;
+		}
+		return true;
+	}
+
 	public static int arrayHashCode(Object a[]) {
 		if (a == null)
 			return 0;
@@ -225,10 +260,34 @@ public final class TestSupplierUtil {
 		return result * 31 + Arrays.hashCode(a);
 	}
 
+	public static int arrayDeepHashCode(Object a[]) {
+		if (a == null)
+			return 0;
+
+		int result = a.getClass().toString().hashCode();
+
+		for (Object element : a) {
+			final int elementHash;
+			final Class<?> cl;
+			if (element == null)
+				elementHash = 0;
+			else if (!element.getClass().isArray())
+				elementHash = element.hashCode();
+			else if (element instanceof Object[])
+				elementHash = arrayDeepHashCode((Object[]) element);
+			else
+				elementHash = Arrays.deepHashCode(new Object[]{element});
+
+			result = 31 * result + elementHash;
+		}
+
+		return result;
+	}
+
 	public static String arrayToString(Object a[]) {
 		if (a == null)
 			return "null";
 
-		return a.getClass() + Arrays.toString(a);
+		return a.getClass() + Arrays.deepToString(a);
 	}
 }

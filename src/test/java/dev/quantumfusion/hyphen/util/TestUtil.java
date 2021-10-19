@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.util;
 
+import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import org.junit.jupiter.api.*;
@@ -80,6 +81,8 @@ public class TestUtil {
 		try {
 			// generation
 			var factory = SerializerFactory.create(ByteBufferIO.class, clazz);
+			factory.setOption(Options.SHORT_METHOD_NAMES, false);
+			factory.setOption(Options.SHORT_VARIABLE_NAMES, false);
 			var serializer = factory.build();
 
 			var expectedScan = clazz.getDeclaredAnnotation(ExpectedResult.class);
