@@ -2,6 +2,8 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 @Data
 public class TestGen {
@@ -15,19 +17,21 @@ public class TestGen {
 
 
 	public static class Test {
-		@Data
-		public Test2 testing;
+		@DataGlobalAnnotation("things")
+		public Number testing;
+
+		public Test(Number testing) {
+			this.testing = testing;
+		}
 	}
 
-	public static class Test2<K> {
-		@Data
-		public K test;
-	}
+
 
 	public static void main(String[] args) {
-		TestGen test = new TestGen(new Test());
+		TestGen test = new TestGen(new Test( 69f));
 		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
-
+		factory.addGlobalAnnotation("things", DataSubclasses.class, new Class[]{Integer.class, Float.class});
+		factory.addGlobalAnnotation("things", Data.class, null);
 
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, test);

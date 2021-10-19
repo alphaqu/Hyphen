@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.IgnoreInterfaces;
 import dev.quantumfusion.hyphen.scan.annotations.IgnoreSuperclass;
 
@@ -51,11 +50,8 @@ public class ClassCache {
 	public static List<FieldInfo> getFields(Class<?> clazz) {
 		return cache(FIELD_CACHE, clazz, (c) -> {
 			var out = new ArrayList<FieldInfo>();
-			var globalData = clazz.getDeclaredAnnotation(Data.class) != null;
 			for (Field field : clazz.getDeclaredFields()) {
-				if (globalData || field.getDeclaredAnnotation(Data.class) != null) {
-					out.add(new FieldInfo(field, field.getAnnotatedType()));
-				}
+				out.add(new FieldInfo(field, field.getAnnotatedType()));
 			}
 			return out;
 		});

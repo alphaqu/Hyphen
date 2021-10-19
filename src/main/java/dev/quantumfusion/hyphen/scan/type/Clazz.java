@@ -1,12 +1,13 @@
 package dev.quantumfusion.hyphen.scan.type;
 
+import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.ClassCache;
-import dev.quantumfusion.hyphen.util.Style;
 import dev.quantumfusion.hyphen.util.ScanUtil;
+import dev.quantumfusion.hyphen.util.Style;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,24 +18,28 @@ import java.util.*;
 public class Clazz {
 	@NotNull
 	public final Class<?> aClass;
-	private final Map<Class<? extends Annotation>, Annotation> annotations;
+	protected final SerializerHandler<?, ?> handler;
+	// Object is the value
+	private final Map<Class<? extends Annotation>, Object> annotations;
 
-	protected Clazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Annotation> annotations) {
+	protected Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations) {
 		this.aClass = aClass;
+		this.handler = handler;
 		this.annotations = annotations;
 	}
 
-	public Clazz(@NotNull Class<?> aClass) {
+	public Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass) {
 		this.aClass = aClass;
+		this.handler = handler;
 		this.annotations = Map.of();
 	}
 
-	public static Clazz create(AnnotatedType type, @Nullable Clazz ctx) {
-		return new Clazz((Class<?>) type.getType(), ScanUtil.acquireAnnotations(type, ctx));
+	public static Clazz create(SerializerHandler<?, ?> handler, AnnotatedType type, @Nullable Clazz ctx) {
+		return new Clazz(handler, (Class<?>) type.getType(), ScanUtil.acquireAnnotations(handler, type, ctx));
 	}
 
-	public <A extends Annotation> A getAnnotation(Class<? extends A> aClass) {
-		return (A) annotations.get(aClass);
+	public Object getAnnotationValue(Class<? extends Annotation> aClass) {
+		return annotations.get(aClass);
 	}
 
 	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
@@ -60,7 +65,7 @@ public class Clazz {
 
 		var ctx = this;
 		for (int i = path.length - 1; i >= 0; i--) {
-			ctx = Clazzifier.create(path[i], ctx, Direction.SUB);
+			ctx = Clazzifier.create(handler, path[i], ctx, Direction.SUB);
 		}
 
 		return ctx;
@@ -70,14 +75,15 @@ public class Clazz {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		final AnnotatedType aSuper = ClassCache.getSuperClass(aClass);
 		if (aSuper != null)
-			fieldEntries.addAll(Clazzifier.create(aSuper, this, Direction.SUPER).getFields());
+			fieldEntries.addAll(Clazzifier.create(handler, aSuper, this, Direction.SUPER).getFields());
 
 
 		for (var field : ClassCache.getFields(aClass)) {
 			try {
-				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(field.type(), this, Direction.NORMAL)));
+				var annotatedType = new ScanUtil.FieldAnnotatedType(field.field(), field.type());
+				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(handler, annotatedType, this, Direction.NORMAL)));
 			} catch (Throwable throwable) {
-				throw HyphenException.thr("field", Style.LINE_RIGHT , field, throwable);
+				throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 			}
 		}
 
@@ -90,9 +96,8 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		// FIXME: values in the annotations are not printed
 		StringJoiner annotationJoiner = new StringJoiner(" ", "{", "}");
-		this.annotations.forEach((aClass1, annotation) -> annotationJoiner.add('@' + annotation.annotationType().getSimpleName()));
+		this.annotations.forEach((aClass1, value) -> annotationJoiner.add('@' + aClass1.getSimpleName() + " = " + value));
 		return aClass.getSimpleName() + " " + annotationJoiner;
 	}
 

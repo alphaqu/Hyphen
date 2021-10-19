@@ -18,21 +18,4 @@ public class TestThings {
 	public C1<C2<Object>> thing3;
 
 
-	static public void main(String[] args) throws NoSuchFieldException {
-		final Clazz things = Clazzifier.create(TestThings.class.getField("thigns2").getAnnotatedType(), null, Direction.NORMAL);
-		scan(things.asSub(C2.class));
-	}
-
-	public static void scan(Clazz clazz) {
-		System.out.println(clazz);
-		for (FieldEntry field : clazz.getFields()) {
-			System.out.println("\t" + field);
-		}
-		System.out.println();
-
-		List<FieldEntry> fields = clazz.getFields();
-		for (FieldEntry field : fields) {
-			scan(field.clazz());
-		}
-	}
 }

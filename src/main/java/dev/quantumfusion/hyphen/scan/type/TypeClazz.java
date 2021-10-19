@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
+import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
@@ -16,19 +17,19 @@ public class TypeClazz extends Clazz {
 	public final String typeName;
 	private final Class<?> bytecodeBound;
 
-	public TypeClazz(Map<Class<? extends Annotation>, Annotation> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
-		super(bytecodeBound, annotations);
+	public TypeClazz(SerializerHandler<?, ?> handler, Map<Class<? extends Annotation>, Object> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
+		super(handler, bytecodeBound, annotations);
 		this.defined = defined;
 		this.bytecodeBound = bytecodeBound;
 		this.typeName = typeName;
 	}
 
-	public static TypeClazz create(AnnotatedType typeVariable, @Nullable Clazz ctx) {
+	public static TypeClazz create(SerializerHandler<?, ?> handler, AnnotatedType typeVariable, @Nullable Clazz ctx) {
 		var type = (TypeVariable<?>) typeVariable.getType();
 		var typeName = type.getTypeName();
 
 		if (ctx == null) throw new RuntimeException("Type Knowledge Required");
-		return new TypeClazz(ScanUtil.acquireAnnotations(typeVariable, ctx), ctx.define(typeName), Object.class, typeName);
+		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), Object.class, typeName);
 	}
 
 	@Override
@@ -66,11 +67,9 @@ public class TypeClazz extends Clazz {
 		return this.defined.toString();
 	}
 
-	@Override
-	public <A extends Annotation> A getAnnotation(Class<? extends A> aClass) {
-		return this.defined.getAnnotation(aClass);
+	public Object getAnnotationValue(Class<? extends Annotation> aClass) {
+		return this.defined.getAnnotationValue(aClass);
 	}
-
 	@Override
 	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
 		return this.defined.containsAnnotation(aClass);

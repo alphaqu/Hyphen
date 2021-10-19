@@ -1,8 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.objectweb.asm.Type;
+
+import java.lang.annotation.Annotation;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -69,5 +72,13 @@ public final class GenUtil {
 				.replace('.', '•')
 				.replace(';', '\u037E') // greek question mark, intellij "fixes" it for you
 				.replace(':', 'ː');
+	}
+
+	public static void main(String[] args) {
+		test("myLittlePony", DataSubclasses.class, new Class[]{int.class, Integer.class});
+	}
+
+	public static void test(String id, Class<? extends Annotation> thing, Object value) {
+
 	}
 }
