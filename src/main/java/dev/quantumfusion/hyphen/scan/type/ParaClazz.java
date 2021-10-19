@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.scan.Annotations;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
@@ -9,6 +8,7 @@ import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.StringJoiner;
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
 
-	public ParaClazz(@NotNull Class<?> aClass, Annotations annotations, Map<String, Clazz> parameters) {
+	public ParaClazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Annotation> annotations, Map<String, Clazz> parameters) {
 		super(aClass, annotations);
 		this.parameters = parameters;
 	}
@@ -38,12 +38,12 @@ public class ParaClazz extends Clazz {
 		else {
 			if (dir != Direction.SUB)
 				throw new UnknownTypeException("Class with parameters comes from a non parameterized source.",
-						"Check if you forgot to declare the parameters and left the type raw in any of the fields.");
+										  "Check if you forgot to declare the parameters and left the type raw in any of the fields.");
 			for (var typeParameter : rawType.getTypeParameters())
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(ScanUtil.wrap(typeParameter), ctx, dir));
 		}
 
-		return new ParaClazz(rawType, Annotations.of(rawAnnotatedType, ctx), parameters);
+		return new ParaClazz(rawType, ScanUtil.acquireAnnotations(rawAnnotatedType, ctx), parameters);
 	}
 
 	@Override
