@@ -19,7 +19,7 @@ public class D1<A> extends C0 {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!super.equals(o)) return false;
+		if (o == null || this.getClass() != o.getClass()) return false;
 
 		D1<?> d1 = (D1<?>) o;
 
@@ -38,7 +38,7 @@ public class D1<A> extends C0 {
 				'}';
 	}
 
-	public static <A> Supplier<? extends Stream<? extends D1<A>>> generateD1(
+	public static <A> Supplier<Stream<? extends D1<A>>> generateD1(
 			Supplier<? extends Stream<? extends A>> aProvider) {
 		return cross(aProvider, D1::new);
 	}

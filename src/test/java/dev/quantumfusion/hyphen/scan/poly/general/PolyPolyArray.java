@@ -12,22 +12,26 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
-public class PolyArray {
-	public @DataSubclasses({Integer.class, Float.class}) Number[] numbers;
+public class PolyPolyArray {
+	public @DataSubclasses({Integer.class, Float.class}) Number @DataSubclasses({Integer[].class, Float[].class, Number[].class}) [] numbers;
 
-	public PolyArray(Number[] numbers) {
+	public PolyPolyArray(Number[] numbers) {
 		this.numbers = numbers;
 	}
 
-	public static Supplier<Stream<? extends PolyArray>> generatePolyArray() {
-		return cross(array(NUMBERS_IF, 78654, 32, Number.class), PolyArray::new);
+	public static Supplier<Stream<? extends PolyPolyArray>> generatePolyPolyArray() {
+		return cross(subClasses(
+				array(INTEGERS, 775865, 32, Integer.class),
+				array(FLOATS, 54, 32, Float.class),
+				array(NUMBERS_IF, 78654, 32, Number.class)
+		), PolyPolyArray::new);
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
-		PolyArray polyArray = (PolyArray) o;
+		PolyPolyArray polyArray = (PolyPolyArray) o;
 		return TestSupplierUtil.arrayEquals(this.numbers, polyArray.numbers);
 	}
 

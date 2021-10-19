@@ -43,7 +43,7 @@ public class D2<B> extends D1<B> {
 		return result;
 	}
 
-	public static <B> Supplier<? extends Stream<? extends D2<B>>> generateD2(
+	public static <B> Supplier<Stream<? extends D2<B>>> generateD2(
 			Supplier<? extends Stream<? extends B>> bProvider) {
 		return cross(bProvider, bProvider, D2::new);
 	}

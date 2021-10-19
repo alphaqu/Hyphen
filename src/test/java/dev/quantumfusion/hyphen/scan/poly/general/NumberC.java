@@ -6,6 +6,12 @@ import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.C2;
 import dev.quantumfusion.hyphen.util.TestThis;
 
+import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
+
 @Data
 @TestThis
 public class NumberC {
@@ -14,5 +20,32 @@ public class NumberC {
 
 	public NumberC(C1<Number> data) {
 		this.data = data;
+	}
+
+	public static Supplier<Stream<? extends NumberC>> generateNumberC() {
+		return cross(subClasses(
+				C1.generateC1(NUMBERS_IF),
+				C2.generateC1(NUMBERS_IF)
+		), NumberC::new);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || this.getClass() != o.getClass()) return false;
+		NumberC numberC = (NumberC) o;
+		return Objects.equals(this.data, numberC.data);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.data);
+	}
+
+	@Override
+	public String toString() {
+		return "NumberC{" +
+				"data=" + this.data +
+				'}';
 	}
 }

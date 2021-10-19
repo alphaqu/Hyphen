@@ -73,6 +73,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	public MethodInfo apply(MethodInfo info) {
 		if (methodDedup != null)
 			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()), this);
+		info.setName(GenUtil.makeSafe(info.getName()), this);
 		return info;
 	}
 

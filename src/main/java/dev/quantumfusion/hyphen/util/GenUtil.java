@@ -56,4 +56,18 @@ public final class GenUtil {
 	public static String upperCase(String str) {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
+
+	public static String makeSafe(String str){
+		return str
+				.replace('[', '⟦')
+				.replace(']', '⟧')
+				.replace('<', '❮')
+				.replace('>', '❯')
+				.replace('(', '❪')
+				.replace(')', '❫')
+				.replace('/', '∕')
+				.replace('.', '•')
+				.replace(';', '\u037E') // greek question mark, intellij "fixes" it for you
+				.replace(':', 'ː');
+	}
 }

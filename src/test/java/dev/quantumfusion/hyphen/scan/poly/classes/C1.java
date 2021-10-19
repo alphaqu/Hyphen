@@ -31,7 +31,7 @@ public class C1<A> extends C0 {
 		return Objects.hashCode(this.a);
 	}
 
-	public static <A> Supplier<? extends Stream<? extends C1<A>>> generateC1(Supplier<? extends Stream<? extends A>> aProvider) {
+	public static <A> Supplier<Stream<? extends C1<A>>> generateC1(Supplier<? extends Stream<? extends A>> aProvider) {
 		return cross(aProvider, C1::new);
 	}
 
