@@ -76,17 +76,21 @@ public class TypeClazz extends Clazz {
 		return this.defined.containsAnnotation(aClass);
 	}
 
+	public Clazz getDefined() {
+		return this.defined;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
 		if (!super.equals(o)) return false;
 		TypeClazz typeClazz = (TypeClazz) o;
-		return Objects.equals(this.bytecodeBound, typeClazz.bytecodeBound);
+		return Objects.equals(this.bytecodeBound, typeClazz.bytecodeBound) && Objects.equals(this.defined, typeClazz.defined);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), this.bytecodeBound);
+		return Objects.hash(super.hashCode(), this.bytecodeBound, this.defined);
 	}
 }

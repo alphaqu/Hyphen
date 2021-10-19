@@ -7,7 +7,7 @@ import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
-import dev.quantumfusion.hyphen.util.ScanUtil;
+import dev.quantumfusion.hyphen.scan.type.TypeClazz;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -55,6 +55,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	public SerializerDef acquireDef(Clazz clazz) {
+		if (clazz instanceof TypeClazz t)
+			return this.acquireDef(t.getDefined());
+
 		if (scanDeduplicationMap.containsKey(clazz))
 			return scanDeduplicationMap.get(clazz);
 
@@ -71,12 +74,11 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		//TODO Discuss about inherited definitions
 		if (definitions.containsKey(definedClass))
 			return definitions.get(definedClass).create(clazz, this);
-
-		return acquireDefNewMethod(clazz);
+		return this.acquireDefNewMethod(clazz);
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
-		if(clazz.containsAnnotation(DataSubclasses.class))
+		if (clazz.containsAnnotation(DataSubclasses.class))
 			return new SubclassDef(this, clazz, clazz.getAnnotation(DataSubclasses.class).value());
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
