@@ -4,7 +4,9 @@ import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.poly.classes.*;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C2;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.CoWrappedC1;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.List;

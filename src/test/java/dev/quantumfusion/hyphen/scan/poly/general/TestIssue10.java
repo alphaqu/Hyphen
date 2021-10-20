@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.scan.poly.general;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.poly.classes.C3Def;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C3Def;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 @Data

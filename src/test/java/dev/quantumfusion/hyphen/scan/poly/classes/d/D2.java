@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.scan.poly.classes;
+package dev.quantumfusion.hyphen.scan.poly.classes.d;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 

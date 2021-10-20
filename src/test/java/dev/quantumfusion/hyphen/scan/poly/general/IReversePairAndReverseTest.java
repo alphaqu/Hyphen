@@ -2,9 +2,9 @@ package dev.quantumfusion.hyphen.scan.poly.general;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-import dev.quantumfusion.hyphen.scan.poly.classes.IReversedPair;
-import dev.quantumfusion.hyphen.scan.poly.classes.Pair;
-import dev.quantumfusion.hyphen.scan.poly.classes.ReversePair;
+import dev.quantumfusion.hyphen.scan.poly.classes.pair.IReversedPair;
+import dev.quantumfusion.hyphen.scan.poly.classes.pair.Pair;
+import dev.quantumfusion.hyphen.scan.poly.classes.pair.ReversePair;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 import java.util.Objects;

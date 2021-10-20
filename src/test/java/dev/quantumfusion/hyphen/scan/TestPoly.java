@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.scan.poly.classes.*;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.*;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package dev.quantumfusion.hyphen.scan.poly.classes;
+package dev.quantumfusion.hyphen.scan.poly.classes.c;
 
 import java.util.function.Supplier;
 import java.util.stream.Stream;

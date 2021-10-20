@@ -3,8 +3,8 @@ package dev.quantumfusion.hyphen.scan.poly.extract.wrappedSuper;
 import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-import dev.quantumfusion.hyphen.scan.poly.classes.C1;
-import dev.quantumfusion.hyphen.scan.poly.classes.CoWrappedC1Super;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.CoWrappedC1Super;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 import dev.quantumfusion.hyphen.util.TestThis;
 

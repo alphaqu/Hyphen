@@ -2,8 +2,8 @@ package dev.quantumfusion.hyphen.scan.poly.general;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-import dev.quantumfusion.hyphen.scan.poly.classes.C1;
-import dev.quantumfusion.hyphen.scan.poly.classes.C2;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C1;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.C2;
 import dev.quantumfusion.hyphen.util.TestSupplierUtil;
 import dev.quantumfusion.hyphen.util.TestThis;
 
