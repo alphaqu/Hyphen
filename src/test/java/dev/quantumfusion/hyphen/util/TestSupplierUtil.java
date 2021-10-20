@@ -13,9 +13,9 @@ import java.util.stream.Stream;
 
 public final class TestSupplierUtil {
 	public static final Supplier<? extends Stream<? extends String>> STRINGS = () -> Arrays.stream(new String[]{
-			"UWU",
-			"uwu",
-			"69696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969",
+			// "UWU",
+			// "uwu",
+			// "69696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969",
 			""
 			// TODO add unicodes
 			// , "☃️"

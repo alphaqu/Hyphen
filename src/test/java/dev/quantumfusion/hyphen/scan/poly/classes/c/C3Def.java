@@ -18,6 +18,10 @@ public class C3Def<E> extends C3<E, String> {
 		this.e = e1;
 	}
 
+	public C3Def(E e, E b1, Object s, E e1) {
+		this(e, b1, (String) s, e1);
+	}
+
 	public static <E> Supplier<? extends Stream<? extends C3Def<E>>> generateC3Def(
 			Supplier<? extends Stream<? extends E>> eProvider
 	) {

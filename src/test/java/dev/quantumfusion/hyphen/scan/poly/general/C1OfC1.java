@@ -16,7 +16,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
-@FailTest
+@FailTest // FIXME: should not fail
 public class C1OfC1 {
 	@DataSubclasses({C1.class, WrappedC1.class})
 	public C1<C1<Integer>> data;

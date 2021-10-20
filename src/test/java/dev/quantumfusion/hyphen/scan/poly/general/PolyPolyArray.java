@@ -5,11 +5,6 @@ import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.util.TestSupplierUtil;
 import dev.quantumfusion.hyphen.util.TestThis;
 
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
-
 @Data
 @TestThis
 public class PolyPolyArray {
@@ -18,14 +13,14 @@ public class PolyPolyArray {
 	public PolyPolyArray(Number[] numbers) {
 		this.numbers = numbers;
 	}
-
+/*
 	public static Supplier<Stream<? extends PolyPolyArray>> generatePolyPolyArray() {
 		return cross(subClasses(
 				array(INTEGERS, 775865, 32, Integer.class),
 				array(FLOATS, 54, 32, Float.class),
 				array(NUMBERS_IF, 78654, 32, Number.class)
 		), PolyPolyArray::new);
-	}
+	}*/
 
 	@Override
 	public boolean equals(Object o) {

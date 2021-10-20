@@ -65,7 +65,7 @@ public class ClassDef extends MethodDef {
 					anIf.elseStart();
 					mh.op(ACONST_NULL);
 				}
-			} else if (compactBooleans && fieldEntry.fieldType == boolean.class)  {
+			} else if (compactBooleans && fieldEntry.fieldType == boolean.class) {
 				info.getBoolean(mh);
 			} else {
 				entry.getValue().writeGet(mh);
@@ -170,7 +170,7 @@ public class ClassDef extends MethodDef {
 					mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
 				} catch (NoSuchMethodException ignored) {
 					throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
-											  "Try making the field public or add a getter");
+							"Try making the field public or add a getter");
 				}
 
 			GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);

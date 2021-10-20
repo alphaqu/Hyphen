@@ -12,7 +12,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 @Data
 @TestThis
 public class Arrays {
-	public Number @DataSubclasses({Integer[].class, Float[].class}) [] numbers;
+	public Number @DataSubclasses({Integer[].class, Float[].class})[] numbers;
 
 
 	public Arrays(Number[] numbers) {

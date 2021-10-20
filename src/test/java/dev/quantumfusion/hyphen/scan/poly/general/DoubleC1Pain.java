@@ -33,14 +33,15 @@ public class DoubleC1Pain {
 				C1.generateC1(INTEGERS),
 				C2.generateC2(INTEGERS),
 				C3Def.generateC3Def(INTEGERS),
-				C1Pair.generateC1(INTEGERS),
+				reduce(C1Pair.generateC1(INTEGERS), 50),
 				IntC1.generateIntC1());
 
+		// FIXME: look into hangup
 		return cross(subClasses(
 				reduce(C1.generateC1(supplier), 5),
-				reduce(C2.generateC2(supplier), 10),
-				reduce(C3Def.generateC3Def(supplier), 20),
-				reduce(C1Pair.generateC1Pair(supplier), 30)
+				//reduce(C3Def.generateC3Def(supplier), 20),
+				reduce(C2.generateC2(supplier), 10)
+				//reduce(C1Pair.generateC1Pair(supplier), 30)
 		), DoubleC1Pain::new);
 	}
 

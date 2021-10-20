@@ -22,13 +22,22 @@ public class ArrayClazz extends Clazz {
 	}
 
 	public static ArrayClazz create(SerializerHandler<?, ?> handler, AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
-		final Clazz component = Clazzifier.create(handler, getAnnotatedGenericComponentType(array), ctx, dir);
+		final Clazz component;
+		if (dir == Direction.SUB) {
+			if (ctx instanceof ArrayClazz arrayClazz) {
+				// FIXME: this feels incorrect
+				// component = Clazzifier.create(handler, getAnnotatedGenericComponentType(array), arrayClazz.component, dir);
+			} else throw new IllegalArgumentException(); // FIXME error
+		}
+		component = Clazzifier.create(handler, getAnnotatedGenericComponentType(array), ctx, dir);
 		return new ArrayClazz(handler, component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(handler, array, ctx), component);
 	}
 
 	private static AnnotatedType getAnnotatedGenericComponentType(AnnotatedType array) {
-		if(array instanceof AnnotatedArrayType annotatedArrayType)
+		if (array instanceof AnnotatedArrayType annotatedArrayType)
 			return annotatedArrayType.getAnnotatedGenericComponentType();
+		if (array instanceof ScanUtil.FieldAnnotatedType fieldAnnotatedType)
+			return getAnnotatedGenericComponentType(fieldAnnotatedType.annotatedType());
 		else return ScanUtil.wrap(ScanUtil.getClassFrom(array).componentType());
 	}
 

@@ -57,12 +57,15 @@ public class ScanUtil {
 		var out = new LinkedHashMap<Class<? extends Annotation>, Object>();
 		if (parent != null) {
 			final Class<?> parentClass = parent.getDefinedClass();
-			addAnnotations(parentClass.getPackage(), out);
+			Package pack = parentClass.getPackage();
+			if (pack != null)
+				addAnnotations(pack, out);
 			addAnnotations(parentClass, out);
 		}
-		if (self instanceof FieldAnnotatedType fieldAnnotatedType)
-			 addAnnotations(fieldAnnotatedType.field, out);
-		else addAnnotations(self, out);
+		if (self instanceof FieldAnnotatedType fieldAnnotatedType) {
+			addAnnotations(fieldAnnotatedType.field, out);
+			addAnnotations(fieldAnnotatedType.annotatedType, out);
+		} else addAnnotations(self, out);
 
 
 		if (out.containsKey(DataGlobalAnnotation.class))

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.FIELD})
+@Target({ElementType.TYPE_USE})
 @HyphenAnnotation
 public @interface DataSubclasses {
 	Class<?>[] value();
