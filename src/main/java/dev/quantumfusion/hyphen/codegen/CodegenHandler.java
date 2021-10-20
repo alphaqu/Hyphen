@@ -5,6 +5,8 @@ import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.codegen.def.MethodDef;
 import dev.quantumfusion.hyphen.io.IOInterface;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.ClassWriter;
@@ -84,12 +86,12 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	public void writeMethod(MethodDef def, boolean raw) {
-		writeMethodInternal(def.getInfo, raw, def::writeMethodGet);
-		writeMethodInternal(def.putInfo, raw, mh -> def.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
-		writeMethodInternal(def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
+		writeMethodInternal(def.clazz, def.getInfo, raw, def::writeMethodGet);
+		writeMethodInternal(def.clazz, def.putInfo, raw, mh -> def.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+		writeMethodInternal(def.clazz, def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
 	}
 
-	private void writeMethodInternal(MethodInfo methodInfo, boolean raw, Consumer<MethodHandler> writer) {
+	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean raw, Consumer<MethodHandler> writer) {
 		final Class<?>[] parameters = methodInfo.parameters;
 		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, raw, options.get(Options.SHORT_VARIABLE_NAMES))) {
 			for (Class<?> parameter : parameters)
@@ -106,11 +108,15 @@ public class CodegenHandler<IO extends IOInterface, D> {
 				}
 			}
 
-			writer.accept(mh);
+			try {
+				writer.accept(mh);
+			} catch (Throwable thr) {
+				throw HyphenException.thr("class", "-", clazz.getDefinedClass().getSimpleName(), thr);
+			}
 			mh.op(Type.getType(methodInfo.returnClass).getOpcode(IRETURN));
 			mh.visitEnd();
 		} catch (Throwable throwable) {
-			throw new RuntimeException(methodInfo.getName(), throwable);
+			throw HyphenException.thr("method", "-", methodInfo.getName(), throwable);
 		}
 	}
 

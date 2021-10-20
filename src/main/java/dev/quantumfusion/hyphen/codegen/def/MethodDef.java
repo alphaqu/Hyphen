@@ -11,7 +11,7 @@ public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo getInfo;
 	public final MethodInfo putInfo;
 	public final MethodInfo measureInfo;
-	protected final Clazz clazz;
+	public final Clazz clazz;
 
 	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz){
 		this(handler, clazz, clazz.toString());

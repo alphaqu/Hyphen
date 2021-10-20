@@ -5,29 +5,32 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.thr.HyphenException;
-import dev.quantumfusion.hyphen.util.Style;
 import dev.quantumfusion.hyphen.util.GenUtil;
+import dev.quantumfusion.hyphen.util.Style;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class ClassDef extends MethodDef {
 	protected final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
+	protected final Class<?>[] constructorParameters;
 	protected final Class<?> aClass;
 
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler.codegenHandler, clazz);
 		this.aClass = clazz.getDefinedClass();
 		try {
-			for (FieldEntry field : clazz.getFields()) {
+			var fields = clazz.getFields();
+			constructorParameters = new Class[fields.size()];
+			for (int i = 0; i < fields.size(); i++) {
+				FieldEntry field = fields.get(i);
+
+				constructorParameters[i] = field.clazz().getDefinedClass();
 				try {
-					fields.put(field, handler.acquireDef(field.clazz()));
+					this.fields.put(field, handler.acquireDef(field.clazz()));
 				} catch (Throwable throwable) {
 					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 				}
@@ -41,63 +44,45 @@ public class ClassDef extends MethodDef {
 	public void writeMethodGet(MethodHandler mh) {
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
-		List<Class<?>> constParameters = new ArrayList<>();
-		fields.forEach((fieldEntry, def) -> {
-			def.writeGet(mh);
-			// TODO fix constructors
-			constParameters.add(fieldEntry.clazz().getBytecodeClass());
-		});
-		//TODO add generic support
-		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constParameters.toArray(Class[]::new));
+		fields.values().forEach(def -> def.writeGet(mh));
+		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constructorParameters);
 	}
 
 	@Override
 	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
-		fields.forEach((fieldEntry, def) -> def.writePut(mh, () -> {
-			//TODO add get method support / generic support
-			allocateField(mh, fieldEntry.field(), fieldEntry.clazz(), valueLoad);
-		}));
+		fields.forEach((fieldEntry, def) -> def.writePut(mh, () -> loadField(mh, fieldEntry, valueLoad)));
 	}
 
 	@Override
 	public void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (fields.size() == 0) {
-			mh.op(ICONST_0);
-		} else {
+		if (fields.size() == 0) mh.op(ICONST_0);
+		else {
 			int i = 0;
 			for (var entry : fields.entrySet()) {
-				var field = entry.getKey().field();
-				entry.getValue().writeMeasure(mh, () -> allocateField(mh, field, entry.getKey().clazz(), valueLoad));
-				if (i++ != 0) mh.op(IADD);
+				entry.getValue().writeMeasure(mh, () -> loadField(mh, entry.getKey(), valueLoad));
+				if (i++ > 0) mh.op(IADD);
 			}
 		}
 	}
 
-	private void allocateField(MethodHandler mh, Field field, Clazz clazz, Runnable dataLoad) {
+	private void loadField(MethodHandler mh, FieldEntry entry, Runnable dataLoad) {
 		dataLoad.run();
-		if (Modifier.isPublic(field.getModifiers())) {
-			mh.visitFieldInsn(GETFIELD, aClass, field.getName(), field.getType());
-		} else {
-			mh.callInst(INVOKEVIRTUAL, aClass, getGetter(aClass, field.getName()), clazz.getBytecodeClass());
-		}
-		GenUtil.shouldCastGeneric(mh, clazz);
-	}
+		var clazz = entry.clazz();
+		var field = entry.field();
+		var definedClass = clazz.getDefinedClass();
+		var bytecodeClass = clazz.getBytecodeClass();
 
-	public String getGetter(Class<?> aClass, String fieldName) {
-		if (!aClass.isRecord()) {
-			try {
-				final String name = "get" + GenUtil.upperCase(fieldName);
-				aClass.getDeclaredMethod(name);
-				return name;
+		var fieldName = field.getName();
+		if (Modifier.isPublic(field.getModifiers())) mh.visitFieldInsn(GETFIELD, aClass, fieldName, field.getType());
+		else if (definedClass.isRecord()) mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
+		else try {
+				definedClass.getDeclaredMethod("get" + GenUtil.upperCase(fieldName));
+				mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
 			} catch (NoSuchMethodException ignored) {
+				throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
+										  "Try making the field public or add a getter");
 			}
-		}
-		try {
-			aClass.getDeclaredMethod(fieldName);
-			return fieldName;
-		} catch (NoSuchMethodException ignored) {
-		}
-		throw new RuntimeException("Could not access" + fieldName + " in class " + aClass.getSimpleName());
-	}
 
+		GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);
+	}
 }

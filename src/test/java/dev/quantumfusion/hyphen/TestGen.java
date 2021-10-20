@@ -2,29 +2,17 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 @Data
-public class TestGen {
+public class TestGen extends Test2<Double> {
 	@Data
-	public Test field;
+	private final Integer field;
 
-
-	public TestGen(Test field) {
+	public TestGen(Double o, Integer field) {
+		super(o);
 		this.field = field;
 	}
-
-
-	public static class Test {
-		@DataGlobalAnnotation("id")
-		public Number testing;
-
-		public Test(Number testing) {
-			this.testing = testing;
-		}
-	}
-
 
 
 	public static void main(String[] args) {
@@ -32,7 +20,7 @@ public class TestGen {
 		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
 		factory.addGlobalAnnotation("id", Data.class, null);
 
-		TestGen test = new TestGen(new Test( 69f));
+		TestGen test = new TestGen(432.5, 4321);
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, test);
 		serializer.put(byteBufferIO, test);
