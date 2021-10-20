@@ -120,7 +120,7 @@ public class ScanUtil {
 	public record FieldAnnotatedType(Field field, AnnotatedType annotatedType) implements AnnotatedType {
 		@Override
 		public Type getType() {
-			return field.getType();
+			return annotatedType.getType();
 		}
 
 		@Override
