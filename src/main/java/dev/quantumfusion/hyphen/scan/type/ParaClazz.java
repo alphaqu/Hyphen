@@ -29,8 +29,14 @@ public class ParaClazz extends Clazz {
 		var parameters = new HashMap<String, Clazz>();
 		var rawType = ScanUtil.getClassFrom(rawAnnotatedType);
 
+		AnnotatedType annType;
 
-		if (rawAnnotatedType instanceof AnnotatedParameterizedType annotatedType)
+		if (rawAnnotatedType instanceof ScanUtil.FieldAnnotatedType fieldAnnotatedType)
+			annType = fieldAnnotatedType.annotatedType();
+		else
+			annType = rawAnnotatedType;
+
+		if (annType instanceof AnnotatedParameterizedType annotatedType)
 			ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
 				parameters.put(
 						(dir == Direction.SUB) ? actual.getType().getTypeName() : internal.getTypeName(),
@@ -39,7 +45,7 @@ public class ParaClazz extends Clazz {
 		else {
 			if (dir != Direction.SUB)
 				throw new UnknownTypeException("Class with parameters comes from a non parameterized source.",
-										  "Check if you forgot to declare the parameters and left the type raw in any of the fields.");
+						"Check if you forgot to declare the parameters and left the type raw in any of the fields.");
 			for (var typeParameter : rawType.getTypeParameters())
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(handler, ScanUtil.wrap(typeParameter), ctx, dir));
 		}

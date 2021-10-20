@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.util.Style;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +46,11 @@ public class HyphenException extends RuntimeException {
 
 	@Override
 	public void printStackTrace(PrintStream s) {
+		s.println(this.niceException());
+	}
+
+	@Override
+	public void printStackTrace(PrintWriter s) {
 		s.println(this.niceException());
 	}
 

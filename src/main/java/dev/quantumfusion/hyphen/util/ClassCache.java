@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
+
 public class ClassCache {
 	private static final Map<Class<?>, List<FieldInfo>> FIELD_CACHE = new IdentityHashMap<>();
 	private static final Map<Class<?>, AnnotatedType[]> INTERFACE_CACHE = new IdentityHashMap<>();
@@ -51,7 +53,8 @@ public class ClassCache {
 		return cache(FIELD_CACHE, clazz, (c) -> {
 			var out = new ArrayList<FieldInfo>();
 			for (Field field : clazz.getDeclaredFields()) {
-				out.add(new FieldInfo(field, field.getAnnotatedType()));
+				if ((field.getModifiers() & ACC_STATIC) == 0)
+					out.add(new FieldInfo(field, field.getAnnotatedType()));
 			}
 			return out;
 		});

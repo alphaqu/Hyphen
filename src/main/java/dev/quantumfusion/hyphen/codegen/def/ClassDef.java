@@ -35,7 +35,7 @@ public class ClassDef extends MethodDef {
 			for (int i = 0; i < fields.size(); i++) {
 				FieldEntry field = fields.get(i);
 
-				constructorParameters[i] = field.clazz().getDefinedClass();
+				constructorParameters[i] = field.clazz().getBytecodeClass();
 				try {
 					this.fields.put(BytecodeField.create(field), handler.acquireDef(field.clazz()));
 				} catch (Throwable throwable) {
