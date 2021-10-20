@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
+import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.util.ScanUtil;
@@ -15,14 +16,14 @@ import java.util.Objects;
 public class ArrayClazz extends Clazz {
 	public final Clazz component;
 
-	public ArrayClazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Annotation> annotations, Clazz component) {
-		super(aClass, annotations);
+	public ArrayClazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations, Clazz component) {
+		super(handler, aClass, annotations);
 		this.component = component;
 	}
 
-	public static ArrayClazz create(AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
-		final Clazz component = Clazzifier.create(getAnnotatedGenericComponentType(array), ctx, dir);
-		return new ArrayClazz(component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(array, ctx), component);
+	public static ArrayClazz create(SerializerHandler<?, ?> handler, AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
+		final Clazz component = Clazzifier.create(handler, getAnnotatedGenericComponentType(array), ctx, dir);
+		return new ArrayClazz(handler, component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(handler, array, ctx), component);
 	}
 
 	private static AnnotatedType getAnnotatedGenericComponentType(AnnotatedType array) {

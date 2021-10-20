@@ -5,8 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@HyphenAnnotation
-public @interface IgnoreInterfaces {
+@Retention(RetentionPolicy.RUNTIME)
+public @interface HyphenAnnotation {
 }

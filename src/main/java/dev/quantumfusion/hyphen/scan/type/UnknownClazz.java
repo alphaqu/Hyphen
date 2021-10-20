@@ -10,7 +10,7 @@ public class UnknownClazz extends Clazz {
 	public static final Clazz UNKNOWN = new UnknownClazz();
 
 	private UnknownClazz() {
-		super(UnknownClazz.class, Map.of());
+		super(null, UnknownClazz.class);
 	}
 
 	@Override

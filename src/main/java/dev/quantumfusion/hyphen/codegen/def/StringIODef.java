@@ -11,6 +11,7 @@ import static org.objectweb.asm.Opcodes.*;
 public class StringIODef implements SerializerDef {
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
+		mh.varOp(ILOAD, "io");
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
 	}
@@ -29,8 +30,8 @@ public class StringIODef implements SerializerDef {
 			valueLoad.run();
 			// kinda bad for speed, but it's kinda our only option here
 			mh.visitFieldInsn(GETSTATIC, StandardCharsets.class, "UTF_8", Charset.class);
-			mh.callInst(INVOKESTATIC, String.class, "getBytes", byte[].class, Charset.class);
-			mh.op(ARRAYLENGTH);
+			mh.callInst(INVOKEVIRTUAL, String.class, "getBytes", byte[].class, Charset.class);
+			mh.op(ARRAYLENGTH, ICONST_4, IADD);
 		}
 	}
 }

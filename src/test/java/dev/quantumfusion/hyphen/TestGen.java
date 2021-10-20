@@ -2,33 +2,19 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 
 @Data
-public class TestGen {
-	@Data
-	public Test field;
-
-
-	public TestGen(Test field) {
-		this.field = field;
-	}
-
-
-	public static class Test {
-		@Data
-		public Test2 testing;
-	}
-
-	public static class Test2<K> {
-		@Data
-		public K test;
-	}
+public record TestGen(@DataNullable String field, @DataNullable String field2, @DataNullable String field3,
+					  @DataNullable String field4, @DataNullable String field5, boolean b1, boolean b2) {
 
 	public static void main(String[] args) {
-		TestGen test = new TestGen(new Test());
-		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
+		var factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
+		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
+		factory.addGlobalAnnotation("id", Data.class, null);
 
-
+		TestGen test = new TestGen("jklvdfa", "fsdaa", "vadhjklv", "fasd", "gfdsdafgsd", false, true);
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, test);
 		serializer.put(byteBufferIO, test);

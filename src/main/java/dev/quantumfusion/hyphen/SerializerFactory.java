@@ -3,6 +3,10 @@ package dev.quantumfusion.hyphen;
 import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.util.ScanUtil;
+
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
 
 /**
  * The Factory where you create a {@link HyphenSerializer} <br>
@@ -48,6 +52,18 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		this.serializerHandler.definitions.put(target, defCreator);
 	}
 
+	// ====================================== ANNOTATIONS =====================================
+	public void addGlobalAnnotation(String id, Class<? extends Annotation> annotation, Object value) {
+		var valueGetter = ScanUtil.getAnnotationValueGetter(annotation);
+		if (valueGetter != null) {
+			var returnType = valueGetter.getReturnType();
+			var valueType = value.getClass();
+			if (valueType != returnType)
+				throw new RuntimeException("Annotation " + annotation.getSimpleName() + " value type " + returnType.getSimpleName() + " does not match parameter " + valueType.getSimpleName());
+		}
+
+		this.serializerHandler.globalAnnotations.computeIfAbsent(id, s -> new HashMap<>()).put(annotation, value);
+	}
 
 	public HyphenSerializer<IO, D> build() {
 		return serializerHandler.build();
@@ -56,6 +72,6 @@ public class SerializerFactory<IO extends IOInterface, D> {
 
 	@FunctionalInterface
 	public interface DynamicDefCreator {
-		SerializerDef create(Clazz clazz, SerializerHandler<?,?> serializerHandler);
+		SerializerDef create(Clazz clazz, SerializerHandler<?, ?> serializerHandler);
 	}
 }

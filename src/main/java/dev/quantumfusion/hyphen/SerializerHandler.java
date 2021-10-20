@@ -4,14 +4,11 @@ import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.def.*;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.scan.type.ParaClazz;
-import dev.quantumfusion.hyphen.scan.type.TypeClazz;
 import dev.quantumfusion.hyphen.scan.type.*;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
+import java.lang.annotation.Annotation;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +32,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
 
 	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
+	public final Map<String, Map<Class<? extends Annotation>, Object>> globalAnnotations;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
 	public final Map<Clazz, MethodDef> methods = new HashMap<>();
 	// not null on export
@@ -55,6 +53,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		}
 
 		this.definitions = new HashMap<>(BUILD_IN_DEFINITIONS);
+		this.globalAnnotations = new HashMap<>();
 	}
 
 	public SerializerDef acquireDef(Clazz clazz) {
@@ -84,7 +83,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
 		if (clazz.containsAnnotation(DataSubclasses.class))
-			return new SubclassDef(this, clazz, clazz.getAnnotation(DataSubclasses.class).value());
+			return new SubclassDef(this, clazz, (Class<?>[]) clazz.getAnnotationValue(DataSubclasses.class));
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
 		else return new ClassDef(this, clazz);
@@ -93,16 +92,16 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private void checkDefined(Clazz clazz) {
 		if (clazz == UnknownClazz.UNKNOWN)
 			throw new UnknownTypeException("Type could not be identified",
-									  "Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
+										   "Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
 
 		if ((clazz instanceof TypeClazz t && (t.defined == UnknownClazz.UNKNOWN))) {
 			throw new UnknownTypeException("Type " + t.typeName + " could not be identified",
-									  "Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
+										   "Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
 		}
 	}
 
 	private MethodDef scan() {
-		return acquireDefNewMethod(new Clazz(dataClass));
+		return acquireDefNewMethod(new Clazz(this, dataClass));
 	}
 
 	public HyphenSerializer<IO, D> build() {

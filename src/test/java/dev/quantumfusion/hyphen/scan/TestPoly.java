@@ -28,19 +28,7 @@ public class TestPoly {
 	public static void check(String name, Map<Class<?>, String> subclasses) throws NoSuchFieldException {
 		System.out.println("hello there");
 
-		Clazz s = Clazzifier.create(TestPoly.class.getDeclaredField(name).getAnnotatedType(), null, Direction.NORMAL);
 
-		// scan(Clazzifier.createClass(CachingTest.Class0.class, null), true);
-
-		for (var entry : subclasses.entrySet()) {
-			var subclass = entry.getKey();
-			var expected = entry.getValue();
-
-			Clazz subClazz = Clazzifier.create(subclass, null, Direction.NORMAL);
-			printAndSupers(subClazz);
-			System.out.println("to");
-
-		}
 	}
 
 	private static void printAndSupers(Clazz subClazz) {

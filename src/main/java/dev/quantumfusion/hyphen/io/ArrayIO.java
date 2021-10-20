@@ -180,9 +180,7 @@ public final class ArrayIO implements IOInterface {
 
 	@Override
 	public final void putString(final String value) {
-		final byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
-		putInt(bytes.length);
-		putByteArray(bytes);
+		putByteArray(value.getBytes(StandardCharsets.UTF_8));
 	}
 
 

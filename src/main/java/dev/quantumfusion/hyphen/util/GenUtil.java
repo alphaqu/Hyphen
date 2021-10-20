@@ -1,8 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.objectweb.asm.Type;
+
+import java.lang.annotation.Annotation;
 
 import static org.objectweb.asm.Opcodes.*;
 

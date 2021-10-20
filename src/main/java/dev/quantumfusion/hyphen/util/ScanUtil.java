@@ -1,18 +1,15 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.scan.annotations.InheritableAnnotation;
+import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
+import dev.quantumfusion.hyphen.scan.annotations.HyphenAnnotation;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -56,29 +53,54 @@ public class ScanUtil {
 		return out;
 	}
 
-	public static Map<Class<? extends Annotation>, Annotation> acquireAnnotations(@NotNull AnnotatedType self, @Nullable Clazz parent) {
+	public static Map<Class<? extends Annotation>, Object> acquireAnnotations(SerializerHandler<?, ?> handler, @NotNull AnnotatedType self, @Nullable Clazz parent) {
+		var out = new LinkedHashMap<Class<? extends Annotation>, Object>();
 		if (parent != null) {
-			var parentAnnotations = mapAnnotations(parent.getDefinedClass().getDeclaredAnnotations(), new HashMap<>(), (t) -> t.isAnnotationPresent(InheritableAnnotation.class));
-			// self annotations have priority
-			return mapAnnotations(self.getDeclaredAnnotations(), parentAnnotations);
+			final Class<?> parentClass = parent.getDefinedClass();
+			addAnnotations(parentClass.getPackage(), out);
+			addAnnotations(parentClass, out);
 		}
-		return mapAnnotations(self.getDeclaredAnnotations(), new HashMap<>());
+		if (self instanceof FieldAnnotatedType fieldAnnotatedType)
+			 addAnnotations(fieldAnnotatedType.field, out);
+		else addAnnotations(self, out);
+
+
+		if (out.containsKey(DataGlobalAnnotation.class))
+			out.putAll(handler.globalAnnotations.get((String) out.get(DataGlobalAnnotation.class)));
+		return out;
 	}
 
-	private static Map<Class<? extends Annotation>, Annotation> mapAnnotations(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation> map) {
-		for (Annotation annotation : annotations) {
-			map.put(annotation.annotationType(), annotation);
+	private static void addAnnotations(AnnotatedElement annotations, Map<Class<? extends Annotation>, Object> map) {
+		try {
+			for (Annotation annotation : annotations.getDeclaredAnnotations()) {
+				var annotatedType = annotation.annotationType();
+				if (annotatedType.getDeclaredAnnotation(HyphenAnnotation.class) == null) return;
+				Object value = null;
+				final Method valueGetter = getAnnotationValueGetter(annotation.annotationType());
+				if (valueGetter != null)
+					value = valueGetter.invoke(annotation);
+
+
+				map.put(annotatedType, value);
+			}
+		} catch (InvocationTargetException | IllegalAccessException exception) {
+			throw new RuntimeException(exception);
 		}
-		return map;
 	}
 
-	private static Map<Class<? extends Annotation>, Annotation> mapAnnotations(Annotation[] annotations, Map<Class<? extends Annotation>, Annotation> map, Predicate<? super Class<? extends Annotation>> predicate) {
-		for (Annotation annotation : annotations) {
-			if (predicate.test(annotation.annotationType()))
-				map.put(annotation.annotationType(), annotation);
+	@Nullable
+	public static Method getAnnotationValueGetter(Class<? extends Annotation> annotation) {
+		Method methodOut = null;
+		for (Method method : annotation.getMethods()) {
+			if (method.getDeclaringClass() == Annotation.class) continue;
+			if (methodOut != null)
+				throw new RuntimeException("Annotation " + annotation.getSimpleName() + " has more than 1 field");
+			methodOut = method;
 		}
-		return map;
+
+		return methodOut;
 	}
+
 
 	public static AnnotatedType wrap(Type clazz) {
 		return new AnnotatedWrapped(clazz);
@@ -93,6 +115,33 @@ public class ScanUtil {
 		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
 
 		throw new IllegalArgumentException(type.getClass() + ": " + type);
+	}
+
+	public record FieldAnnotatedType(Field field, AnnotatedType annotatedType) implements AnnotatedType {
+		@Override
+		public Type getType() {
+			return annotatedType.getType();
+		}
+
+		@Override
+		public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+			return field.getAnnotation(annotationClass);
+		}
+
+		@Override
+		public Annotation[] getAnnotations() {
+			return field.getAnnotations();
+		}
+
+		@Override
+		public Annotation[] getDeclaredAnnotations() {
+			return field.getDeclaredAnnotations();
+		}
+
+		@Override
+		public String toString() {
+			return Arrays.toString(field.getDeclaredAnnotations());
+		}
 	}
 
 	private record AnnotatedWrapped(Type type) implements AnnotatedType {

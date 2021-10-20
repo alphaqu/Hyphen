@@ -58,7 +58,7 @@ public class HyphenException extends RuntimeException {
 		new Group(this.getClass().getSimpleName() + " Reason", null, main).append(sb);
 
 		if (possibleSolution != null)
-			new Group("Dev Notice", null, Collections.singletonList(new Entry(null, null, possibleSolution))).append(sb);
+			new Group("Possible Solution", null, Collections.singletonList(new Entry(null, null, possibleSolution))).append(sb);
 
 		new Group("Path", Style.RED_BACKGROUND, this.path).append(sb);
 		new Group("Stacktrace", Style.RED_BACKGROUND, Arrays.stream(this.getStackTrace()).map(Entry::create).collect(Collectors.toList())).append(sb);
