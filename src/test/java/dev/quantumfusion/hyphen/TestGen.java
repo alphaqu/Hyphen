@@ -7,9 +7,9 @@ import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 @Data
 public class TestGen extends Test2<Double> {
 	@Data
-	private final Integer field;
+	public final String field;
 
-	public TestGen(Double o, Integer field) {
+	public TestGen(Double o, String field) {
 		super(o);
 		this.field = field;
 	}
@@ -20,7 +20,7 @@ public class TestGen extends Test2<Double> {
 		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
 		factory.addGlobalAnnotation("id", Data.class, null);
 
-		TestGen test = new TestGen(432.5, 4321);
+		TestGen test = new TestGen(432.5, "4321");
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, test);
 		serializer.put(byteBufferIO, test);
