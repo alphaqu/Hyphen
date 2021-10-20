@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
+import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.PackedBooleans;
@@ -12,7 +13,6 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import dev.quantumfusion.hyphen.util.Style;
-import org.objectweb.asm.Label;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -50,6 +50,7 @@ public class ClassDef extends MethodDef {
 	@Override
 	public void writeMethodGet(MethodHandler mh) {
 		var info = new PackedBooleans();
+		var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
 		for (var entry : fields.entrySet()) if (entry.getKey().nullable) info.countBoolean();
 		info.writeGet(mh);
 		mh.typeOp(NEW, aClass);
@@ -64,6 +65,8 @@ public class ClassDef extends MethodDef {
 					anIf.elseStart();
 					mh.op(ACONST_NULL);
 				}
+			} else if (compactBooleans && fieldEntry.fieldType == boolean.class)  {
+				info.getBoolean(mh);
 			} else {
 				entry.getValue().writeGet(mh);
 			}
@@ -74,6 +77,7 @@ public class ClassDef extends MethodDef {
 	@Override
 	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		var info = new PackedBooleans();
+		var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
 		for (var entry : fields.entrySet()) {
 			var fieldEntry = entry.getKey();
 			if (fieldEntry.nullable) {
@@ -86,12 +90,17 @@ public class ClassDef extends MethodDef {
 					anIf.elseStart();
 					info.trueBoolean(mh);
 				}
+			} else if (compactBooleans && fieldEntry.fieldType == boolean.class) {
+				info.initBoolean(mh);
+				fieldEntry.loadField(mh, aClass, valueLoad);
+				info.consumeBoolean(mh);
 			}
 		}
 		info.writePut(mh);
 
 		for (var entry : fields.entrySet()) {
 			var fieldEntry = entry.getKey();
+			if (compactBooleans && fieldEntry.fieldType == boolean.class) continue;
 			if (fieldEntry.nullable) {
 				final Variable cache = mh.getVar(fieldEntry.fieldName + "_cache");
 				mh.varOp(ILOAD, cache);
@@ -109,9 +118,15 @@ public class ClassDef extends MethodDef {
 		if (fields.size() == 0) mh.op(ICONST_0);
 		else {
 			var info = new PackedBooleans();
+			var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
 			int i = 0;
 			for (var entry : fields.entrySet()) {
 				var field = entry.getKey();
+				if (compactBooleans && field.fieldType == boolean.class) {
+					info.countBoolean();
+					continue;
+				}
+
 				if (field.nullable) {
 					var cache = mh.addVar(field.fieldName + "_cache", field.fieldType);
 					info.countBoolean();
@@ -124,6 +139,7 @@ public class ClassDef extends MethodDef {
 						mh.op(ICONST_0);
 					}
 				} else entry.getValue().writeMeasure(mh, () -> field.loadField(mh, aClass, valueLoad));
+
 				if (i++ > 0) mh.op(IADD);
 			}
 
@@ -148,7 +164,7 @@ public class ClassDef extends MethodDef {
 
 			var fieldName = this.fieldName;
 			if (Modifier.isPublic(this.access)) mh.visitFieldInsn(GETFIELD, holder, fieldName, this.fieldType);
-			else if (definedClass.isRecord()) mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
+			else if (holder.isRecord()) mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
 			else try {
 					definedClass.getDeclaredMethod("get" + GenUtil.upperCase(fieldName));
 					mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);

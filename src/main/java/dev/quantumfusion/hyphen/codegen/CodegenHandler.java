@@ -33,7 +33,7 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	private final boolean debug;
 
 	// Options
-	private final EnumMap<Options, Boolean> options;
+	public final EnumMap<Options, Boolean> options;
 
 	// Method Dedup
 	@Nullable

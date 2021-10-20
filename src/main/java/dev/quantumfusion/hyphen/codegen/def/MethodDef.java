@@ -1,9 +1,12 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
+import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodInfo;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.ILOAD;
 
@@ -12,6 +15,7 @@ public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo putInfo;
 	public final MethodInfo measureInfo;
 	public final Clazz clazz;
+	public final Map<Options, Boolean> options;
 
 	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz){
 		this(handler, clazz, clazz.toString());
@@ -19,6 +23,7 @@ public abstract class MethodDef implements SerializerDef {
 
 	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz, String name) {
 		this.clazz = clazz;
+		this.options = handler.options;
 		final Class<?> definedClass = clazz.getDefinedClass();
 		this.getInfo = handler.apply(new MethodInfo("get" + name, definedClass, handler.ioClass));
 		this.putInfo = handler.apply(new MethodInfo("put" + name, Void.TYPE, handler.ioClass, definedClass));
