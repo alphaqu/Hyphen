@@ -2,7 +2,7 @@ package dev.quantumfusion.hyphen.scan.poly.general;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
-import dev.quantumfusion.hyphen.scan.annotations.NullableData;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.poly.classes.C1;
 import dev.quantumfusion.hyphen.scan.poly.classes.WrappedC1;
 import dev.quantumfusion.hyphen.util.TestThis;
@@ -18,7 +18,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 @TestThis
 public class NullableC1OfC1 {
 	@Nullable
-	@NullableData
+	@DataNullable
 	@DataSubclasses({C1.class, WrappedC1.class})
 	public C1<C1<Integer>> data;
 

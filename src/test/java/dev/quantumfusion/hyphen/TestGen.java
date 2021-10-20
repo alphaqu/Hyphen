@@ -17,7 +17,7 @@ public class TestGen {
 
 
 	public static class Test {
-		@DataGlobalAnnotation("things")
+		@DataGlobalAnnotation("id")
 		public Number testing;
 
 		public Test(Number testing) {
@@ -28,11 +28,11 @@ public class TestGen {
 
 
 	public static void main(String[] args) {
-		TestGen test = new TestGen(new Test( 69f));
-		final SerializerFactory<ByteBufferIO, TestGen> factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
-		factory.addGlobalAnnotation("things", DataSubclasses.class, new Class[]{Integer.class, Float.class});
-		factory.addGlobalAnnotation("things", Data.class, null);
+		var factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
+		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
+		factory.addGlobalAnnotation("id", Data.class, null);
 
+		TestGen test = new TestGen(new Test( 69f));
 		var serializer = factory.build();
 		ByteBufferIO byteBufferIO = ByteBufferIO.create(serializer, test);
 		serializer.put(byteBufferIO, test);
