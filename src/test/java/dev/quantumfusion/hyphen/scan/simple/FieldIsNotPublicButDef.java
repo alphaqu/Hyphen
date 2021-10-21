@@ -4,11 +4,15 @@ import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.TestThis;
 
-@Data
+
 @TestThis
-@FailTest // FIXME: what is this test for?
+@FailTest // FIXME
 public class FieldIsNotPublicButDef {
-	int thing;
+	@Data
+	public int thing;
+
+	private int ignore;
+
 
 	public FieldIsNotPublicButDef(int thing) {
 		this.thing = thing;

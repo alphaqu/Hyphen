@@ -86,6 +86,8 @@ public class SerializerHandler<IO extends IOInterface, D> {
 			return new SubclassDef(this, clazz, (Class<?>[]) clazz.getAnnotationValue(DataSubclasses.class));
 		if (clazz instanceof ArrayClazz arrayClazz)
 			return new ArrayDef(this, arrayClazz);
+		if (clazz.getDefinedClass().isEnum())
+			return new EnumDef(this, clazz);
 		else return new ClassDef(this, clazz);
 	}
 
