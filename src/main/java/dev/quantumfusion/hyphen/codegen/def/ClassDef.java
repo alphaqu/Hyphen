@@ -17,6 +17,7 @@ import dev.quantumfusion.hyphen.util.Style;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -32,15 +33,25 @@ public class ClassDef extends MethodDef {
 		try {
 			var fields = clazz.getFields();
 			constructorParameters = new Class[fields.size()];
-			for (int i = 0; i < fields.size(); i++) {
-				FieldEntry field = fields.get(i);
-
-				constructorParameters[i] = field.clazz().getBytecodeClass();
+			for (FieldEntry field : fields) {
 				try {
 					this.fields.put(BytecodeField.create(field), handler.acquireDef(field.clazz()));
 				} catch (Throwable throwable) {
 					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 				}
+			}
+
+			List<FieldEntry> fieldEntries = new Clazz(handler, clazz.getDefinedClass()).getFields();
+			for (int i = 0; i < fieldEntries.size(); i++) {
+				constructorParameters[i] = fieldEntries.get(i).clazz().getDefinedClass();
+			}
+
+			try {
+				if (!Modifier.isPublic(aClass.getConstructor(constructorParameters).getModifiers()))
+					throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
+
+			} catch (NoSuchMethodException e) {
+				throw new HyphenException(e.getMessage(), "Check if the constructor holds all of the fields.");
 			}
 		} catch (Throwable throwable) {
 			throw HyphenException.thr("class", Style.LINE_DOWN, clazz, throwable);
@@ -170,7 +181,7 @@ public class ClassDef extends MethodDef {
 					mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
 				} catch (NoSuchMethodException ignored) {
 					throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
-							"Try making the field public or add a getter");
+											  "Try making the field public or add a getter");
 				}
 
 			GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);
