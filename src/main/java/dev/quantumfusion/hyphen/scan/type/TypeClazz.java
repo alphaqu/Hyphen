@@ -67,14 +67,6 @@ public class TypeClazz extends Clazz {
 		return this.defined.toString();
 	}
 
-	public Object getAnnotationValue(Class<? extends Annotation> aClass) {
-		return this.defined.getAnnotationValue(aClass);
-	}
-	@Override
-	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
-		return this.defined.containsAnnotation(aClass);
-	}
-
 	public Clazz getDefined() {
 		return this.defined;
 	}

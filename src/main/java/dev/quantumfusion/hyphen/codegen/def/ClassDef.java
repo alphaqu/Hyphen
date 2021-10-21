@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
+import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.thr.HyphenException;
@@ -16,6 +17,7 @@ import dev.quantumfusion.hyphen.util.Style;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,23 +33,24 @@ public class ClassDef extends MethodDef {
 		super(handler.codegenHandler, clazz);
 		this.aClass = clazz.getDefinedClass();
 		try {
-			var fields = clazz.getFields();
-			constructorParameters = new Class[fields.size()];
-			for (FieldEntry field : fields) {
+			for (FieldEntry field : clazz.getFields()) {
+				if (!field.clazz().containsAnnotation(Data.class)) continue;
 				try {
 					this.fields.put(BytecodeField.create(field), handler.acquireDef(field.clazz()));
 				} catch (Throwable throwable) {
 					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 				}
+
 			}
 
-			List<FieldEntry> fieldEntries = new Clazz(handler, clazz.getDefinedClass()).getFields();
-			for (int i = 0; i < fieldEntries.size(); i++) {
-				constructorParameters[i] = fieldEntries.get(i).clazz().getDefinedClass();
+			List<Class<?>> constructorParameters = new ArrayList<>();
+			for (FieldEntry field :  new Clazz(handler, clazz.getDefinedClass()).getFields()) {
+				if (!field.clazz().containsAnnotation(Data.class)) continue;
+				constructorParameters.add(field.clazz().getDefinedClass());
 			}
-
+			this.constructorParameters = constructorParameters.toArray(Class[]::new);
 			try {
-				if (!Modifier.isPublic(aClass.getConstructor(constructorParameters).getModifiers()))
+				if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers()))
 					throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
 
 			} catch (NoSuchMethodException e) {

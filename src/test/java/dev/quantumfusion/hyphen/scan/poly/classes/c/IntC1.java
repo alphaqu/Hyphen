@@ -11,11 +11,6 @@ public class IntC1 extends C1<Integer> {
 		super(integer);
 	}
 
-	// FIXME: tracking issue #10
-	public IntC1(Object integer) {
-		super((Integer) integer);
-	}
-
 	public static Supplier<? extends Stream<? extends IntC1>> generateIntC1() {
 		return cross(INTEGERS, IntC1::new);
 	}
