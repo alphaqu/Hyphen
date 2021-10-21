@@ -4,6 +4,7 @@ import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
+import dev.quantumfusion.hyphen.scan.poly.general.DoubleC1Pain;
 import org.junit.jupiter.api.*;
 import org.opentest4j.AssertionFailedError;
 
@@ -76,6 +77,10 @@ public class TestUtil {
 		);
 	}
 
+	@TestFactory
+	public DynamicNode test5(){
+		return test(DoubleC1Pain.class);
+	}
 
 	public static <O> DynamicNode test(Class<O> clazz) {
 		try {

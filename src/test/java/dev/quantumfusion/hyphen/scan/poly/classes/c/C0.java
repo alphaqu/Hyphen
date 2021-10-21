@@ -4,7 +4,7 @@ package dev.quantumfusion.hyphen.scan.poly.classes.c;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class C0 {
+public class C0 implements CM1 {
 	@Override
 	public int hashCode() {
 		return 101;
