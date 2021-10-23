@@ -9,4 +9,6 @@ public enum EnumC implements CM1 {
 	public static Supplier<Stream<? extends EnumC>> generateEnumC() {
 		return () -> Stream.of(EnumC.values());
 	}
+
+	public static final EnumC[] VAL = values();
 }
