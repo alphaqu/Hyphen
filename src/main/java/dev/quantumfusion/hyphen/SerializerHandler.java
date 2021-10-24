@@ -25,16 +25,28 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	// Options, Shares with codegenHandler
 
+	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
+
+	static {
+		addStaticDef(PrimitiveIODef::new,
+					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
+		addStaticDef(PrimitiveArrayIODef::new,
+					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
+		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
+		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
+		BUILD_IN_DEFINITIONS.put(Map.class, (c, sh) -> new MapDef(sh, (ParaClazz) c));
+	}
+
 	public final EnumMap<Options, Boolean> options;
 	public final Class<D> dataClass;
 	public final Class<IO> ioClass;
 	public final boolean debug;
-	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
-
 	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
 	public final Map<String, Map<Class<? extends Annotation>, Object>> globalAnnotations;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
 	public final Map<Clazz, MethodDef> methods = new HashMap<>();
+	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
 	// not null on export
 	public CodegenHandler<IO, D> codegenHandler;
 
@@ -54,6 +66,12 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 		this.definitions = new HashMap<>(BUILD_IN_DEFINITIONS);
 		this.globalAnnotations = new HashMap<>();
+	}
+
+	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
+		for (Class<?> aClass : clazz) {
+			BUILD_IN_DEFINITIONS.put(aClass, (c, sh) -> creator.apply(aClass));
+		}
 	}
 
 	public SerializerDef acquireDef(Clazz clazz) {
@@ -117,25 +135,6 @@ public class SerializerHandler<IO extends IOInterface, D> {
 			if (throwable instanceof HyphenException he) hyphenException = he;
 			else hyphenException = new HyphenException(throwable, null);
 			throw hyphenException;
-		}
-	}
-
-	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
-
-	static {
-		addStaticDef(PrimitiveIODef::new,
-					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
-		addStaticDef(PrimitiveArrayIODef::new,
-					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
-		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
-		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
-		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
-		BUILD_IN_DEFINITIONS.put(Map.class, (c, sh) -> new MapDef(sh, (ParaClazz) c));
-	}
-
-	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
-		for (Class<?> aClass : clazz) {
-			BUILD_IN_DEFINITIONS.put(aClass, (c, sh) -> creator.apply(aClass));
 		}
 	}
 }

@@ -77,12 +77,9 @@ public abstract class IndexedDef extends MethodDef {
 			this.lengthFunc.accept(mh);
 			mh.op(IMUL);
 
-			if (includeStatic) {
-				mh.op(ICONST_4, IADD);
-			}
-		} else {
-			mh.op(includeStatic ? ICONST_4 : ICONST_0);
-		}
+			if (includeStatic) mh.op(ICONST_4, IADD);
+		} else mh.op(includeStatic ? ICONST_4 : ICONST_0);
+
 
 		if (componentDef.hasDynamicSize()) {
 			try (var array = ArrayFor.create(mh, valueLoad, null, null, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {

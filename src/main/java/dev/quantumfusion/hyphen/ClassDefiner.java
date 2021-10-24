@@ -7,7 +7,7 @@ public class ClassDefiner extends ClassLoader {
 		super(parent);
 	}
 
-	public Class<?> def(String name, byte[] bytes)  {
+	public Class<?> def(String name, byte[] bytes) {
 		final Class<?> aClass = defineClass(name, bytes, 0, bytes.length, null);
 		try {
 			Class.forName(name, true, this);

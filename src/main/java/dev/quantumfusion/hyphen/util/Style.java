@@ -22,6 +22,6 @@ public class Style {
 
 
 	public static final String LINE_RIGHT = "⎛";
-	public static final String LINE_DOWN =  "⎟";
+	public static final String LINE_DOWN = "⎟";
 
 }

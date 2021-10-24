@@ -1,14 +1,12 @@
 package dev.quantumfusion.hyphen.codegen;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
-
 import java.util.Arrays;
 import java.util.Objects;
 
 public class MethodInfo {
-	private String name;
 	public final Class<?> returnClass;
 	public final Class<?>[] parameters;
+	private String name;
 
 	public MethodInfo(String name, Class<?> returnClass, Class<?>... parameters) {
 		this.name = name;
@@ -16,12 +14,11 @@ public class MethodInfo {
 		this.parameters = parameters;
 	}
 
-
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name, /*to prevent people from changing the name*/ @SuppressWarnings("unused") CodegenHandler<?,?> handler) {
+	public void setName(String name, /*to prevent people from changing the name*/ @SuppressWarnings("unused") CodegenHandler<?, ?> handler) {
 		assert handler != null;
 		this.name = name;
 	}

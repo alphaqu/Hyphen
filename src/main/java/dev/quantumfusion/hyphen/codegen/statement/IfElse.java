@@ -5,7 +5,7 @@ import org.objectweb.asm.Label;
 
 import static org.objectweb.asm.Opcodes.GOTO;
 
-public class IfElse implements AutoCloseable{
+public class IfElse implements AutoCloseable {
 	protected final MethodHandler mh;
 	protected final Label elseLabel = new Label();
 	protected final Label endLabel = new Label();

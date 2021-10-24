@@ -3,12 +3,31 @@ package dev.quantumfusion.hyphen.util;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import org.objectweb.asm.Handle;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.lang.invoke.*;
+
 import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.H_INVOKESTATIC;
 
 @SuppressWarnings("WeakerAccess")
 public final class GenUtil {
+	private static final char[] HYPHEN_METHOD_BASE_CHARS = "ඞabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$0123456789".toCharArray();
+	private static final Handle LAMBDA_METAFACTORY_HANDLE = createHandle(
+			H_INVOKESTATIC,
+			LambdaMetafactory.class,
+			"metafactory",
+			false,
+			CallSite.class, // pushed by vm
+			MethodHandles.Lookup.class, // pushed by vm
+			String.class, // pushed by vm
+			MethodType.class, // sam type
+			MethodType.class,
+			MethodHandle.class,
+			MethodType.class
+	);
+
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];
 		for (int i = 0; i < classes.length; i++)
@@ -42,8 +61,6 @@ public final class GenUtil {
 		return Type.getMethodDescriptor(of(returnClass), of(parameters));
 	}
 
-	private static final char[] HYPHEN_METHOD_BASE_CHARS = "ඞabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$0123456789".toCharArray();
-
 	public static String hyphenShortMethodName(int methodId) {
 		final int length = (63 - Long.numberOfLeadingZeros(methodId)) / 6 + 1;
 		final char[] result = new char[length];
@@ -58,7 +75,7 @@ public final class GenUtil {
 		return str.substring(0, 1).toUpperCase() + str.substring(1);
 	}
 
-	public static String makeSafe(String str){
+	public static String makeSafe(String str) {
 		return str
 				.replace('[', '⟦')
 				.replace(']', '⟧')
@@ -89,6 +106,34 @@ public final class GenUtil {
 				name,
 				methodDesc(returnClass, parameters),
 				isInterface
+		);
+	}
+
+	public static void createMethodRef(
+			MethodVisitor mv,
+			Class<?> targetInterface,
+			String targetMethod,
+			Class<?> targetMethodReturnClass,
+			Class<?>[] targetMethodParameters,
+			String sourceClass,
+			String sourceMethod,
+			Class<?> sourceMethodReturnClass,
+			Class<?>[] capturedParameters,
+			Class<?>[] uncapturedParameters) {
+		mv.visitInvokeDynamicInsn(
+				targetMethod,
+				methodDesc(targetInterface, capturedParameters),
+				LAMBDA_METAFACTORY_HANDLE,
+				methodDesc(targetMethodReturnClass, targetMethodParameters),
+				createHandle(
+						H_INVOKESTATIC,
+						sourceClass,
+						sourceMethod,
+						false,
+						sourceMethodReturnClass,
+						ArrayUtil.combine(capturedParameters, uncapturedParameters)
+				),
+				methodDesc(sourceMethodReturnClass, uncapturedParameters)
 		);
 	}
 }

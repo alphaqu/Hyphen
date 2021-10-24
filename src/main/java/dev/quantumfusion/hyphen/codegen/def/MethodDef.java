@@ -55,7 +55,7 @@ public abstract class MethodDef implements SerializerDef {
 		mh.callInst(measureInfo);
 	}
 
-	public void writeMethods(CodegenHandler<?,?> handler, CodegenHandler.MethodWriter call, boolean raw) {
+	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter call, boolean raw) {
 		if (!handler.options.get(Options.DISABLE_GET))
 			call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
 		if (!handler.options.get(Options.DISABLE_PUT))

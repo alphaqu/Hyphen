@@ -14,11 +14,11 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private static final char SHORT_VAR_NAME = '\u0D9E'; // amogus
-	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
-	private final Label start = new Label();
 	public final String self;
 	public final Class<?> dataClass;
 	public final Class<?> ioClass;
+	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
+	private final Label start = new Label();
 	private boolean compactVars;
 
 	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass) {
@@ -41,9 +41,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			boolean raw, boolean synthetic
 	) {
 		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (raw ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
-				methodInfo.getName(),
-				GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
-				null, null), self, dataClass, ioClass);
+							methodInfo.getName(),
+							GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
+							null, null), self, dataClass, ioClass);
 
 		if (raw) this.addVar("this", Object.class);
 		this.compactVars = compactVars;
@@ -116,7 +116,6 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			return GenUtil.upperCase(primitive.getComponentType().getSimpleName()) + "Array";
 		return GenUtil.upperCase(primitive.getSimpleName());
 	}
-
 
 	// Var things
 	public Variable addVar(String name, Class<?> type) {

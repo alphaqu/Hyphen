@@ -3,11 +3,11 @@ package dev.quantumfusion.hyphen.codegen.def;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
-import dev.quantumfusion.hyphen.codegen.IndyCodyUtil;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodInfo;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
+import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -38,8 +38,7 @@ public class MapDef extends MethodDef {
 		valueLoad.run();
 		mh.varOp(ILOAD, "io");
 
-		IndyCodyUtil.createMethodRef(
-				mh,
+		GenUtil.createMethodRef(mh,
 				BiConsumer.class, "accept", Void.TYPE, new Class[]{Object.class, Object.class}, // BiConsumer::accept(Object, Object) void
 				mh.self, this.putLambda.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
 		);
@@ -63,8 +62,12 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethods(CodegenHandler<?,?> handler, CodegenHandler.MethodWriter call, boolean raw) {
+	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter call, boolean raw) {
 		super.writeMethods(handler, call, raw);
-		if(!handler.options.get(Options.DISABLE_MEASURE)) call.writeMethod(this.clazz, this.putLambda, false, true, mh -> this.writeMethodPutLambda(mh, () -> mh.varOp(ILOAD, "data"), () -> mh.varOp(ILOAD, "data$")));
+		if (!handler.options.get(Options.DISABLE_MEASURE))
+			call.writeMethod(this.clazz, this.putLambda, false, true,
+							 mh -> this.writeMethodPutLambda(mh,
+															 () -> mh.varOp(ILOAD, "data"),
+															 () -> mh.varOp(ILOAD, "data$")));
 	}
 }

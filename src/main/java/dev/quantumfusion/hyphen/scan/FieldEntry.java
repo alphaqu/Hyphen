@@ -7,9 +7,10 @@ import java.util.Map;
 
 public record FieldEntry(Field field, Clazz clazz) {
 
-	public static FieldEntry create(Map.Entry<Field,Clazz> entry) {
+	public static FieldEntry create(Map.Entry<Field, Clazz> entry) {
 		return new FieldEntry(entry.getKey(), entry.getValue());
 	}
+
 	@Override
 	public String toString() {
 		return field.getName() + " : " + clazz;

@@ -3,8 +3,6 @@ package dev.quantumfusion.hyphen.codegen.statement;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.Variable;
 
-import java.util.List;
-
 import static org.objectweb.asm.Opcodes.*;
 
 public class ArrayFor extends For implements AutoCloseable {
@@ -19,22 +17,9 @@ public class ArrayFor extends For implements AutoCloseable {
 		this.getterFunc = getterFunc;
 	}
 
-	public void getElement() {
-		arrayLoad.run();
-		mh.varOp(ILOAD, i);
-		getterFunc.run();
-	}
-
-	@Override
-	public void close() {
-		mh.visitIincInsn(i.pos(), 1); // i++
-		super.close();
-	}
-
 	public static ArrayFor createArray(MethodHandler mh, Variable array, Variable i, Variable length) {
 		return create(mh, () -> mh.varOp(ILOAD, array), i, length, () -> mh.op(AALOAD), () -> mh.op(ARRAYLENGTH));
 	}
-
 
 	public static ArrayFor create(MethodHandler mh, Runnable arrayLoad, Variable i, Variable length, Runnable getterFunc, Runnable lengthFunc) {
 		if (i == null) {
@@ -52,5 +37,17 @@ public class ArrayFor extends For implements AutoCloseable {
 		mh.varOp(ILOAD, i, length);
 		array1.exit(IF_ICMPGE);
 		return array1;
+	}
+
+	public void getElement() {
+		arrayLoad.run();
+		mh.varOp(ILOAD, i);
+		getterFunc.run();
+	}
+
+	@Override
+	public void close() {
+		mh.visitIincInsn(i.pos(), 1); // i++
+		super.close();
 	}
 }

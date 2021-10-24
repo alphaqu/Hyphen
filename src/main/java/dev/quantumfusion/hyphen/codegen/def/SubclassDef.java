@@ -82,9 +82,8 @@ public class SubclassDef extends MethodDef {
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
 		mh.varOp(ISTORE, "clz");
 
-		if (includeStatic) {
+		if (includeStatic)
 			mh.visitLdcInsn(this.staticSize());
-		}
 
 		if (this.hasDynamicSize()) {
 			ArrayUtil.dualFor(this.subClasses, this.subDefs, (clz, serializerDef) -> {
@@ -99,20 +98,16 @@ public class SubclassDef extends MethodDef {
 					int ss = serializerDef.staticSize();
 					if (!this.allSameStaticSize && ss != 0) {
 						mh.visitLdcInsn(ss);
-						if (serializerDef.hasDynamicSize())
-							mh.op(IADD);
+						if (serializerDef.hasDynamicSize()) mh.op(IADD);
 					} else if (!serializerDef.hasDynamicSize())
 						mh.op(ICONST_0);
 
-					if (includeStatic)
-						mh.op(IADD, IRETURN);
-					else
-						mh.op(IRETURN);
+					if (includeStatic) mh.op(IADD);
+					mh.op(IRETURN);
 				}
 			});
 			// TODO: throw
-			if(!includeStatic)
-				mh.op(ICONST_0);
+			if (!includeStatic) mh.op(ICONST_0);
 		}
 	}
 

@@ -2,9 +2,7 @@ package dev.quantumfusion.hyphen.scan.type;
 
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 
-import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Map;
 
 public class UnknownClazz extends Clazz {
 	public static final Clazz UNKNOWN = new UnknownClazz();

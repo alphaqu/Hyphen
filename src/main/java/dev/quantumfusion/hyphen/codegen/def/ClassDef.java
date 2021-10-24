@@ -165,8 +165,7 @@ public class ClassDef extends MethodDef {
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
 		if (this.fields.isEmpty())
-			if (includeStatic)
-				mh.visitLdcInsn(this.staticSize());
+			if (includeStatic) mh.visitLdcInsn(this.staticSize());
 			else mh.op(ICONST_0);
 		else {
 			var compactBooleans = this.options.get(Options.COMPACT_BOOLEANS);
@@ -180,16 +179,14 @@ public class ClassDef extends MethodDef {
 			}
 
 			for (var entry : this.fields.entrySet()) {
+				if (compactBooleans && entry.getKey().fieldType == boolean.class) continue;
+
 				var field = entry.getKey();
 				var fieldDef = entry.getValue();
-
-				if (compactBooleans && field.fieldType == boolean.class) {
-					continue;
-				}
-
+				var staticSize = fieldDef.staticSize();
+				var dynamicSize = fieldDef.hasDynamicSize();
 				if (field.nullable) {
-					var staticSize = fieldDef.staticSize();
-					if (fieldDef.hasDynamicSize()) {
+					if (dynamicSize) {
 						var cache = mh.addVar(field.fieldName + "_cache", field.fieldType);
 						field.loadField(mh, aClass, valueLoad);
 						mh.op(DUP);
@@ -201,48 +198,40 @@ public class ClassDef extends MethodDef {
 								mh.visitLdcInsn(staticSize);
 								mh.op(IADD);
 							}
-
-							// if we arent the first, just add
-							if (i++ > 0) {
-								mh.op(IADD);
-								anIf.elseStart();
-							} else {
-								// else we need to push 0 for the null case
-								anIf.elseStart();
-								mh.op(ICONST_0);
-							}
+							measureAdd(mh, i++, anIf);
 						}
 					} else {
 						if (staticSize != 0) {
 							field.loadField(mh, aClass, valueLoad);
 							try (var anIf = new IfElse(mh, IFNULL)) {
 								mh.visitLdcInsn(staticSize);
-
-								// if we arent the first, just add
-								if (i++ > 0)  {
-									mh.op(IADD);
-									anIf.elseStart();
-								}
-								else {
-									// else we need to push 0 for the null case
-									anIf.elseStart();
-									mh.op(ICONST_0);
-								}
+								measureAdd(mh, i++, anIf);
 							}
-
 						}
 					}
 				} else {
-					if (fieldDef.hasDynamicSize()) {
+					if (dynamicSize) {
 						fieldDef.writeMeasure(mh, () -> field.loadField(mh, aClass, valueLoad));
 						if (i++ > 0) mh.op(IADD);
 					}
 				}
 			}
-			if(i == 0){
+			if (i == 0) {
 				// TODO: missed constant size
 				mh.op(ICONST_0);
 			}
+		}
+	}
+
+	private void measureAdd(MethodHandler mh, int i, IfElse anIf) {
+		// if we arent the first, just add
+		if (i > 0) {
+			mh.op(IADD);
+			anIf.elseStart();
+		} else {
+			// else we need to push 0 for the null case
+			anIf.elseStart();
+			mh.op(ICONST_0);
 		}
 	}
 
@@ -266,7 +255,7 @@ public class ClassDef extends MethodDef {
 					mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
 				} catch (NoSuchMethodException ignored) {
 					throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
-							"Try making the field public or add a getter");
+											  "Try making the field public or add a getter");
 				}
 
 			GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);

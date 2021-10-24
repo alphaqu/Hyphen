@@ -13,6 +13,14 @@ public class BoxedIODef extends PrimitiveIODef {
 		this.boxed = boxed;
 	}
 
+	private static Class<?> getPrimitiveFromBoxed(Class<?> boxed) {
+		try {
+			return (Class<?>) boxed.getDeclaredField("TYPE").get(null);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException("sus");
+		}
+	}
+
 	@Override
 	public void writeGet(MethodHandler mh) {
 		super.writeGet(mh);
@@ -25,13 +33,5 @@ public class BoxedIODef extends PrimitiveIODef {
 			valueLoad.run();
 			mh.callInst(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);
 		});
-	}
-
-	private static Class<?> getPrimitiveFromBoxed(Class<?> boxed) {
-		try {
-			return (Class<?>) boxed.getDeclaredField("TYPE").get(null);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

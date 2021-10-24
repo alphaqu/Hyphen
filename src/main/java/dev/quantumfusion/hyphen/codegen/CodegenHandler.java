@@ -27,14 +27,12 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class CodegenHandler<IO extends IOInterface, D> {
 	// Settings
+	private final boolean debug;
 	public final Class<IO> ioClass;
 	public final Class<D> dataClass;
 	public final String self;
-	private final boolean debug;
-
 	// Options
 	public final EnumMap<Options, Boolean> options;
-
 	// Method Dedup
 	@Nullable
 	private final Map<MethodInfo, AtomicInteger> methodDedup;
@@ -87,10 +85,6 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 	public void writeMethod(MethodDef def, boolean raw) {
 		def.writeMethods(this, this::writeMethodInternal, raw);
-	}
-
-	public interface MethodWriter {
-		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer);
 	}
 
 	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer) {
@@ -158,5 +152,9 @@ public class CodegenHandler<IO extends IOInterface, D> {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+
+	public interface MethodWriter {
+		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer);
 	}
 }
