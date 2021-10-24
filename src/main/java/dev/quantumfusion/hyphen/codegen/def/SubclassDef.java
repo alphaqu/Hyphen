@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class SubclassDef extends MethodDef {
+public final class SubclassDef extends MethodDef {
 	private final Class<?>[] subClasses;
 	private final SerializerDef[] subDefs;
 	private final boolean allSameStaticSize;
 
 	public SubclassDef(SerializerHandler<?, ?> handler, Clazz clazz, Class<?>[] subClasses) {
-		super(handler.codegenHandler, clazz, "SUB{" + clazz + " # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
+		super(handler, clazz, "SUB{ # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
 		this.subClasses = subClasses;
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
 

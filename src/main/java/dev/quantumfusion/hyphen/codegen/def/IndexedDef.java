@@ -18,7 +18,7 @@ public abstract class IndexedDef extends MethodDef {
 	protected final Consumer<MethodHandler> lengthFunc;
 
 	public IndexedDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component, Consumer<MethodHandler> getterFunc, Consumer<MethodHandler> lengthFunc) {
-		super(handler.codegenHandler, clazz);
+		super(handler, clazz);
 		this.component = component;
 		this.getterFunc = getterFunc;
 		this.lengthFunc = lengthFunc;

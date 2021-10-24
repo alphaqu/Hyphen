@@ -22,14 +22,14 @@ import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ClassDef extends MethodDef {
-	protected final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
-	protected final Class<?>[] constructorParameters;
-	protected final Class<?> aClass;
-	protected final boolean record;
+public final class ClassDef extends MethodDef {
+	private final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
+	private final Class<?>[] constructorParameters;
+	private final Class<?> aClass;
+	private final boolean record;
 
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
-		super(handler.codegenHandler, clazz);
+		super(handler, clazz);
 		this.aClass = clazz.getDefinedClass();
 		this.record = aClass.isRecord();
 		try {
@@ -40,7 +40,6 @@ public class ClassDef extends MethodDef {
 				} catch (Throwable throwable) {
 					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 				}
-
 			}
 
 			if (!handler.options.get(Options.DISABLE_PUT)) {

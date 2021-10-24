@@ -13,7 +13,7 @@ import java.lang.invoke.MethodHandles;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class EnumDef extends MethodDef {
+public final class EnumDef extends MethodDef {
 	public static boolean USE_CONSTANT_DYNAMIC = true;
 	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = true;
 
@@ -24,7 +24,7 @@ public class EnumDef extends MethodDef {
 
 	@SuppressWarnings("unchecked")
 	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
-		super(handler.codegenHandler, clazz);
+		super(handler, clazz);
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
 		this.enSize = this.en.getEnumConstants().length;
 

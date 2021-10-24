@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import static org.objectweb.asm.Opcodes.*;
 
 public class PrimitiveArrayIODef implements SerializerDef {
-	final Class<?> primitiveArray;
+	protected final Class<?> primitiveArray;
 
 	public PrimitiveArrayIODef(Class<?> primitiveArray) {
 		this.primitiveArray = primitiveArray;

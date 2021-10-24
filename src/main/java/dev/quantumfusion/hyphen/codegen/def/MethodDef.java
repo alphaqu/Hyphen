@@ -1,6 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.Options;
+import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.MethodInfo;
@@ -8,26 +9,28 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.IADD;
+import static org.objectweb.asm.Opcodes.ILOAD;
 
 public abstract class MethodDef implements SerializerDef {
+	public final Map<Options, Boolean> options;
 	public final MethodInfo getInfo;
 	public final MethodInfo putInfo;
 	public final MethodInfo measureInfo;
 	public final Clazz clazz;
-	public final Map<Options, Boolean> options;
 
-	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz) {
-		this(handler, clazz, clazz.toString());
+	public MethodDef(SerializerHandler<?,?> handler, Clazz clazz) {
+		this(handler, clazz, "");
 	}
 
-	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz, String name) {
+	public MethodDef(SerializerHandler<?,?> handler, Clazz clazz, String suffix) {
+		var ch = handler.codegenHandler;
+		var definedClass = clazz.getDefinedClass();
 		this.clazz = clazz;
-		this.options = handler.options;
-		final Class<?> definedClass = clazz.getDefinedClass();
-		this.getInfo = handler.apply(new MethodInfo("get" + name, definedClass, handler.ioClass));
-		this.putInfo = handler.apply(new MethodInfo("put" + name, Void.TYPE, handler.ioClass, definedClass));
-		this.measureInfo = handler.apply(new MethodInfo("measure" + name, int.class, definedClass));
+		this.options = ch.options;
+		this.getInfo = ch.createMethodInfo(clazz, "get", suffix, definedClass, ch.ioClass);
+		this.putInfo = ch.createMethodInfo(clazz, "put", suffix, Void.TYPE, ch.ioClass, definedClass);
+		this.measureInfo = ch.createMethodInfo(clazz, "measure", suffix, int.class, definedClass);
 	}
 
 	protected abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
@@ -55,15 +58,15 @@ public abstract class MethodDef implements SerializerDef {
 		mh.callInst(measureInfo);
 	}
 
-	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter call, boolean raw) {
-		if (!handler.options.get(Options.DISABLE_GET) || raw)
-			call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
-		if (!handler.options.get(Options.DISABLE_PUT) || raw)
-			call.writeMethod(this.clazz, this.putInfo, raw, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
-		if (!handler.options.get(Options.DISABLE_MEASURE) && (raw || this.hasDynamicSize())) {
-			call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> {
+	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
+		if (!handler.options.get(Options.DISABLE_GET) || spark)
+			writer.writeMethod(this.clazz, this.getInfo, spark, false, this::writeMethodGet);
+		if (!handler.options.get(Options.DISABLE_PUT) || spark)
+			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+		if (!handler.options.get(Options.DISABLE_MEASURE) && (spark || this.hasDynamicSize())) {
+			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> {
 				this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data"));
-				if (raw) {
+				if (spark) {
 					mh.visitLdcInsn(getStaticSize());
 					mh.op(IADD);
 				}

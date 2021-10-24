@@ -7,6 +7,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import java.lang.invoke.*;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.objectweb.asm.Opcodes.CHECKCAST;
 import static org.objectweb.asm.Opcodes.H_INVOKESTATIC;
@@ -27,6 +29,11 @@ public final class GenUtil {
 			MethodHandle.class,
 			MethodType.class
 	);
+	private static final Map<Character, Character> SAFE_METHOD_NAME_MAPPER = Map.of('[', '⟦', ']', '⟧',
+																					'<', '❮', '>', '❯',
+																					'(', '❪', ')', '❫',
+																					'/', '∕', '.', '•',
+																					';', '\u037E', ':', 'ː');
 
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];
@@ -76,17 +83,10 @@ public final class GenUtil {
 	}
 
 	public static String makeSafe(String str) {
-		return str
-				.replace('[', '⟦')
-				.replace(']', '⟧')
-				.replace('<', '❮')
-				.replace('>', '❯')
-				.replace('(', '❪')
-				.replace(')', '❫')
-				.replace('/', '∕')
-				.replace('.', '•')
-				.replace(';', '\u037E') // greek question mark, intellij "fixes" it for you
-				.replace(':', 'ː');
+		return str.chars()
+				.map(ch -> SAFE_METHOD_NAME_MAPPER.getOrDefault((char) ch, (char) ch))
+				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+				.toString();
 	}
 
 	public static Handle createHandle(int op, Class<?> owner, String name, boolean isInterface, Class<?> returnClass, Class<?>... parameters) {

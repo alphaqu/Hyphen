@@ -70,10 +70,14 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		}
 	}
 
-	public MethodInfo apply(MethodInfo info) {
+	public MethodInfo createMethodInfo(Clazz clazz, String prefix, Class<?> returnClass, Class<?>... parameters) {
+		return createMethodInfo(clazz, prefix, "", returnClass, parameters);
+	}
+
+	public MethodInfo createMethodInfo(Clazz clazz, String prefix, String suffix, Class<?> returnClass, Class<?>... parameters) {
+		var info = new MethodInfo(GenUtil.makeSafe(prefix + clazz.toString() + suffix), returnClass, parameters);
 		if (methodDedup != null)
 			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()));
-		info.setName(GenUtil.makeSafe(info.getName()));
 		return info;
 	}
 
@@ -83,17 +87,17 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		}
 	}
 
-	public void writeMethod(MethodDef def, boolean raw) {
-		def.writeMethods(this, this::writeMethodInternal, raw);
+	private void writeMethod(MethodDef def, boolean spark) {
+		def.writeMethods(this, this::writeMethodInternal, spark);
 	}
 
-	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer) {
+	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean spark, boolean synthetic, Consumer<MethodHandler> writer) {
 		final Class<?>[] parameters = methodInfo.parameters;
-		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, options.get(Options.SHORT_VARIABLE_NAMES), raw, synthetic)) {
+		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, options.get(Options.SHORT_VARIABLE_NAMES), spark, synthetic)) {
 			for (Class<?> parameter : parameters)
-				mh.addVar(getVarName(parameter) + (raw ? "raw" : ""), raw ? Object.class : parameter);
+				mh.addVar(getVarName(parameter) + (spark ? "raw" : ""), spark ? Object.class : parameter);
 			mh.visitCode();
-			if (raw) {
+			if (spark) {
 				for (Class<?> parameter : parameters) {
 					final String varName = getVarName(parameter);
 					mh.addVar(varName, parameter); // add var
@@ -155,6 +159,6 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	public interface MethodWriter {
-		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer);
+		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean spark, boolean synthetic, Consumer<MethodHandler> writer);
 	}
 }

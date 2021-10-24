@@ -8,11 +8,12 @@ public class MethodInfo {
 	public final Class<?>[] parameters;
 	private String name;
 
-	public MethodInfo(String name, Class<?> returnClass, Class<?>... parameters) {
+	MethodInfo(String name, Class<?> returnClass, Class<?>... parameters) {
 		this.name = name;
 		this.returnClass = returnClass;
 		this.parameters = parameters;
 	}
+
 
 	public String getName() {
 		return name;

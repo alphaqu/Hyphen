@@ -19,18 +19,16 @@ public class MapDef extends MethodDef {
 	private final Clazz valueClazz;
 	private final SerializerDef keyDef;
 	private final SerializerDef valueDef;
-	private final MethodInfo putLambda;
+	private final MethodInfo putLambdaMethod;
 
 
 	public MapDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		super(handler.codegenHandler, clazz);
-
+		super(handler, clazz);
 		this.keyClazz = clazz.define("K");
 		this.valueClazz = clazz.define("V");
 		this.keyDef = handler.acquireDef(this.keyClazz);
 		this.valueDef = handler.acquireDef(this.valueClazz);
-
-		this.putLambda = handler.codegenHandler.apply(new MethodInfo(clazz + "$lambda$put", Void.TYPE, handler.ioClass, this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()));
+		this.putLambdaMethod = handler.codegenHandler.createMethodInfo(clazz, "$lambda$put", Void.TYPE, handler.ioClass, this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass());
 	}
 
 	@Override
@@ -40,7 +38,7 @@ public class MapDef extends MethodDef {
 
 		GenUtil.createMethodRef(mh,
 								BiConsumer.class, "accept", Void.TYPE, new Class[]{Object.class, Object.class}, // BiConsumer::accept(Object, Object) void
-								mh.self, this.putLambda.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
+								mh.self, this.putLambdaMethod.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
 		);
 
 		mh.callInst(INVOKEVIRTUAL, Map.class, "forEach", Void.TYPE, BiConsumer.class);
@@ -57,11 +55,11 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter call, boolean raw) {
-		super.writeMethods(handler, call, raw);
+	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
+		super.writeMethods(handler, writer, spark);
 		if (!handler.options.get(Options.DISABLE_MEASURE))
-			call.writeMethod(this.clazz, this.putLambda, false, true,
-							 mh -> {
+			writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
+							   mh -> {
 								 keyDef.writePut(mh, () -> mh.varOp(ILOAD, "data"));
 								 valueDef.writePut(mh, () -> mh.varOp(ILOAD, "data$"));
 							 });
