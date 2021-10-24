@@ -129,6 +129,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
+		BUILD_IN_DEFINITIONS.put(Map.class, (c, sh) -> new MapDef(sh, (ParaClazz) c));
 	}
 
 	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {

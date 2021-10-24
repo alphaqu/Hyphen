@@ -32,8 +32,15 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		this.visitLabel(start);
 	}
 
-	public MethodHandler(ClassWriter cw, MethodInfo methodInfo, String self, Class<?> dataClass, Class<?> ioClass, boolean raw, boolean compactVars) {
-		this(cw.visitMethod(ACC_PUBLIC | (raw ? 0 : ACC_STATIC) | ACC_FINAL,
+	public MethodHandler(
+			ClassWriter cw,
+			MethodInfo methodInfo,
+			String self,
+			Class<?> dataClass, Class<?> ioClass,
+			boolean compactVars,
+			boolean raw, boolean synthetic
+	) {
+		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (raw ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
 				methodInfo.getName(),
 				GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
 				null, null), self, dataClass, ioClass);
@@ -113,8 +120,10 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	// Var things
 	public Variable addVar(String name, Class<?> type) {
-		if (variableMap.containsKey(name))
-			return variableMap.get(name);
+		while (variableMap.containsKey(name)) {
+			// TODO: @Alpha, I need your remarks on this change
+			name += "$";
+		}
 
 		var var = new Variable(variableMap.size(), Type.getType(type));
 		variableMap.put(name, var);

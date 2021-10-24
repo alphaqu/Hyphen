@@ -25,7 +25,7 @@ public class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodHandler mh) {
 		mh.varOp(ILOAD, "io");
 		mh.getIO(byte.class);
 		try (var tableSwitch = new TableSwitch(mh, 0, this.subDefs.length)) {
@@ -40,7 +40,7 @@ public class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
@@ -64,7 +64,7 @@ public class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);

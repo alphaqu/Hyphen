@@ -86,14 +86,16 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	public void writeMethod(MethodDef def, boolean raw) {
-		writeMethodInternal(def.clazz, def.getInfo, raw, def::writeMethodGet);
-		writeMethodInternal(def.clazz, def.putInfo, raw, mh -> def.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
-		writeMethodInternal(def.clazz, def.measureInfo, raw, mh -> def.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
+		def.writeMethods(this::writeMethodInternal, raw);
 	}
 
-	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean raw, Consumer<MethodHandler> writer) {
+	public interface MethodWriter {
+		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer);
+	}
+
+	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean raw, boolean synthetic, Consumer<MethodHandler> writer) {
 		final Class<?>[] parameters = methodInfo.parameters;
-		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, raw, options.get(Options.SHORT_VARIABLE_NAMES))) {
+		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, options.get(Options.SHORT_VARIABLE_NAMES), raw, synthetic)) {
 			for (Class<?> parameter : parameters)
 				mh.addVar(getVarName(parameter) + (raw ? "raw" : ""), raw ? Object.class : parameter);
 			mh.visitCode();

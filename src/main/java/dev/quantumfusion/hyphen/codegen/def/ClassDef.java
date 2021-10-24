@@ -44,7 +44,7 @@ public class ClassDef extends MethodDef {
 			}
 
 			List<Class<?>> constructorParameters = new ArrayList<>();
-			for (FieldEntry field :  new Clazz(handler, clazz.getDefinedClass()).getFields()) {
+			for (FieldEntry field : new Clazz(handler, clazz.getDefinedClass()).getFields()) {
 				if (!field.clazz().containsAnnotation(Data.class)) continue;
 				constructorParameters.add(field.clazz().getDefinedClass());
 			}
@@ -62,7 +62,7 @@ public class ClassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodHandler mh) {
 		var info = new PackedBooleans();
 		var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
 		for (var entry : fields.entrySet()) if (entry.getKey().nullable) info.countBoolean();
@@ -89,7 +89,7 @@ public class ClassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		var info = new PackedBooleans();
 		var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
 		for (var entry : fields.entrySet()) {
@@ -128,8 +128,8 @@ public class ClassDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (fields.size() == 0) mh.op(ICONST_0);
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+		if (this.fields.isEmpty()) mh.op(ICONST_0);
 		else {
 			var info = new PackedBooleans();
 			var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
@@ -184,7 +184,7 @@ public class ClassDef extends MethodDef {
 					mh.callInst(INVOKEVIRTUAL, holder, fieldName, bytecodeClass);
 				} catch (NoSuchMethodException ignored) {
 					throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
-											  "Try making the field public or add a getter");
+							"Try making the field public or add a getter");
 				}
 
 			GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);

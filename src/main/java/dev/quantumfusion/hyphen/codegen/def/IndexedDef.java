@@ -29,7 +29,7 @@ public abstract class IndexedDef extends MethodDef {
 	public abstract void writeGetConverter(MethodHandler mh);
 
 	@Override
-	public void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodHandler mh) {
 		final Variable out = mh.addVar("out", Object[].class);
 		mh.varOp(ILOAD, "io");
 		mh.getIO(int.class);
@@ -46,7 +46,7 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		final Variable length = mh.addVar("length", int.class);
 		mh.varOp(ILOAD, "io");
 		valueLoad.run();
@@ -63,7 +63,7 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		mh.op(ICONST_4);
 		try (var array = ArrayFor.create(mh, valueLoad, null, null, () -> getterFunc.accept(mh), () -> lengthFunc.accept(mh))) {
 			componentDef.writeMeasure(mh, () -> {

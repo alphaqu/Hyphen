@@ -100,6 +100,21 @@ public class ArrayUtil {
 		return out;
 	}
 
+
+	/**
+	 * Combines 2 arrays into 1.
+	 *
+	 * @param a1  Array 1
+	 * @param a2  Array y
+	 * @param <T> The Array Type
+	 * @return The combined array.
+	 */
+	public static <T> T[] combine(T[] a1, T[] a2) {
+		T[] out = Arrays.copyOf(a1, a1.length + a2.length);
+		System.arraycopy(a2, 0, out, a1.length, a2.length);
+		return out;
+	}
+
 	/**
 	 * Filters the array's content.
 	 *
@@ -119,6 +134,7 @@ public class ArrayUtil {
 		}
 		return Arrays.copyOf(clone, count);
 	}
+
 	public static <T> T[] copyAndAppend(T[] oldArray, T newEntry) {
 		final int length = oldArray.length;
 		var newArray = new Object[length + 1];

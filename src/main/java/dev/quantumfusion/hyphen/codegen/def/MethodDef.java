@@ -17,7 +17,7 @@ public abstract class MethodDef implements SerializerDef {
 	public final Clazz clazz;
 	public final Map<Options, Boolean> options;
 
-	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz){
+	public MethodDef(CodegenHandler<?, ?> handler, Clazz clazz) {
 		this(handler, clazz, clazz.toString());
 	}
 
@@ -30,11 +30,11 @@ public abstract class MethodDef implements SerializerDef {
 		this.measureInfo = handler.apply(new MethodInfo("measure" + name, int.class, definedClass));
 	}
 
-	public abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
+	protected abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
 
-	public abstract void writeMethodGet(MethodHandler mh);
+	protected abstract void writeMethodGet(MethodHandler mh);
 
-	public abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
+	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
@@ -53,5 +53,11 @@ public abstract class MethodDef implements SerializerDef {
 	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
 		valueLoad.run();
 		mh.callInst(measureInfo);
+	}
+
+	public void writeMethods(CodegenHandler.MethodWriter call, boolean raw) {
+		call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
+		call.writeMethod(this.clazz, this.putInfo, raw, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+		call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
 	}
 }

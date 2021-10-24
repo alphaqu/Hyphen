@@ -1,13 +1,11 @@
 package dev.quantumfusion.hyphen.util;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Type;
 
-import java.lang.annotation.Annotation;
-
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
 
 @SuppressWarnings("WeakerAccess")
 public final class GenUtil {
@@ -72,5 +70,25 @@ public final class GenUtil {
 				.replace('.', '•')
 				.replace(';', '\u037E') // greek question mark, intellij "fixes" it for you
 				.replace(':', 'ː');
+	}
+
+	public static Handle createHandle(int op, Class<?> owner, String name, boolean isInterface, Class<?> returnClass, Class<?>... parameters) {
+		return new Handle(
+				op,
+				Type.getInternalName(owner),
+				name,
+				methodDesc(returnClass, parameters),
+				isInterface
+		);
+	}
+
+	public static Handle createHandle(int op, String owner, String name, boolean isInterface, Class<?> returnClass, Class<?>... parameters) {
+		return new Handle(
+				op,
+				owner,
+				name,
+				methodDesc(returnClass, parameters),
+				isInterface
+		);
 	}
 }
