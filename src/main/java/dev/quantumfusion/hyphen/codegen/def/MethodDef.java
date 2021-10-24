@@ -8,7 +8,7 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo getInfo;
@@ -34,7 +34,7 @@ public abstract class MethodDef implements SerializerDef {
 
 	protected abstract void writeMethodGet(MethodHandler mh);
 
-	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic);
+	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
@@ -56,11 +56,18 @@ public abstract class MethodDef implements SerializerDef {
 	}
 
 	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter call, boolean raw) {
-		if (!handler.options.get(Options.DISABLE_GET))
+		if (!handler.options.get(Options.DISABLE_GET) || raw)
 			call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
-		if (!handler.options.get(Options.DISABLE_PUT))
+		if (!handler.options.get(Options.DISABLE_PUT) || raw)
 			call.writeMethod(this.clazz, this.putInfo, raw, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
-		if (!handler.options.get(Options.DISABLE_MEASURE) && (raw || this.hasDynamicSize()))
-			call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data"), raw));
+		if (!handler.options.get(Options.DISABLE_MEASURE) && (raw || this.hasDynamicSize())) {
+			call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> {
+				this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data"));
+				if (raw) {
+					mh.visitLdcInsn(getStaticSize());
+					mh.op(IADD);
+				}
+			});
+		}
 	}
 }

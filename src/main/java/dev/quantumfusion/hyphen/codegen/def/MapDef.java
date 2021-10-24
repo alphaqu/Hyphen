@@ -52,7 +52,7 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		mh.op(ICONST_4);
 	}
 
@@ -63,7 +63,7 @@ public class MapDef extends MethodDef {
 			call.writeMethod(this.clazz, this.putLambda, false, true,
 							 mh -> {
 								 keyDef.writePut(mh, () -> mh.varOp(ILOAD, "data"));
-								 valueDef.writePut(mh, () -> mh.varOp(ILOAD, "data"));
+								 valueDef.writePut(mh, () -> mh.varOp(ILOAD, "data$"));
 							 });
 	}
 }

@@ -35,7 +35,7 @@ public class PrimitiveIODef implements SerializerDef {
 	}
 
 	@Override
-	public int staticSize() {
+	public int getStaticSize() {
 		return this.size;
 	}
 

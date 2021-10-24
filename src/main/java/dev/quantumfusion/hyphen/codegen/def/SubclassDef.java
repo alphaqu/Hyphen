@@ -24,10 +24,10 @@ public class SubclassDef extends MethodDef {
 		this.subClasses = subClasses;
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
 
-		int size = this.subDefs[0].staticSize();
+		int size = this.subDefs[0].getStaticSize();
 
 		for (int i = 1; i < this.subDefs.length; i++) {
-			if (size != this.subDefs[i].staticSize()) {
+			if (size != this.subDefs[i].getStaticSize()) {
 				this.allSameStaticSize = false;
 				return;
 			}
@@ -76,14 +76,11 @@ public class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
 		mh.varOp(ISTORE, "clz");
-
-		if (includeStatic)
-			mh.visitLdcInsn(this.staticSize());
 
 		if (this.hasDynamicSize()) {
 			ArrayUtil.dualFor(this.subClasses, this.subDefs, (clz, serializerDef) -> {
@@ -95,28 +92,27 @@ public class SubclassDef extends MethodDef {
 							valueLoad.run();
 							GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
 						});
-					int ss = serializerDef.staticSize();
+					int ss = serializerDef.getStaticSize();
 					if (!this.allSameStaticSize && ss != 0) {
 						mh.visitLdcInsn(ss);
 						if (serializerDef.hasDynamicSize()) mh.op(IADD);
 					} else if (!serializerDef.hasDynamicSize())
 						mh.op(ICONST_0);
 
-					if (includeStatic) mh.op(IADD);
 					mh.op(IRETURN);
 				}
 			});
 			// TODO: throw
-			if (!includeStatic) mh.op(ICONST_0);
+			mh.op(ICONST_0);
 		}
 	}
 
 	@Override
-	public int staticSize() {
+	public int getStaticSize() {
 		if (this.subDefs.length == 0) // ???
 			return 0;
 		if (this.allSameStaticSize)
-			return this.subDefs[0].staticSize() + 1;
+			return this.subDefs[0].getStaticSize() + 1;
 		return 1;
 	}
 

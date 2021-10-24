@@ -33,7 +33,7 @@ public class PrimitiveArrayIODef implements SerializerDef {
 	}
 
 	@Override
-	public int staticSize() {
+	public int getStaticSize() {
 		return 4;
 	}
 }

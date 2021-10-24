@@ -77,7 +77,7 @@ public class EnumDef extends MethodDef {
 	}
 
 	@Override
-	public int staticSize() {
+	public int getStaticSize() {
 		return this.primitive == null ? 0 : PrimitiveIODef.getSize(this.primitive);
 	}
 
@@ -87,10 +87,7 @@ public class EnumDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
-		if (includeStatic)
-			mh.op(ICONST_0 + this.staticSize()); // limited to 4
-		else
-			throw new UnsupportedOperationException("Enums don't have a dynamic size");
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+		throw new UnsupportedOperationException("Enums don't have a dynamic size");
 	}
 }

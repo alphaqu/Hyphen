@@ -11,7 +11,7 @@ public interface SerializerDef {
 		throw new UnsupportedOperationException();
 	}
 
-	default int staticSize() {
+	default int getStaticSize() {
 		return 0;
 	}
 
