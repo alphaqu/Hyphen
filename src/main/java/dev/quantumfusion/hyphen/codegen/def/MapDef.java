@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
+import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.IndyCodyUtil;
@@ -62,8 +63,8 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	public void writeMethods(CodegenHandler.MethodWriter call, boolean raw, boolean disablePut, boolean disableGet, boolean disableMeasure) {
-		super.writeMethods(call, raw, disablePut, disableGet, disableMeasure);
-		if(!disablePut) call.writeMethod(this.clazz, this.putLambda, false, true, mh -> this.writeMethodPutLambda(mh, () -> mh.varOp(ILOAD, "data"), () -> mh.varOp(ILOAD, "data$")));
+	public void writeMethods(CodegenHandler<?,?> handler, CodegenHandler.MethodWriter call, boolean raw) {
+		super.writeMethods(handler, call, raw);
+		if(!handler.options.get(Options.DISABLE_MEASURE)) call.writeMethod(this.clazz, this.putLambda, false, true, mh -> this.writeMethodPutLambda(mh, () -> mh.varOp(ILOAD, "data"), () -> mh.varOp(ILOAD, "data$")));
 	}
 }

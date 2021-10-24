@@ -33,21 +33,26 @@ public class SpeedTest {
 		byteBufferIO.rewind();
 		System.out.println(cdSerializer.get(byteBufferIO));
 
-		for (long i = 0; i < 10_000; i++) {
+		for (long i = 0; i < 1000000; i++) {
 			run(false, "cdSerializer", cdSerializer, byteBufferIO, 1000);
 			run(false, "cdInvokeSerializer", cdInvokeSerializer, byteBufferIO, 1000);
 			run(false, "valuesSerializer", valuesSerializer, byteBufferIO, 1000);
 		}
 
-		run(true, "cdSerializer", cdSerializer, byteBufferIO, ITERATION_COUNT);
-		run(true, "cdInvokeSerializer", cdInvokeSerializer, byteBufferIO, ITERATION_COUNT);
-		run(true, "valuesSerializer", valuesSerializer, byteBufferIO, ITERATION_COUNT);
-		run(true, "cdInvokeSerializer", cdInvokeSerializer, byteBufferIO, ITERATION_COUNT);
-		run(true, "valuesSerializer", valuesSerializer, byteBufferIO, ITERATION_COUNT);
-		run(true, "cdSerializer", cdSerializer, byteBufferIO, ITERATION_COUNT);
+		int valuesSerializerTime = 0;
+		int cdInvokeSerializerTime = 0;
+		int cdSerializerTime = 0;
+		for (int i = 0; i < 10; i++) {
+			valuesSerializerTime += run(true, "valuesSerializer", valuesSerializer, byteBufferIO, ITERATION_COUNT);
+			cdInvokeSerializerTime += run(true, "cdInvokeSerializer", cdInvokeSerializer, byteBufferIO, ITERATION_COUNT);
+			cdSerializerTime += run(true, "cdSerializer", cdSerializer, byteBufferIO, ITERATION_COUNT);
+			System.out.println(i);
+		}
+
+		System.out.println("Values: " + valuesSerializerTime + "ms  Invoke: " + cdInvokeSerializerTime + "ms  Cd: " + cdSerializerTime + "ms");
 	}
 
-	private static void run(boolean print, String name, HyphenSerializer<ByteBufferIO, EnumTest> valuesSerializer, ByteBufferIO byteBufferIO, long count) {
+	private static long run(boolean print, String name, HyphenSerializer<ByteBufferIO, EnumTest> valuesSerializer, ByteBufferIO byteBufferIO, long count) {
 		long startValues = System.currentTimeMillis();
 
 		for (long i = 0; i < count; i++) {
@@ -63,7 +68,6 @@ public class SpeedTest {
 
 		long stopValues = System.currentTimeMillis();
 
-		if (print)
-			System.out.println("res " + name + "(" + res + "): " + (stopValues - startValues));
+		return (stopValues - startValues);
 	}
 }
