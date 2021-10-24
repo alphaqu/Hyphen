@@ -18,8 +18,7 @@ public class MethodInfo {
 		return name;
 	}
 
-	public void setName(String name, /*to prevent people from changing the name*/ @SuppressWarnings("unused") CodegenHandler<?, ?> handler) {
-		assert handler != null;
+	void setName(String name) {
 		this.name = name;
 	}
 

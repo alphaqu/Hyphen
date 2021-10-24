@@ -72,8 +72,8 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 	public MethodInfo apply(MethodInfo info) {
 		if (methodDedup != null)
-			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()), this);
-		info.setName(GenUtil.makeSafe(info.getName()), this);
+			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()));
+		info.setName(GenUtil.makeSafe(info.getName()));
 		return info;
 	}
 
@@ -122,9 +122,9 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	public void setupSpark(MethodDef spark) {
-		spark.getInfo.setName("get", this);
-		spark.putInfo.setName("put", this);
-		spark.measureInfo.setName("measure", this);
+		spark.getInfo.setName("get");
+		spark.putInfo.setName("put");
+		spark.measureInfo.setName("measure");
 		writeMethod(spark, true);
 	}
 
