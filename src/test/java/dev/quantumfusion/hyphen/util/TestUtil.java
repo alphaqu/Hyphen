@@ -61,6 +61,12 @@ public class TestUtil {
 	}
 
 	@TestFactory
+	DynamicNode testPolyEnums() {
+		return testAll("dev.quantumfusion.hyphen.scan.poly.enums");
+	}
+
+
+	@TestFactory
 	DynamicNode testPolyWildcards() {
 		return testAll("dev.quantumfusion.hyphen.scan.poly.wildcards");
 	}

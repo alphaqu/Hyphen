@@ -1,7 +1,7 @@
-package dev.quantumfusion.hyphen.scan.poly.general;
+package dev.quantumfusion.hyphen.scan.poly.enums;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.EnumCBoolean;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumCNull;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 import java.util.Objects;
@@ -12,10 +12,10 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 @Data
 @TestThis
-public class EnumBooleanTest {
-	public EnumCBoolean data;
+public class EnumNullTest {
+	public EnumCNull data;
 
-	public EnumBooleanTest(EnumCBoolean data) {
+	public EnumNullTest(EnumCNull data) {
 		this.data = data;
 	}
 
@@ -30,7 +30,7 @@ public class EnumBooleanTest {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
-		EnumBooleanTest c0IntC1 = (EnumBooleanTest) o;
+		EnumNullTest c0IntC1 = (EnumNullTest) o;
 		return Objects.equals(this.data, c0IntC1.data);
 	}
 
@@ -39,7 +39,7 @@ public class EnumBooleanTest {
 		return Objects.hash(this.data);
 	}
 
-	public static Supplier<Stream<? extends EnumBooleanTest>> generateEnumBooleanTest() {
-		return cross(EnumCBoolean.generateEnumCBoolean(), EnumBooleanTest::new);
+	public static Supplier<Stream<? extends EnumNullTest>> generateEnumNullTest() {
+		return cross(EnumCNull.generateEnumCNull(), EnumNullTest::new);
 	}
 }

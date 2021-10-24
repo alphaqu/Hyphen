@@ -5,7 +5,7 @@ import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
-public class BoxedIODef extends IODef {
+public class BoxedIODef extends PrimitiveIODef {
 	protected final Class<?> boxed;
 
 	public BoxedIODef(Class<?> boxed) {

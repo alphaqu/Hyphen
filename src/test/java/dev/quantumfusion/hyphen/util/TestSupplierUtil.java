@@ -89,6 +89,11 @@ public final class TestSupplierUtil {
 		return () -> Arrays.stream(subclasses).flatMap(Supplier::get);
 	}
 
+
+	public static <T> Supplier<Stream<? extends T>> nullable(Supplier<? extends Stream<? extends T>> supplier) {
+		return () -> Stream.concat(Stream.of((T) null), supplier.get());
+	}
+
 	@SafeVarargs
 	public static <T> Supplier<Stream<? extends T>> nullableSubClasses(Supplier<? extends Stream<? extends T>>... subclasses) {
 		return () -> Stream.concat(Stream.of((T) null), Arrays.stream(subclasses).flatMap(Supplier::get));

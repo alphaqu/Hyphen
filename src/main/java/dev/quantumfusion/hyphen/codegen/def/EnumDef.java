@@ -14,15 +14,27 @@ import java.lang.invoke.MethodHandles;
 import static org.objectweb.asm.Opcodes.*;
 
 public class EnumDef extends MethodDef {
-	static public boolean USE_CONSTANT_DYNAMIC = true;
-	static public boolean USE_CONSTANT_DYNAMIC_INVOKE = true;
+	public static boolean USE_CONSTANT_DYNAMIC = true;
+	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = true;
 
 	private final Class<? extends Enum<?>> en;
+	private final int enSize;
+	private final Class<?> primitive;
 
 	@SuppressWarnings("unchecked")
 	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler.codegenHandler, clazz);
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
+		this.enSize = this.en.getEnumConstants().length;
+
+		if (this.enSize == 0)
+			this.primitive = null;
+		else if (this.enSize <= 0xff)
+			this.primitive = byte.class;
+		else if (this.enSize <= 0xffff)
+			this.primitive = short.class;
+		else
+			this.primitive = int.class;
 	}
 
 	@Override
@@ -63,9 +75,23 @@ public class EnumDef extends MethodDef {
 		mh.putIO(byte.class);
 	}
 
+
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		mh.op(ICONST_1);
+	public int staticSize() {
+		return this.primitive == null ? 0 : PrimitiveIODef.getSize(this.primitive);
+	}
+
+	@Override
+	public boolean hasDynamicSize() {
+		return false;
+	}
+
+	@Override
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
+		if (includeStatic)
+			mh.op(ICONST_0 + this.staticSize()); // limited to 4
+		else
+			throw new UnsupportedOperationException("Enums don't have a dynamic size");
 	}
 
 	@SuppressWarnings({"unchecked", "unused"})

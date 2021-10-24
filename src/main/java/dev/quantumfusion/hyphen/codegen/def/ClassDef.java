@@ -43,18 +43,22 @@ public class ClassDef extends MethodDef {
 
 			}
 
-			List<Class<?>> constructorParameters = new ArrayList<>();
-			for (FieldEntry field : new Clazz(handler, clazz.getDefinedClass()).getFields()) {
-				if (!field.clazz().containsAnnotation(Data.class)) continue;
-				constructorParameters.add(field.clazz().getDefinedClass());
-			}
-			this.constructorParameters = constructorParameters.toArray(Class[]::new);
-			try {
-				if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers()))
-					throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
+			if (!handler.options.get(Options.DISABLE_PUT)) {
+				List<Class<?>> constructorParameters = new ArrayList<>();
+				for (FieldEntry field : new Clazz(handler, clazz.getDefinedClass()).getFields()) {
+					if (!field.clazz().containsAnnotation(Data.class)) continue;
+					constructorParameters.add(field.clazz().getDefinedClass());
+				}
+				this.constructorParameters = constructorParameters.toArray(Class[]::new);
+				try {
+					if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers()))
+						throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
 
-			} catch (NoSuchMethodException e) {
-				throw new HyphenException(e.getMessage(), "Check if the constructor holds all of the fields.");
+				} catch (NoSuchMethodException e) {
+					throw new HyphenException(e.getMessage(), "Check if the constructor holds all of the fields.");
+				}
+			} else {
+				this.constructorParameters = null;
 			}
 		} catch (Throwable throwable) {
 			throw HyphenException.thr("class", Style.LINE_DOWN, clazz, throwable);
@@ -128,38 +132,116 @@ public class ClassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (this.fields.isEmpty()) mh.op(ICONST_0);
+	public int staticSize() {
+		if (this.fields.isEmpty()) return 0;
+
+		int size = 0;
+		int booleans = 0;
+		var compactBooleans = this.options.get(Options.COMPACT_BOOLEANS);
+		for (var entry : this.fields.entrySet()) {
+			var field = entry.getKey();
+			if (compactBooleans && field.fieldType == boolean.class) {
+				booleans++;
+				continue;
+			}
+
+			if (field.nullable) {
+				booleans++;
+			} else {
+				size += entry.getValue().staticSize();
+			}
+		}
+
+		size += (booleans + 7) >> 3;
+		return size;
+	}
+
+	@Override
+	public boolean hasDynamicSize() {
+		// TODO: actually check if any field has dynamic sizes
+		return true;// !this.fields.isEmpty();
+	}
+
+	@Override
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
+		if (this.fields.isEmpty())
+			if (includeStatic)
+				mh.visitLdcInsn(this.staticSize());
+			else mh.op(ICONST_0);
 		else {
-			var info = new PackedBooleans();
-			var compactBooleans = options.get(Options.COMPACT_BOOLEANS);
+			var compactBooleans = this.options.get(Options.COMPACT_BOOLEANS);
 			int i = 0;
-			for (var entry : fields.entrySet()) {
+			if (includeStatic) {
+				var staticSize = this.staticSize();
+				if (staticSize != 0) {
+					i = 1;
+					mh.visitLdcInsn(staticSize);
+				}
+			}
+
+			for (var entry : this.fields.entrySet()) {
 				var field = entry.getKey();
+				var fieldDef = entry.getValue();
+
 				if (compactBooleans && field.fieldType == boolean.class) {
-					info.countBoolean();
 					continue;
 				}
 
 				if (field.nullable) {
-					var cache = mh.addVar(field.fieldName + "_cache", field.fieldType);
-					info.countBoolean();
-					field.loadField(mh, aClass, valueLoad);
-					mh.op(DUP);
-					mh.varOp(ISTORE, cache);
-					try (var anIf = new IfElse(mh, IFNULL)) {
-						entry.getValue().writeMeasure(mh, () -> mh.varOp(ILOAD, cache));
-						anIf.elseStart();
-						mh.op(ICONST_0);
+					var staticSize = fieldDef.staticSize();
+					if (fieldDef.hasDynamicSize()) {
+						var cache = mh.addVar(field.fieldName + "_cache", field.fieldType);
+						field.loadField(mh, aClass, valueLoad);
+						mh.op(DUP);
+						mh.varOp(ISTORE, cache);
+						try (var anIf = new IfElse(mh, IFNULL)) {
+							fieldDef.writeMeasure(mh, () -> mh.varOp(ILOAD, cache));
+
+							if (staticSize != 0) {
+								mh.visitLdcInsn(staticSize);
+								mh.op(IADD);
+							}
+
+							// if we arent the first, just add
+							if (i++ > 0) {
+								mh.op(IADD);
+								anIf.elseStart();
+							} else {
+								// else we need to push 0 for the null case
+								anIf.elseStart();
+								mh.op(ICONST_0);
+							}
+						}
+					} else {
+						if (staticSize != 0) {
+							field.loadField(mh, aClass, valueLoad);
+							try (var anIf = new IfElse(mh, IFNULL)) {
+								mh.visitLdcInsn(staticSize);
+
+								// if we arent the first, just add
+								if (i++ > 0)  {
+									mh.op(IADD);
+									anIf.elseStart();
+								}
+								else {
+									// else we need to push 0 for the null case
+									anIf.elseStart();
+									mh.op(ICONST_0);
+								}
+							}
+
+						}
 					}
-				} else entry.getValue().writeMeasure(mh, () -> field.loadField(mh, aClass, valueLoad));
-
-				if (i++ > 0) mh.op(IADD);
+				} else {
+					if (fieldDef.hasDynamicSize()) {
+						fieldDef.writeMeasure(mh, () -> field.loadField(mh, aClass, valueLoad));
+						if (i++ > 0) mh.op(IADD);
+					}
+				}
 			}
-
-			if (info.getBytes() > 0) {
-				mh.visitLdcInsn(info.getBytes());
-				if (i > 0) mh.op(IADD);
+			if(i == 0){
+				// TODO: missed constant size
+				mh.op(ICONST_0);
 			}
 		}
 	}

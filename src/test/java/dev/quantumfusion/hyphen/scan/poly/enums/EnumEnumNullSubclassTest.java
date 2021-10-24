@@ -1,11 +1,12 @@
-package dev.quantumfusion.hyphen.scan.poly.general;
+package dev.quantumfusion.hyphen.scan.poly.enums;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.c.CM1;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.EnumC;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.EnumCBoolean;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.EnumCSingleton;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumC;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumCBoolean;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumCNull;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumCSingleton;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 import java.util.Objects;
@@ -17,11 +18,11 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.subClasses;
 
 @Data
 @TestThis
-public class EnumEnumSubclassTest {
-	@DataSubclasses({EnumC.class, EnumCBoolean.class, EnumCSingleton.class})
+public class EnumEnumNullSubclassTest {
+	@DataSubclasses({EnumC.class, EnumCBoolean.class, EnumCSingleton.class, EnumCNull.class})
 	public CM1 data;
 
-	public EnumEnumSubclassTest(CM1 data) {
+	public EnumEnumNullSubclassTest(CM1 data) {
 		this.data = data;
 	}
 
@@ -36,7 +37,7 @@ public class EnumEnumSubclassTest {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
-		EnumEnumSubclassTest c0IntC1 = (EnumEnumSubclassTest) o;
+		EnumEnumNullSubclassTest c0IntC1 = (EnumEnumNullSubclassTest) o;
 		return Objects.equals(this.data, c0IntC1.data);
 	}
 
@@ -45,10 +46,12 @@ public class EnumEnumSubclassTest {
 		return Objects.hash(this.data);
 	}
 
-	public static Supplier<Stream<? extends EnumEnumSubclassTest>> generateEnumEnumSubclassTest() {
+	public static Supplier<Stream<? extends EnumEnumNullSubclassTest>> generateEnumEnumNullSubclassTest() {
 		return cross(subClasses(
 				EnumC.generateEnumC(),
 				EnumCBoolean.generateEnumCBoolean(),
-				EnumCSingleton.generateEnumCSingleton()), EnumEnumSubclassTest::new);
+				EnumCSingleton.generateEnumCSingleton(),
+				EnumCNull.generateEnumCNull()
+				), EnumEnumNullSubclassTest::new);
 	}
 }

@@ -123,8 +123,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
 
 	static {
-		addStaticDef(IODef::new,
-					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class,
+		addStaticDef(PrimitiveIODef::new,
+					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
+		addStaticDef(PrimitiveArrayIODef::new,
 					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());

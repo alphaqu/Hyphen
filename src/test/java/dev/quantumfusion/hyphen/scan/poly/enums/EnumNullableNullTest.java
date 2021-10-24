@@ -1,7 +1,8 @@
-package dev.quantumfusion.hyphen.scan.poly.general;
+package dev.quantumfusion.hyphen.scan.poly.enums;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.EnumCSingleton;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
+import dev.quantumfusion.hyphen.scan.poly.classes.c.enums.EnumCNull;
 import dev.quantumfusion.hyphen.util.TestThis;
 
 import java.util.Objects;
@@ -9,13 +10,15 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.nullable;
 
 @Data
 @TestThis
-public class EnumSingletonTest {
-	public EnumCSingleton data;
+public class EnumNullableNullTest {
+	@DataNullable
+	public EnumCNull data;
 
-	public EnumSingletonTest(EnumCSingleton data) {
+	public EnumNullableNullTest(EnumCNull data) {
 		this.data = data;
 	}
 
@@ -30,7 +33,7 @@ public class EnumSingletonTest {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || this.getClass() != o.getClass()) return false;
-		EnumSingletonTest c0IntC1 = (EnumSingletonTest) o;
+		EnumNullableNullTest c0IntC1 = (EnumNullableNullTest) o;
 		return Objects.equals(this.data, c0IntC1.data);
 	}
 
@@ -39,7 +42,7 @@ public class EnumSingletonTest {
 		return Objects.hash(this.data);
 	}
 
-	public static Supplier<Stream<? extends EnumSingletonTest>> generateEnumSingletonTest() {
-		return cross(EnumCSingleton.generateEnumCSingleton(), EnumSingletonTest::new);
+	public static Supplier<Stream<? extends EnumNullableNullTest>> generateEnumNullableNullTest() {
+		return cross(nullable(EnumCNull.generateEnumCNull()), EnumNullableNullTest::new);
 	}
 }

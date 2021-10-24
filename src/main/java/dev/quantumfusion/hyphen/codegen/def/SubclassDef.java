@@ -17,11 +17,23 @@ import static org.objectweb.asm.Opcodes.*;
 public class SubclassDef extends MethodDef {
 	private final Class<?>[] subClasses;
 	private final SerializerDef[] subDefs;
+	private final boolean allSameStaticSize;
 
 	public SubclassDef(SerializerHandler<?, ?> handler, Clazz clazz, Class<?>[] subClasses) {
 		super(handler.codegenHandler, clazz, "SUB{" + clazz + " # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
 		this.subClasses = subClasses;
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
+
+		int size = this.subDefs[0].staticSize();
+
+		for (int i = 1; i < this.subDefs.length; i++) {
+			if (size != this.subDefs[i].staticSize()) {
+				this.allSameStaticSize = false;
+				return;
+			}
+		}
+		this.allSameStaticSize = true;
+
 	}
 
 	@Override
@@ -55,7 +67,7 @@ public class SubclassDef extends MethodDef {
 
 				serializerDef.writePut(mh, () -> {
 					valueLoad.run();
-					GenUtil.shouldCastGeneric(mh ,clz, this.clazz.getBytecodeClass());
+					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
 				});
 				mh.op(RETURN);
 			}
@@ -64,24 +76,69 @@ public class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
 		mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
 		mh.varOp(ISTORE, "clz");
 
-		mh.op(ICONST_1);
-		ArrayUtil.dualFor(this.subClasses, this.subDefs, (clz, serializerDef) -> {
-			mh.varOp(ILOAD, "clz");
-			mh.visitLdcInsn(Type.getType(clz));
-			try (var anIf = new If(mh, IF_ACMPNE)) {
-				serializerDef.writeMeasure(mh, () -> {
-					valueLoad.run();
-					GenUtil.shouldCastGeneric(mh ,clz, this.clazz.getBytecodeClass());
-				});
-				mh.op(IADD, IRETURN);
-			}
-		});
-		// TODO: throw
+		if (includeStatic) {
+			mh.visitLdcInsn(this.staticSize());
+		}
+
+		if (this.hasDynamicSize()) {
+			ArrayUtil.dualFor(this.subClasses, this.subDefs, (clz, serializerDef) -> {
+				mh.varOp(ILOAD, "clz");
+				mh.visitLdcInsn(Type.getType(clz));
+				try (var anIf = new If(mh, IF_ACMPNE)) {
+					if (serializerDef.hasDynamicSize())
+						serializerDef.writeMeasure(mh, () -> {
+							valueLoad.run();
+							GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
+						});
+					int ss = serializerDef.staticSize();
+					if (!this.allSameStaticSize && ss != 0) {
+						mh.visitLdcInsn(ss);
+						if (serializerDef.hasDynamicSize())
+							mh.op(IADD);
+					} else if (!serializerDef.hasDynamicSize())
+						mh.op(ICONST_0);
+
+					if (includeStatic)
+						mh.op(IADD, IRETURN);
+					else
+						mh.op(IRETURN);
+				}
+			});
+			// TODO: throw
+			if(!includeStatic)
+				mh.op(ICONST_0);
+		}
+	}
+
+	@Override
+	public int staticSize() {
+		if (this.subDefs.length == 0) // ???
+			return 0;
+		if (this.allSameStaticSize)
+			return this.subDefs[0].staticSize() + 1;
+		return 1;
+	}
+
+	@Override
+	public boolean hasDynamicSize() {
+		if (this.subDefs.length == 0) // ???
+			return false;
+
+
+		if (!this.allSameStaticSize)
+			return true;
+
+		for (SerializerDef subDef : this.subDefs) {
+			if (subDef.hasDynamicSize())
+				return true;
+		}
+
+		return false;
 	}
 }

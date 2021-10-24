@@ -86,7 +86,10 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	public void writeMethod(MethodDef def, boolean raw) {
-		def.writeMethods(this::writeMethodInternal, raw);
+		def.writeMethods(this::writeMethodInternal, raw,
+				this.options.get(Options.DISABLE_PUT),
+				this.options.get(Options.DISABLE_GET),
+				this.options.get(Options.DISABLE_MEASURE));
 	}
 
 	public interface MethodWriter {

@@ -57,13 +57,13 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic) {
 		mh.op(ICONST_4);
 	}
 
 	@Override
-	public void writeMethods(CodegenHandler.MethodWriter call, boolean raw) {
-		super.writeMethods(call, raw);
-		call.writeMethod(this.clazz, this.putLambda, false, true, mh -> this.writeMethodPutLambda(mh, () -> mh.varOp(ILOAD, "data"), () -> mh.varOp(ILOAD, "data$")));
+	public void writeMethods(CodegenHandler.MethodWriter call, boolean raw, boolean disablePut, boolean disableGet, boolean disableMeasure) {
+		super.writeMethods(call, raw, disablePut, disableGet, disableMeasure);
+		if(!disablePut) call.writeMethod(this.clazz, this.putLambda, false, true, mh -> this.writeMethodPutLambda(mh, () -> mh.varOp(ILOAD, "data"), () -> mh.varOp(ILOAD, "data$")));
 	}
 }

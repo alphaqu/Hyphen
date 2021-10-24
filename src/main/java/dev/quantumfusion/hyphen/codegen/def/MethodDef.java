@@ -34,7 +34,7 @@ public abstract class MethodDef implements SerializerDef {
 
 	protected abstract void writeMethodGet(MethodHandler mh);
 
-	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
+	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad, boolean includeStatic);
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
@@ -55,9 +55,14 @@ public abstract class MethodDef implements SerializerDef {
 		mh.callInst(measureInfo);
 	}
 
-	public void writeMethods(CodegenHandler.MethodWriter call, boolean raw) {
-		call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
-		call.writeMethod(this.clazz, this.putInfo, raw, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
-		call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data")));
+	public void writeMethods(
+			CodegenHandler.MethodWriter call, boolean raw,
+			boolean disablePut, boolean disableGet, boolean disableMeasure) {
+		if (!disablePut)
+			call.writeMethod(this.clazz, this.getInfo, raw, false, this::writeMethodGet);
+		if (!disableGet)
+			call.writeMethod(this.clazz, this.putInfo, raw, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+		if (!disableMeasure && (raw || this.hasDynamicSize()))
+			call.writeMethod(this.clazz, this.measureInfo, raw, false, mh -> this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data"), raw));
 	}
 }
