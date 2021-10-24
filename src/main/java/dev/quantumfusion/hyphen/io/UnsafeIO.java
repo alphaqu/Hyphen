@@ -413,4 +413,8 @@ public final class UnsafeIO implements IOInterface {
 		putInt(value.length);
 		for (final String s : value) putString(s);
 	}
+
+	public static final int getStringBytes(String string) {
+		return (((byte[]) UNSAFE.getObject(string, STRING_FIELD_OFFSET)).length) + 4 /* the array length */;
+	}
 }

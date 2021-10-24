@@ -24,10 +24,10 @@ public class StringIODef implements SerializerDef {
 
 	@Override
 	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+		valueLoad.run();
 		if (mh.ioClass == UnsafeIO.class) {
-			//TODO unsafeStringMeasure
+			mh.callInst(INVOKESTATIC, UnsafeIO.class, "getStringBytes", int.class, String.class);
 		} else {
-			valueLoad.run();
 			// kinda bad for speed, but it's kinda our only option here
 			mh.visitFieldInsn(GETSTATIC, StandardCharsets.class, "UTF_8", Charset.class);
 			mh.callInst(INVOKEVIRTUAL, String.class, "getBytes", byte[].class, Charset.class);
