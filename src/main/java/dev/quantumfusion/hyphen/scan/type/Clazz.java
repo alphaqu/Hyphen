@@ -31,7 +31,9 @@ public class Clazz {
 	public Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass) {
 		this.aClass = aClass;
 		this.handler = handler;
-		this.annotations = Map.of();
+		var map = new HashMap<Class<? extends Annotation>, Object>();
+		ScanUtil.addAnnotations(aClass, map);
+		this.annotations = map;
 	}
 
 	public static Clazz create(SerializerHandler<?, ?> handler, AnnotatedType type, @Nullable Clazz ctx) {

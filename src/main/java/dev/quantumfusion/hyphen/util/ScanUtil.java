@@ -73,7 +73,7 @@ public class ScanUtil {
 		return out;
 	}
 
-	private static void addAnnotations(AnnotatedElement annotations, Map<Class<? extends Annotation>, Object> map) {
+	public static void addAnnotations(AnnotatedElement annotations, Map<Class<? extends Annotation>, Object> map) {
 		try {
 			for (Annotation annotation : annotations.getDeclaredAnnotations()) {
 				var annotatedType = annotation.annotationType();
