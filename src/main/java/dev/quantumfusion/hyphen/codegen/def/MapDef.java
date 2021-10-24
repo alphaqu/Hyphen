@@ -39,16 +39,11 @@ public class MapDef extends MethodDef {
 		mh.varOp(ILOAD, "io");
 
 		GenUtil.createMethodRef(mh,
-				BiConsumer.class, "accept", Void.TYPE, new Class[]{Object.class, Object.class}, // BiConsumer::accept(Object, Object) void
-				mh.self, this.putLambda.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
+								BiConsumer.class, "accept", Void.TYPE, new Class[]{Object.class, Object.class}, // BiConsumer::accept(Object, Object) void
+								mh.self, this.putLambda.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
 		);
 
 		mh.callInst(INVOKEVIRTUAL, Map.class, "forEach", Void.TYPE, BiConsumer.class);
-	}
-
-	private void writeMethodPutLambda(MethodHandler mh, Runnable loadKey, Runnable loadValue) {
-		this.keyDef.writePut(mh, loadKey);
-		this.valueDef.writePut(mh, loadValue);
 	}
 
 	@Override
@@ -66,8 +61,9 @@ public class MapDef extends MethodDef {
 		super.writeMethods(handler, call, raw);
 		if (!handler.options.get(Options.DISABLE_MEASURE))
 			call.writeMethod(this.clazz, this.putLambda, false, true,
-							 mh -> this.writeMethodPutLambda(mh,
-															 () -> mh.varOp(ILOAD, "data"),
-															 () -> mh.varOp(ILOAD, "data$")));
+							 mh -> {
+								 keyDef.writePut(mh, () -> mh.varOp(ILOAD, "data"));
+								 valueDef.writePut(mh, () -> mh.varOp(ILOAD, "data"));
+							 });
 	}
 }
