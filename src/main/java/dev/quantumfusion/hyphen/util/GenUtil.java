@@ -8,7 +8,6 @@ import org.objectweb.asm.Type;
 
 import java.lang.invoke.*;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static org.objectweb.asm.Opcodes.CHECKCAST;
 import static org.objectweb.asm.Opcodes.H_INVOKESTATIC;
@@ -68,6 +67,10 @@ public final class GenUtil {
 		return Type.getMethodDescriptor(of(returnClass), of(parameters));
 	}
 
+	public static Type methodTypeDesc(Class<?> returnClass, Class<?>... parameters) {
+		return Type.getMethodType(of(returnClass), of(parameters));
+	}
+
 	public static String hyphenShortMethodName(int methodId) {
 		final int length = (63 - Long.numberOfLeadingZeros(methodId)) / 6 + 1;
 		final char[] result = new char[length];
@@ -124,7 +127,7 @@ public final class GenUtil {
 				targetMethod,
 				methodDesc(targetInterface, capturedParameters),
 				LAMBDA_METAFACTORY_HANDLE,
-				methodDesc(targetMethodReturnClass, targetMethodParameters),
+				methodTypeDesc(targetMethodReturnClass, targetMethodParameters),
 				createHandle(
 						H_INVOKESTATIC,
 						sourceClass,
@@ -133,7 +136,7 @@ public final class GenUtil {
 						sourceMethodReturnClass,
 						ArrayUtil.combine(capturedParameters, uncapturedParameters)
 				),
-				methodDesc(sourceMethodReturnClass, uncapturedParameters)
+				methodTypeDesc(sourceMethodReturnClass, uncapturedParameters)
 		);
 	}
 }

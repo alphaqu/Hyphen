@@ -6,11 +6,13 @@ import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.poly.general.DoubleC1Pain;
 import org.junit.jupiter.api.*;
+import org.objectweb.asm.Opcodes;
 import org.opentest4j.AssertionFailedError;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -75,6 +77,11 @@ public class TestUtil {
 		return testAll("dev.quantumfusion.hyphen.scan.simple");
 	}
 
+	@TestFactory
+	DynamicNode testSimpleMap() {
+		return testAll("dev.quantumfusion.hyphen.scan.simple.map");
+	}
+
 	public static DynamicNode testAll(String packageName) {
 		return DynamicContainer.dynamicContainer(
 				packageName,
@@ -83,7 +90,7 @@ public class TestUtil {
 	}
 
 	@TestFactory
-	public DynamicNode test5(){
+	public DynamicNode test5() {
 		return test(DoubleC1Pain.class);
 	}
 
@@ -105,7 +112,9 @@ public class TestUtil {
 			Stream<? extends O> datas;
 			try {
 				//noinspection unchecked
-				datas = ((Supplier<? extends Stream<? extends O>>) clazz.getDeclaredMethod("generate" + clazz.getSimpleName()).invoke(null)).get();
+				Method declaredMethod = clazz.getDeclaredMethod("generate" + clazz.getSimpleName());
+				Assumptions.assumeTrue((declaredMethod.getModifiers() & Opcodes.ACC_STATIC) != 0, "generate is not static");
+				datas = ((Supplier<? extends Stream<? extends O>>) declaredMethod.invoke(null)).get();
 			} catch (NoSuchMethodException e) {
 				Assumptions.assumeFalse(true, "missing generate method");
 				throw Assertions.<RuntimeException>fail("missing generate method", e);

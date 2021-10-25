@@ -1,9 +1,7 @@
 package dev.quantumfusion.hyphen.util;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -106,7 +104,7 @@ public final class TestSupplierUtil {
 	 * @param seed
 	 * @param maxSize
 	 */
-	public static <T> Supplier<Stream<? extends T[]>> array(Supplier<? extends Stream<? extends T>> elements, int seed, int maxSize, Class<? extends T> tClass) {
+	public static <B, T extends B> Supplier<Stream<? extends T[]>> array(Supplier<? extends Stream<? extends T>> elements, int seed, int maxSize, Class<? extends B> tClass) {
 		return array(elements, seed, 1 + maxSize / 2, 0, maxSize, tClass);
 	}
 
@@ -114,7 +112,7 @@ public final class TestSupplierUtil {
 	 * produces arrays between lengths of min and max size (inclusive). the resulting stream will have approx count * elements.size items
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Supplier<Stream<? extends T[]>> array(Supplier<? extends Stream<? extends T>> elements, int seed, int count, int minSize, int maxSize, Class<? extends T> tClass) {
+	public static <B, T extends B> Supplier<Stream<? extends T[]>> array(Supplier<? extends Stream<? extends T>> elements, int seed, int count, int minSize, int maxSize, Class<? extends B> tClass) {
 		if (maxSize == 0)
 			return () -> Stream.<T[]>of((T[]) Array.newInstance(tClass, 0));
 		if (minSize == 0) return subClasses(() -> Stream.<T[]>of((T[]) Array.newInstance(tClass, 0)), array(
@@ -124,8 +122,45 @@ public final class TestSupplierUtil {
 			int size = random.nextInt(maxSize - minSize + 1) + minSize;
 			if (size == 0)
 				return Stream.<T[]>of((T[]) Array.newInstance(tClass, 0));
-			return TestSupplierUtil.<T>cross(IntStream.range(0, size).mapToObj(u2 -> reduce(elements, random.nextInt(), size))
+			// they can't be inferred
+			//noinspection RedundantTypeArguments
+			return TestSupplierUtil.<B, T>crossArray(IntStream.range(0, size).mapToObj(u2 -> reduce(elements, random.nextInt(), size))
 					.<Supplier<? extends Stream<? extends T>>>toArray(Supplier[]::new), tClass);
+		});
+	}
+
+	public static <K, V> Supplier<Stream<? extends Map<K, V>>> map(
+			Supplier<? extends Stream<? extends K>> keySupplier,
+			Supplier<? extends Stream<? extends V>> valSupplier,
+			int seed, int count
+	) {
+
+		var reducedValSupplier = reduce(valSupplier, seed);
+
+		return () -> IntStream.range(0, count).mapToObj(u -> {
+			var hashMap = new HashMap<K, V>();
+
+			int emptyValueCount = 0;
+			int valueIndex = 0;
+
+			//noinspection unchecked
+			var keyIterator = keySupplier.get().iterator();
+			var valIterator = reducedValSupplier.get().iterator();
+
+
+			while(keyIterator.hasNext()){
+				var key = keyIterator.next();
+				while (!valIterator.hasNext()) {
+					if (valueIndex++ == 0 && ++emptyValueCount >= 3)
+						return hashMap;
+					// reset iterator
+					valIterator = reducedValSupplier.get().iterator();
+				}
+
+				hashMap.put(key, valIterator.next());
+			}
+
+			return hashMap;
 		});
 	}
 
@@ -172,9 +207,9 @@ public final class TestSupplierUtil {
 										converter.apply(a, b, c, d)))));
 	}
 
-	public static <T> Stream<? extends T[]> cross(
+	public static <B, T extends B> Stream<? extends T[]> crossArray(
 			Supplier<? extends Stream<? extends T>>[] tSuppliers,
-			Class<? extends T> tClass
+			Class<? extends B> tClass
 	) {
 		//noinspection unchecked
 		T[] o = (T[]) Array.newInstance(tClass, tSuppliers.length);
@@ -254,7 +289,7 @@ public final class TestSupplierUtil {
 		return true;
 	}
 
-	public static int arrayHashCode(Object a[]) {
+	public static int arrayHashCode(Object[] a) {
 		if (a == null)
 			return 0;
 
@@ -265,7 +300,7 @@ public final class TestSupplierUtil {
 		return result * 31 + Arrays.hashCode(a);
 	}
 
-	public static int arrayDeepHashCode(Object a[]) {
+	public static int arrayDeepHashCode(Object[] a) {
 		if (a == null)
 			return 0;
 
@@ -289,7 +324,7 @@ public final class TestSupplierUtil {
 		return result;
 	}
 
-	public static String arrayToString(Object a[]) {
+	public static String arrayToString(Object[] a) {
 		if (a == null)
 			return "null";
 

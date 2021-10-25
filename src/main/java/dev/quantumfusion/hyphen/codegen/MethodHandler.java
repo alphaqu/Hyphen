@@ -41,9 +41,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			boolean raw, boolean synthetic
 	) {
 		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (raw ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
-							methodInfo.getName(),
-							GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
-							null, null), self, dataClass, ioClass);
+				methodInfo.getName(),
+				GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
+				null, null), self, dataClass, ioClass);
 
 		if (raw) this.addVar("this", Object.class);
 		this.compactVars = compactVars;
@@ -74,7 +74,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	public void callInst(int opcode, Class<?> owner, String name, Class<?> returnClass, Class<?>... parameters) {
-		super.visitMethodInsn(opcode, GenUtil.internal(owner), name, GenUtil.methodDesc(returnClass, parameters), opcode == INVOKEINTERFACE);
+		super.visitMethodInsn(opcode, GenUtil.internal(owner), name, GenUtil.methodDesc(returnClass, parameters), owner.isInterface());
 	}
 
 	public void callInst(MethodInfo info) {
@@ -119,9 +119,14 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	// Var things
 	public Variable addVar(String name, Class<?> type) {
-		while (variableMap.containsKey(name)) {
-			// TODO: @Alpha, I need your remarks on this change
-			name += "$";
+
+		if (variableMap.containsKey(name)) {
+			// FIXME: bad solution that is gonna cause issues in the future
+			int i = 1;
+			while (variableMap.containsKey(name + i)) {
+				i++;
+			}
+			name += i;
 		}
 
 		var var = new Variable(variableMap.size(), Type.getType(type));
