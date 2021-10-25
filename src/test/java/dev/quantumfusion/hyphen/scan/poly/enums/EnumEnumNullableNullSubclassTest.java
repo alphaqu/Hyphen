@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.enums;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
@@ -14,10 +15,13 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
+import static dev.quantumfusion.hyphen.util.TestSupplierUtil.nullableSubClasses;
 
 @Data
 @TestThis
+// TODO: consider whether this should actually throw, if not how to fix this?
+@FailTest(msg = "Enum does not contain any values")
 public class EnumEnumNullableNullSubclassTest {
 	@DataSubclasses({EnumC.class, EnumCBoolean.class, EnumCSingleton.class, EnumCNull.class})
 	@DataNullable

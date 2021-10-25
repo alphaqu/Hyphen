@@ -2,9 +2,13 @@ package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.statement.IfElse;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.ConstantDynamic;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Type;
 
 import java.lang.invoke.ConstantBootstraps;
@@ -20,18 +24,21 @@ public final class EnumDef extends MethodDef {
 	private final Class<? extends Enum<?>> en;
 	private final int enSize;
 
-	private final Class<?> enumSize;
+	private final Class<?> enumSizePrimitive;
+	private final boolean isNullable;
 
 	@SuppressWarnings("unchecked")
 	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler, clazz);
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
-		this.enSize = this.en.getEnumConstants().length;
 
-		if (this.enSize == 0) this.enumSize = null;
-		else if (this.enSize <= 0xff) this.enumSize = byte.class;
-		else if (this.enSize <= 0xffff) this.enumSize = short.class;
-		else this.enumSize = int.class;
+		this.isNullable = clazz.containsAnnotation(DataNullable.class);
+		this.enSize = this.en.getEnumConstants().length + (this.isNullable ? 1 : 0);
+
+		if (this.enSize == 0) throw new HyphenException("Enum does not contain any values", "Make the enum nullable");
+		else if (this.enSize <= 0xff) this.enumSizePrimitive = byte.class;
+		else if (this.enSize <= 0xffff) this.enumSizePrimitive = short.class;
+		else this.enumSizePrimitive = int.class;
 	}
 
 	@SuppressWarnings({"unchecked", "unused"})
@@ -41,13 +48,30 @@ public final class EnumDef extends MethodDef {
 
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
+		Label end = null;
+		if (this.isNullable) {
+			var l = new Label();
+			end = new Label();
+			mh.varOp(ILOAD, "io");
+			mh.getIO(this.enumSizePrimitive);
+
+			mh.op(DUP);
+			// index | index
+			mh.visitJumpInsn(IFGE, l);
+			mh.op(POP, ACONST_NULL);
+			// null
+			mh.visitJumpInsn(GOTO, end);
+			mh.visitLabel(l);
+			// index
+		}
+
 		if (USE_CONSTANT_DYNAMIC) {
 			if (USE_CONSTANT_DYNAMIC_INVOKE) {
 				mh.visitLdcInsn(new ConstantDynamic(
 						this.en.getSimpleName() + "$Values",
 						Type.getDescriptor(this.en.arrayType()),
 						GenUtil.createHandle(H_INVOKESTATIC, ConstantBootstraps.class, "invoke", false, Object.class,
-											 MethodHandles.Lookup.class, String.class, Class.class, MethodHandle.class, Object[].class),
+								MethodHandles.Lookup.class, String.class, Class.class, MethodHandle.class, Object[].class),
 						GenUtil.createHandle(H_INVOKESTATIC, this.en, "values", false, this.en.arrayType())
 				));
 			} else {
@@ -55,29 +79,57 @@ public final class EnumDef extends MethodDef {
 						this.en.getSimpleName() + "$Values",
 						Type.getDescriptor(this.en.arrayType()),
 						GenUtil.createHandle(H_INVOKESTATIC, EnumDef.class, "getValues", false, Enum[].class,
-											 MethodHandles.Lookup.class, String.class, Class.class)
+								MethodHandles.Lookup.class, String.class, Class.class)
 				));
 			}
 		} else {
 			// mh.callInst(INVOKESTATIC, this.en, "values", this.en.arrayType());
 			mh.visitFieldInsn(GETSTATIC, this.en, "VAL", this.en.arrayType());
 		}
-		mh.varOp(ILOAD, "io");
-		mh.getIO(this.enumSize);
+
+		if (this.isNullable) {
+			// index | enumValues
+			mh.op(SWAP);
+			// enumValues | index
+		} else {
+			// enumValues
+			mh.varOp(ILOAD, "io");
+			mh.getIO(this.enumSizePrimitive);
+			// enumValues | index
+		}
+
+		// enumValues | index
+
 		mh.op(AALOAD);
+		if (end != null)
+			mh.visitLabel(end);
 	}
 
 	@Override
 	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
 		mh.varOp(ILOAD, "io");
 		valueLoad.run();
-		mh.callInst(INVOKEVIRTUAL, Enum.class, "ordinal", int.class);
-		mh.putIO(this.enumSize);
+
+		if (this.isNullable) {
+			try (IfElse ifElse = new IfElse(mh, IFNONNULL)) {
+				// if null
+				mh.op(ICONST_M1);
+
+				ifElse.elseStart();
+				// if not null
+				valueLoad.run();
+				mh.callInst(INVOKEVIRTUAL, Enum.class, "ordinal", int.class);
+			}
+			mh.putIO(this.enumSizePrimitive);
+		} else {
+			mh.callInst(INVOKEVIRTUAL, Enum.class, "ordinal", int.class);
+			mh.putIO(this.enumSizePrimitive);
+		}
 	}
 
 	@Override
 	public int getStaticSize() {
-		return this.enumSize == null ? 0 : PrimitiveIODef.getSize(this.enumSize);
+		return this.enumSizePrimitive == null ? 0 : PrimitiveIODef.getSize(this.enumSizePrimitive);
 	}
 
 	@Override

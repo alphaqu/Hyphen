@@ -39,6 +39,7 @@ public final class SubclassDef extends MethodDef {
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
 		mh.varOp(ILOAD, "io");
+		// TODO: consider using dynamic max size like enums
 		mh.getIO(byte.class);
 		try (var tableSwitch = new TableSwitch(mh, 0, this.subDefs.length)) {
 			tableSwitch.labels(value -> {

@@ -10,12 +10,10 @@ import dev.quantumfusion.hyphen.util.TestThis;
 
 @Data
 @TestThis
-// TODO: fix
 @FailTest(UnknownTypeException.class)
 public class SimpleSuper {
 	@DataSubclasses({C1.class, C2.class})
-	public C1<@DataSubclasses({Integer.class, Float.class})
-			? super Number> data;
+	public C1<? super Number> data;
 
 	public SimpleSuper(C1<? super Number> data) {
 		this.data = data;

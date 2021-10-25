@@ -10,7 +10,7 @@ import dev.quantumfusion.hyphen.util.TestThis;
 
 @Data
 @TestThis
-// TODO: fix
+// TODO: Decide, if this should throw; also implement wildcards
 @FailTest(UnknownTypeException.class)
 public class IntC1PartialError {
 	@DataSubclasses({C1.class, IntC1.class})

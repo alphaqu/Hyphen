@@ -8,6 +8,7 @@ import dev.quantumfusion.hyphen.util.TestThis;
 @Data
 @TestThis
 public class PolyPolyArray {
+	// TODO: consider if this is type even makes sense
 	public @DataSubclasses({Integer.class, Float.class}) Number @DataSubclasses({Integer[].class, Float[].class, Number[].class}) [] numbers;
 
 	public PolyPolyArray(Number[] numbers) {

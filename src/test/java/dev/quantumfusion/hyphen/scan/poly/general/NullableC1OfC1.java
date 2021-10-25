@@ -17,7 +17,8 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
-@FailTest // FIXME should not fail
+// TODO: This is currently not supported in the new scan system
+@FailTest
 public class NullableC1OfC1 {
 	@Nullable
 	@DataNullable

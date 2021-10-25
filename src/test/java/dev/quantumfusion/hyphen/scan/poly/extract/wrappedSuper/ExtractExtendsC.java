@@ -12,7 +12,7 @@ import dev.quantumfusion.hyphen.util.TestThis;
 // Tracking issue #6
 @Data
 @TestThis
-// TODO: fix
+// TODO: This is currently not supported in the new scan system
 @FailTest(UnknownTypeException.class)
 public class ExtractExtendsC {
 	@DataSubclasses({C1.class, CoWrappedC1Super.class})

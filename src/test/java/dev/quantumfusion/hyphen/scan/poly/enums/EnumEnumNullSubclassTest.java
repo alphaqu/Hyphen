@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.enums;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.c.CM1;
@@ -18,6 +19,8 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.subClasses;
 
 @Data
 @TestThis
+// TODO: consider whether this should actually throw, if not how to fix this?
+@FailTest(msg = "Enum does not contain any values")
 public class EnumEnumNullSubclassTest {
 	@DataSubclasses({EnumC.class, EnumCBoolean.class, EnumCSingleton.class, EnumCNull.class})
 	public CM1 data;

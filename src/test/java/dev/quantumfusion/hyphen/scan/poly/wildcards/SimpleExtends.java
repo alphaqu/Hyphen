@@ -10,12 +10,11 @@ import dev.quantumfusion.hyphen.util.TestThis;
 
 @Data
 @TestThis
-// TODO: fix
+// TODO: implement wildcards
 @FailTest(UnknownTypeException.class)
 public class SimpleExtends {
 	@DataSubclasses({C1.class, C2.class})
-	public C1<@DataSubclasses({Integer.class, Float.class})
-			? extends Number> data;
+	public C1<? extends @DataSubclasses({Integer.class, Float.class}) Number> data;
 
 	public SimpleExtends(C1<? extends Number> data) {
 		this.data = data;

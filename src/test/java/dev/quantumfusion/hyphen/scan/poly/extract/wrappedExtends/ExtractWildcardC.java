@@ -10,7 +10,7 @@ import dev.quantumfusion.hyphen.util.TestThis;
 
 @Data
 @TestThis
-// TODO: fix
+// TODO: This is currently not supported in the new scan system
 @FailTest(UnknownTypeException.class)
 public class ExtractWildcardC {
 	@DataSubclasses({C1.class, CoWrappedC1Extends.class})

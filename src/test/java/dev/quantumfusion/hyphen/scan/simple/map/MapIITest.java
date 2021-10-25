@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
-@TestThis
 @Data
+@TestThis
 public class MapIITest {
-	@Data // FIXME
+	@Data
 	public final Map<Integer, Integer> data;
 
 	public MapIITest(Map<Integer, Integer> data) {

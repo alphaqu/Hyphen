@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.scan.poly.enums;
 
+import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.util.TestThis;
 
@@ -11,6 +12,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 @Data
 @TestThis
+@FailTest(msg = "Enum does not contain any values")
 public class EnumNullTestTest {
 	public EnumNullTest data;
 

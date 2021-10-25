@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+// TODO: cleanup
 public class TestUtil {
 	public static Stream<? extends Class<?>> findAllClassesUsingClassLoader(String packageName) {
 		InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(packageName.replaceAll("[.]", "/"));
@@ -233,7 +233,7 @@ public class TestUtil {
 					}));
 		} catch (Throwable t) {
 			return DynamicTest.dynamicTest(clazz.getSimpleName(), () -> {
-				if (clazz.isAnnotationPresent(FailTest.class)) {
+				if (clazz.isAnnotationPresent(FailTest.class) && !"Expected test to fail ==> expected: <false> but was: <true>".equals(t.getMessage())) {
 					t.printStackTrace();
 					FailTest failTest = clazz.getDeclaredAnnotation(FailTest.class);
 					if (failTest.value() != Throwable.class)

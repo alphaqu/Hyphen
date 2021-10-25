@@ -11,11 +11,6 @@ public class IntPair<B> extends Pair<Integer, B> {
 		super(integer, b);
 	}
 
-	// FIXME: tracking issue 10
-	public IntPair(Object object, B b) {
-		this((Integer) object, b);
-	}
-
 	public static <B> Supplier<? extends Stream<? extends IntPair<B>>> generateIntPair(
 			Supplier<? extends Stream<? extends B>> bProvider) {
 		return cross(INTEGERS, bProvider, IntPair::new);

@@ -16,7 +16,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 @Data
 @TestThis
-@FailTest // FIXME should not fail
+@FailTest // FIXME infinite toString()
 public class RecursiveString {
 	@DataSubclasses({C1.class, RecursiveC.class})
 	public C1<String> data;
