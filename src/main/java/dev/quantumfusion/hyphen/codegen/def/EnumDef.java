@@ -20,7 +20,7 @@ public final class EnumDef extends MethodDef {
 	private final Class<? extends Enum<?>> en;
 	private final int enSize;
 
-	private final Class<?> primitive;
+	private final Class<?> enumSize;
 
 	@SuppressWarnings("unchecked")
 	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
@@ -28,10 +28,10 @@ public final class EnumDef extends MethodDef {
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
 		this.enSize = this.en.getEnumConstants().length;
 
-		if (this.enSize == 0) this.primitive = null;
-		else if (this.enSize <= 0xff) this.primitive = byte.class;
-		else if (this.enSize <= 0xffff) this.primitive = short.class;
-		else this.primitive = int.class;
+		if (this.enSize == 0) this.enumSize = null;
+		else if (this.enSize <= 0xff) this.enumSize = byte.class;
+		else if (this.enSize <= 0xffff) this.enumSize = short.class;
+		else this.enumSize = int.class;
 	}
 
 	@SuppressWarnings({"unchecked", "unused"})
@@ -63,7 +63,7 @@ public final class EnumDef extends MethodDef {
 			mh.visitFieldInsn(GETSTATIC, this.en, "VAL", this.en.arrayType());
 		}
 		mh.varOp(ILOAD, "io");
-		mh.getIO(byte.class);
+		mh.getIO(this.enumSize);
 		mh.op(AALOAD);
 	}
 
@@ -72,13 +72,12 @@ public final class EnumDef extends MethodDef {
 		mh.varOp(ILOAD, "io");
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Enum.class, "ordinal", int.class);
-		// TODO: dynamically pick size depending on enum entry count
-		mh.putIO(byte.class);
+		mh.putIO(this.enumSize);
 	}
 
 	@Override
 	public int getStaticSize() {
-		return this.primitive == null ? 0 : PrimitiveIODef.getSize(this.primitive);
+		return this.enumSize == null ? 0 : PrimitiveIODef.getSize(this.enumSize);
 	}
 
 	@Override
