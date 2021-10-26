@@ -1,5 +1,6 @@
 package dev.quantumfusion.hyphen.codegen;
 
+import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -54,7 +55,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private static Class<?>[] parameters(Class<?>[] parameters, boolean raw) {
 		if (raw) {
 			final Class<?>[] a = new Class[parameters.length];
-			Arrays.fill(a, Object.class);
+			for (int i = 0; i < a.length; i++) {
+				a[i] = IOInterface.class.isAssignableFrom(parameters[i]) ? IOInterface.class : Object.class;
+			}
 			return a;
 		}
 		return parameters;
