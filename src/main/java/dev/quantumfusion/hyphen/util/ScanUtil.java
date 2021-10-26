@@ -69,7 +69,13 @@ public class ScanUtil {
 
 
 		if (out.containsKey(DataGlobalAnnotation.class))
-			out.putAll(handler.globalAnnotations.get((String) out.get(DataGlobalAnnotation.class)));
+			out.putAll(handler.globalAnnotations.get(out.get(DataGlobalAnnotation.class)));
+
+		final Class<?> classFrom = getClassFrom(self);
+		if (handler.globalAnnotations.containsKey(classFrom)) {
+			out.putAll(handler.globalAnnotations.get(classFrom));
+		}
+
 		return out;
 	}
 

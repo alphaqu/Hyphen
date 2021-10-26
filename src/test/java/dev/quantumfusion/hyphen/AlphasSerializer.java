@@ -2,7 +2,9 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.UnsafeIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -15,7 +17,10 @@ public class AlphasSerializer {
 	}
 
 	public static <O> void test(O data) {
-		var factory = SerializerFactory.create(UnsafeIO.class, (Class<O>) data.getClass());
+		var factory = SerializerFactory.createDebug(UnsafeIO.class, (Class<O>) data.getClass());
+		factory.addGlobalAnnotation(String.class, DataNullable.class, null);
+		factory.setExportDir(Path.of("./"));
+
 		final HyphenSerializer<UnsafeIO, O> serializer = factory.build();
 		final int measure = serializer.measure(data);
 		final UnsafeIO unsafeIO = UnsafeIO.create(measure);

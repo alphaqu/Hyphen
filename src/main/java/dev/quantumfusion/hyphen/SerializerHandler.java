@@ -44,15 +44,16 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	public final Class<IO> ioClass;
 	public final boolean debug;
 	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
-	public final Map<String, Map<Class<? extends Annotation>, Object>> globalAnnotations;
+	// String for annotation or the Class to apply
+	public final Map<Object, Map<Class<? extends Annotation>, Object>> globalAnnotations;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
 	public final Map<Clazz, MethodDef> methods = new HashMap<>();
 	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
 	// not null on export
 	public CodegenHandler<IO, D> codegenHandler;
 
-	private String name = "HyphenSerializer";
-	private Path exportPath = null;
+	public String name = "HyphenSerializer";
+	public Path exportPath = null;
 
 	public SerializerHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
 		// Initialize options
@@ -127,31 +128,6 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private MethodDef scan() {
 		return acquireDefNewMethod(new Clazz(this, dataClass));
 	}
-
-	/**
-	 * Sets the name of the produced serializer class.
-	 */
-	public SerializerHandler<IO, D> withName(String name){
-		this.name = name;
-		return this;
-	}
-
-	/**
-	 * Sets the file location to export to.
-	 */
-	public SerializerHandler<IO, D> withExportPath(Path path){
-		this.exportPath = path;
-		return this;
-	}
-
-	/**
-	 * Sets the directory to export to. Uses {@link #withName(String)} to call {@link #withExportPath(Path)}
-	 */
-	public SerializerHandler<IO, D> withExportDir(Path path){
-		return this.withExportPath(path.resolve(this.name + ".class"));
-	}
-
-
 
 	public HyphenSerializer<IO, D> build() {
 		try {
