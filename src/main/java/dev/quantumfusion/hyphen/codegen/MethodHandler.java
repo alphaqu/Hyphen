@@ -158,8 +158,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public Variable addVar(String name, Class<?> type) {
 		if (variableMap.containsKey(name)) {
-			// FIXME: bad solution that is gonna cause issues in the future
-			int i = 1;
+			int i = 0;
 			while (variableMap.containsKey(name + i)) {
 				i++;
 			}
