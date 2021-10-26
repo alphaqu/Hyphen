@@ -83,9 +83,9 @@ public class ScanUtil {
 		try {
 			for (Annotation annotation : annotations.getDeclaredAnnotations()) {
 				var annotatedType = annotation.annotationType();
-				if (annotatedType.getDeclaredAnnotation(HyphenAnnotation.class) == null) return;
+				if (!annotatedType.isAnnotationPresent(HyphenAnnotation.class)) continue;
 				Object value = null;
-				final Method valueGetter = getAnnotationValueGetter(annotation.annotationType());
+				final Method valueGetter = getAnnotationValueGetter(annotatedType);
 				if (valueGetter != null)
 					value = valueGetter.invoke(annotation);
 

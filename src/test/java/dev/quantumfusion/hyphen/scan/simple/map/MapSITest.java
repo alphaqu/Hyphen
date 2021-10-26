@@ -14,7 +14,6 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 @TestThis
 @Data
 public class MapSITest {
-	@Data // FIXME
 	public final Map<String, Integer> data;
 
 	public MapSITest(Map<String, Integer> data) {
