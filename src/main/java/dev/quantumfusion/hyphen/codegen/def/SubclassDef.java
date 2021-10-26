@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.TableSwitch;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
@@ -38,7 +39,7 @@ public final class SubclassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		// TODO: consider using dynamic max size like enums
 		mh.getIO(byte.class);
 		try (var tableSwitch = new TableSwitch(mh, 0, this.subDefs.length)) {
@@ -54,81 +55,67 @@ public final class SubclassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
-		mh.addVar("clz", Class.class);
-		valueLoad.run();
-		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
-		mh.varOp(ISTORE, "clz");
-		ArrayUtil.dualForEach(this.subClasses, this.subDefs, (clz, serializerDef, i) -> {
-			mh.varOp(ILOAD, "clz");
-			mh.visitLdcInsn(Type.getType(clz));
-			try (var f = new If(mh, IF_ACMPNE)) {
-				mh.varOp(ILOAD, "io");
-				mh.visitLdcInsn(i);
-				mh.putIO(byte.class);
+		ifChainClasses(mh, valueLoad, (clz, serializerDef, i) -> {
+			mh.loadIO();
+			mh.visitLdcInsn(i);
+			mh.putIO(byte.class);
 
-				serializerDef.writePut(mh, () -> {
-					valueLoad.run();
-					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
-				});
-				mh.op(RETURN);
-			}
+			serializerDef.writePut(mh, () -> {
+				valueLoad.run();
+				GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
+			});
+			mh.op(RETURN);
 		});
 		// TODO: throw
 	}
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		mh.addVar("clz", Class.class);
+		ifChainClasses(mh, valueLoad, (clz, serializerDef, i) -> {
+			if (serializerDef.hasDynamicSize())
+				serializerDef.writeMeasure(mh, () -> {
+					valueLoad.run();
+					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
+				});
+			int ss = serializerDef.getStaticSize();
+			if (!this.allSameStaticSize && ss != 0) {
+				mh.visitLdcInsn(ss);
+				if (serializerDef.hasDynamicSize()) mh.op(IADD);
+			} else if (!serializerDef.hasDynamicSize()) mh.op(ICONST_0);
+			mh.op(IRETURN);
+		});
+		// TODO: throw
+		mh.op(ICONST_0);
+	}
+
+	private void ifChainClasses(MethodHandler mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
+		final Variable clz = mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
-		mh.varOp(ISTORE, "clz");
-
-		if (this.hasDynamicSize()) {
-			ArrayUtil.dualFor(this.subClasses, this.subDefs, (clz, serializerDef) -> {
-				mh.varOp(ILOAD, "clz");
-				mh.visitLdcInsn(Type.getType(clz));
-				try (var anIf = new If(mh, IF_ACMPNE)) {
-					if (serializerDef.hasDynamicSize())
-						serializerDef.writeMeasure(mh, () -> {
-							valueLoad.run();
-							GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
-						});
-					int ss = serializerDef.getStaticSize();
-					if (!this.allSameStaticSize && ss != 0) {
-						mh.visitLdcInsn(ss);
-						if (serializerDef.hasDynamicSize()) mh.op(IADD);
-					} else if (!serializerDef.hasDynamicSize())
-						mh.op(ICONST_0);
-
-					mh.op(IRETURN);
-				}
-			});
-			// TODO: throw
-			mh.op(ICONST_0);
-		}
+		mh.varOp(ISTORE, clz);
+		ArrayUtil.dualForEach(this.subClasses, this.subDefs, (aClass, serializerDef, i) -> {
+			mh.varOp(ILOAD, clz);
+			mh.visitLdcInsn(Type.getType(aClass));
+			try (var f = new If(mh, IF_ACMPNE)) {
+				action.apply(aClass, serializerDef, i);
+			}
+		});
 	}
 
 	@Override
 	public int getStaticSize() {
-		if (this.subDefs.length == 0) // ???
-			return 0;
-		if (this.allSameStaticSize)
-			return this.subDefs[0].getStaticSize() + 1;
+		if (this.subDefs.length == 0) return 0;
+		if (this.allSameStaticSize) return this.subDefs[0].getStaticSize() + 1;
 		return 1;
 	}
 
 	@Override
 	public boolean hasDynamicSize() {
-		if (this.subDefs.length == 0) // ???
-			return false;
-
-
-		if (!this.allSameStaticSize)
-			return true;
+		if (this.subDefs.length == 0) return false;
+		if (!this.allSameStaticSize) return true;
 
 		for (SerializerDef subDef : this.subDefs) {
-			if (subDef.hasDynamicSize())
-				return true;
+			if (subDef.hasDynamicSize()) return true;
 		}
 
 		return false;

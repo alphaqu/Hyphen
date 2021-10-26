@@ -52,7 +52,7 @@ public final class EnumDef extends MethodDef {
 		if (this.isNullable) {
 			var l = new Label();
 			end = new Label();
-			mh.varOp(ILOAD, "io");
+			mh.loadIO();
 			mh.getIO(this.enumSizePrimitive);
 
 			mh.op(DUP);
@@ -93,7 +93,7 @@ public final class EnumDef extends MethodDef {
 			// enumValues | index
 		} else {
 			// enumValues
-			mh.varOp(ILOAD, "io");
+			mh.loadIO();
 			mh.getIO(this.enumSizePrimitive);
 			// enumValues | index
 		}
@@ -107,7 +107,7 @@ public final class EnumDef extends MethodDef {
 
 	@Override
 	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		valueLoad.run();
 
 		if (this.isNullable) {

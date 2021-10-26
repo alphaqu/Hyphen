@@ -9,10 +9,14 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -53,14 +57,14 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 		this.cw.visit(V16, ACC_PUBLIC | ACC_FINAL, this.self, null, GenUtil.internal(Object.class), new String[]{GenUtil.internal(HyphenSerializer.class)});
 
-		try (var mh = new MethodHandler(this.cw.visitMethod(ACC_PUBLIC, "<init>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass)) {
+		try (var mh = new MethodHandler(this.cw.visitMethod(ACC_PUBLIC, "<init>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass, true)) {
 			mh.visitIntInsn(ALOAD, 0);
 			mh.callInst(INVOKESPECIAL, Object.class, "<init>", Void.TYPE);
 			mh.op(RETURN);
 		}
 
 		if (options.get(Options.FAST_ALLOC)) {
-			try (var mh = new MethodHandler(this.cw.visitMethod(ACC_STATIC, "<clinit>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass)) {
+			try (var mh = new MethodHandler(this.cw.visitMethod(ACC_STATIC, "<clinit>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass, false)) {
 				mh.visitTypeInsn(NEW, self);
 				mh.op(DUP);
 				mh.visitMethodInsn(INVOKESPECIAL, self, "<init>", GenUtil.methodDesc(Void.TYPE), false);
@@ -94,12 +98,14 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	private void writeMethodInternal(Clazz clazz, MethodInfo methodInfo, boolean spark, boolean synthetic, Consumer<MethodHandler> writer) {
 		final Class<?>[] parameters = methodInfo.parameters;
 		try (var mh = new MethodHandler(cw, methodInfo, self, dataClass, ioClass, options.get(Options.SHORT_VARIABLE_NAMES), spark, synthetic)) {
-			for (Class<?> parameter : parameters)
-				mh.addVar(getVarName(parameter) + (spark ? "raw" : ""), spark ? Object.class : parameter);
+			for (int i = 0; i < parameters.length; i++) {
+				mh.addVar(MethodHandler.getParamName(i) + (spark ? "raw" : ""), spark ? Object.class : parameters[i]);
+			}
 			mh.visitCode();
 			if (spark) {
-				for (Class<?> parameter : parameters) {
-					final String varName = getVarName(parameter);
+				for (int i = 0; i < parameters.length; i++) {
+					var parameter = parameters[i];
+					var varName = MethodHandler.getParamName(i);
 					mh.addVar(varName, parameter); // add var
 					// cast
 					mh.varOp(ILOAD, varName + "raw");
@@ -120,11 +126,6 @@ public class CodegenHandler<IO extends IOInterface, D> {
 		}
 	}
 
-	private String getVarName(Class<?> c) {
-		if (c == ioClass) return "io";
-		return "data";
-	}
-
 	public void setupSpark(MethodDef spark) {
 		spark.getInfo.setName("get");
 		spark.putInfo.setName("put");
@@ -136,27 +137,33 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	public synchronized <O extends HyphenSerializer<IO, D>> HyphenSerializer<IO, D> export() {
 		final byte[] bytes = cw.toByteArray();
 
-		if (debug) {
-			try {
-				Files.write(Path.of("./" + self + ".class"), bytes, StandardOpenOption.CREATE);
-			} catch (IOException e) {
-				e.printStackTrace();
+		try {
+			if (debug) {
+				try {
+					Files.write(Path.of("./" + self + ".class"), bytes, StandardOpenOption.CREATE);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-		}
-		final Class<O> def = (Class<O>) definer.def(self, bytes);
+			final Class<O> def = (Class<O>) definer.def(self, bytes);
 
-		if (options.get(Options.FAST_ALLOC)) {
-			return (HyphenSerializer<IO, D>) ClassDefiner.SERIALIZER;
-		} else {
-			try {
-				var constructor = def.getConstructor();
-				constructor.setAccessible(true);
-				return constructor.newInstance();
-			} catch (Throwable e) {
-				throw new RuntimeException(e);
+			if (options.get(Options.FAST_ALLOC)) {
+				return (HyphenSerializer<IO, D>) ClassDefiner.SERIALIZER;
+			} else {
+				try {
+					var constructor = def.getConstructor();
+					constructor.setAccessible(true);
+					return constructor.newInstance();
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
+				}
 			}
+		} catch (Throwable thr) {
+			CheckClassAdapter.verify(new ClassReader(bytes), true, new PrintWriter(System.out));
+			throw thr;
 		}
 	}
+
 
 	public interface MethodWriter {
 		void writeMethod(Clazz clazz, MethodInfo methodInfo, boolean spark, boolean synthetic, Consumer<MethodHandler> writer);

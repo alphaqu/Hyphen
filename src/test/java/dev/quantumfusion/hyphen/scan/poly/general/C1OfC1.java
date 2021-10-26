@@ -16,8 +16,6 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
-// TODO: This is currently not supported in the new scan system
-@FailTest
 public class C1OfC1 {
 	@DataSubclasses({C1.class, WrappedC1.class})
 	public C1<C1<Integer>> data;

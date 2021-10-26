@@ -151,8 +151,7 @@ public final class ClassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (this.fields.isEmpty())
-			mh.op(ICONST_0);
+		if (this.fields.isEmpty()) mh.op(ICONST_0);
 		else {
 			int i = 0;
 			for (var entry : this.fields.entrySet()) {

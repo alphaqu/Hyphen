@@ -19,8 +19,8 @@ public class Clazzifier {
 			var type = annotatedType.getType();
 			if (type instanceof ParameterizedType) return ParaClazz.create(handler, annotatedType, ctx, dir);
 			if (type instanceof GenericArrayType) return ArrayClazz.create(handler, annotatedType, ctx, dir);
-			if (type instanceof TypeVariable) return TypeClazz.create(handler, annotatedType, ctx);
-			if (type instanceof WildcardType) return UnknownClazz.UNKNOWN;
+			if (type instanceof WildcardType) return Clazzifier.create(handler, ((AnnotatedWildcardType) annotatedType).getAnnotatedUpperBounds()[0], ctx, dir);
+			if (type instanceof TypeVariable) return      TypeClazz.create(handler, annotatedType, ctx);
 			if (type instanceof Class<?> c && c.getTypeParameters().length > 0)
 				return ParaClazz.create(handler, annotatedType, ctx, dir);
 			if (type instanceof Class<?> c && c.isArray())

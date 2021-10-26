@@ -11,14 +11,14 @@ import static org.objectweb.asm.Opcodes.*;
 public class StringIODef implements SerializerDef {
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "getString", String.class);
 	}
 

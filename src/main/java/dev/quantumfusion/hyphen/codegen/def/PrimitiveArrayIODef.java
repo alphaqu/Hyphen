@@ -13,14 +13,14 @@ public class PrimitiveArrayIODef implements SerializerDef {
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		valueLoad.run();
 		mh.putIO(this.primitiveArray);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		mh.getIO(this.primitiveArray);
 	}
 

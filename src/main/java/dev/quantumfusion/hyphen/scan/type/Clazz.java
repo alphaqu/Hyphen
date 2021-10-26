@@ -82,8 +82,7 @@ public class Clazz {
 
 		for (var field : ClassCache.getFields(aClass)) {
 			try {
-				var annotatedType = new ScanUtil.FieldAnnotatedType(field.field(), field.type());
-				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(handler, annotatedType, this, Direction.NORMAL)));
+				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(handler, new ScanUtil.FieldAnnotatedType(field.field(), field.type()), this, Direction.NORMAL)));
 			} catch (Throwable throwable) {
 				throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
 			}
@@ -98,8 +97,10 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		StringJoiner annotationJoiner = new StringJoiner(" ", "{", "}");
-		this.annotations.forEach((aClass1, value) -> annotationJoiner.add('@' + aClass1.getSimpleName() + " = " + value));
+		StringJoiner annotationJoiner = new StringJoiner(" ", "<", ">");
+		this.annotations.forEach((aClass1, value) -> {
+			annotationJoiner.add('@' + aClass1.getSimpleName() + hashCode());
+		});
 		return aClass.getSimpleName() + " " + annotationJoiner;
 	}
 

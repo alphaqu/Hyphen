@@ -38,9 +38,9 @@ public class ParaClazz extends Clazz {
 
 		if (annType instanceof AnnotatedParameterizedType annotatedType)
 			ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
-				parameters.put(
-						(dir == Direction.SUB) ? actual.getType().getTypeName() : internal.getTypeName(),
-						Clazzifier.create(handler, (dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir));
+				final String key = (dir == Direction.SUB) ? actual.getType().getTypeName() : internal.getTypeName();
+				final Clazz value = Clazzifier.create(handler, (dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir);
+				parameters.put(key, value);
 			});
 		else {
 			if (dir != Direction.SUB)
@@ -55,7 +55,14 @@ public class ParaClazz extends Clazz {
 
 	@Override
 	public Clazz define(String typeName) {
-		return parameters.getOrDefault(typeName, UnknownClazz.UNKNOWN);
+		final Clazz orDefault = parameters.getOrDefault(typeName, UnknownClazz.UNKNOWN);
+		if (orDefault == UnknownClazz.UNKNOWN) {
+			for (Clazz value : parameters.values()) {
+				final Clazz define = value.define(typeName);
+				if (define != UnknownClazz.UNKNOWN) return define;
+			}
+		}
+		return orDefault;
 	}
 
 	@Override

@@ -5,19 +5,18 @@ import org.objectweb.asm.Label;
 
 import static org.objectweb.asm.Opcodes.GOTO;
 
-public class For implements AutoCloseable {
+public class While implements AutoCloseable {
 	protected final MethodHandler mh;
 	protected final Label start = new Label();
 	protected final Label stop = new Label();
 
-
-	protected For(MethodHandler mh) {
+	protected While(MethodHandler mh) {
 		this.mh = mh;
 		this.mh.visitLabel(start);
 	}
 
-	public static For create(MethodHandler mh) {
-		return new For(mh);
+	public static While create(MethodHandler mh) {
+		return new While(mh);
 	}
 
 	public void exit(int op) {

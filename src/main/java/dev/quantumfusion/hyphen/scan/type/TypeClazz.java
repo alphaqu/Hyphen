@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,11 @@ public class TypeClazz extends Clazz {
 		var typeName = type.getTypeName();
 
 		if (ctx == null) throw new RuntimeException("Type Knowledge Required");
-		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), Object.class, typeName);
+		final Type bound = type.getBounds()[0];
+		if (bound != Object.class) {
+			System.out.println(bound);
+		}
+		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), ScanUtil.getClassFrom(bound), typeName);
 	}
 
 	@Override

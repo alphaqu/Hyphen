@@ -17,6 +17,11 @@ public class CoWrappedC1Extends<A, CA extends C1<? extends A>> extends C1<CA> {
 		this.selfA = selfA;
 	}
 
+	public CoWrappedC1Extends(Object ca, A selfA) {
+		super((CA) ca);
+		this.selfA = selfA;
+	}
+
 	public static <A, CA extends C1<? extends A>> Supplier<? extends Stream<? extends CoWrappedC1Extends<A, CA>>> generateCoWrappedC1Extends(
 			Supplier<? extends Stream<? extends A>> aSupplier,
 			Supplier<? extends Stream<? extends CA>> caSupplier

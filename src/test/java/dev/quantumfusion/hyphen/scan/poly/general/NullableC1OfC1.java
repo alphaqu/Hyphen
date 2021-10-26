@@ -17,8 +17,6 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.*;
 
 @Data
 @TestThis
-// TODO: This is currently not supported in the new scan system
-@FailTest
 public class NullableC1OfC1 {
 	@Nullable
 	@DataNullable

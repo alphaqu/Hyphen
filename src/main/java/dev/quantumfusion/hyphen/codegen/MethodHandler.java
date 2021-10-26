@@ -19,13 +19,15 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public final Class<?> ioClass;
 	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
 	private final Label start = new Label();
+	private final boolean instanceMethod;
 	private boolean compactVars;
 
-	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass) {
+	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass, boolean instanceMethod) {
 		super(ASM9, methodVisitor);
 		this.self = self;
 		this.dataClass = dataClass;
 		this.ioClass = ioClass;
+		this.instanceMethod = instanceMethod;
 		this.compactVars = false;
 
 		this.visitCode();
@@ -38,14 +40,14 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			String self,
 			Class<?> dataClass, Class<?> ioClass,
 			boolean compactVars,
-			boolean raw, boolean synthetic
+			boolean spark, boolean synthetic
 	) {
-		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (raw ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
-				methodInfo.getName(),
-				GenUtil.methodDesc(convert(methodInfo.returnClass, raw), parameters(methodInfo.parameters, raw)),
-				null, null), self, dataClass, ioClass);
+		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (spark ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
+							methodInfo.getName(),
+							GenUtil.methodDesc(convert(methodInfo.returnClass, spark), parameters(methodInfo.parameters, spark)),
+							null, null), self, dataClass, ioClass, spark);
 
-		if (raw) this.addVar("this", Object.class);
+		if (spark) this.addVar("this", Object.class);
 		this.compactVars = compactVars;
 	}
 
@@ -86,20 +88,28 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		for (int i : op) this.visitInsn(i);
 	}
 
-	public void varOp(int op, String... vars) {
-		for (var varName : vars) varOp(op, varName);
+	public void parameterOp(int op, int parameter) {
+		varOp(op, getParamName(parameter));
 	}
 
 	public void varOp(int op, Variable... vars) {
 		for (var var : vars) varOp(op, var);
 	}
 
-	public void varOp(int op, String var) {
+	void varOp(int op, String var) {
 		varOp(op, getVar(var));
 	}
 
 	public void varOp(int op, Variable var) {
 		this.visitIntInsn(var.type().getOpcode(op), var.pos());
+	}
+
+	public void loadIO() {
+		this.parameterOp(ILOAD, 0);
+	}
+
+	public static String getParamName(int id) {
+		return "methodparam_" + id;
 	}
 
 	// IOgentification:tm:
@@ -117,9 +127,36 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		return GenUtil.upperCase(primitive.getSimpleName());
 	}
 
-	// Var things
-	public Variable addVar(String name, Class<?> type) {
+	// Label things
+	public Label jump(int op) {
+		final Label label = new Label();
+		this.visitJumpInsn(op, label);
+		return label;
+	}
 
+	public void jump(int op, Label label) {
+		this.visitJumpInsn(op, label);
+	}
+
+	public void defineLabel(Label label) {
+		this.visitLabel(label);
+	}
+
+	public Label defineLabel() {
+		final Label label = new Label();
+		this.visitLabel(label);
+		return label;
+	}
+
+	// Var things
+	public Variable addVar(String name, Class<?> type, int createOp) {
+		final Variable i = this.addVar(name, type);
+		this.op(createOp);
+		this.varOp(ISTORE, i);
+		return i;
+	}
+
+	public Variable addVar(String name, Class<?> type) {
 		if (variableMap.containsKey(name)) {
 			// FIXME: bad solution that is gonna cause issues in the future
 			int i = 1;
@@ -138,6 +175,10 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		var var = variableMap.get(name);
 		if (var == null) throw new RuntimeException("Variable " + name + " does not exist.");
 		return var;
+	}
+
+	public void inc(Variable var, int size) {
+		this.visitIincInsn(var.pos(), size);
 	}
 
 	// Close operations to use this in a try catch. NO RETURN HAPPENS HERE

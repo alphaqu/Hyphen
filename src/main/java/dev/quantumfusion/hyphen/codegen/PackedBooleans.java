@@ -15,7 +15,7 @@ public class PackedBooleans {
 
 	public void writeGet(MethodHandler mh) {
 		for (int i = 0; i < stacks; i++) {
-			mh.varOp(ILOAD, "io");
+			mh.loadIO();
 			mh.getIO(byte.class);
 			mh.varOp(ISTORE, mh.addVar("n_" + stacks, int.class));
 		}
@@ -45,7 +45,7 @@ public class PackedBooleans {
 	public void initBoolean(MethodHandler mh) {
 		if (booleansAmount++ % 8 == 0) {
 			stacks++;
-			mh.varOp(ILOAD, "io");
+			mh.loadIO();
 		}
 	}
 

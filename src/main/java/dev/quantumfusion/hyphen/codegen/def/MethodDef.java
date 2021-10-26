@@ -41,14 +41,14 @@ public abstract class MethodDef implements SerializerDef {
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		valueLoad.run();
 		mh.callInst(putInfo);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
-		mh.varOp(ILOAD, "io");
+		mh.loadIO();
 		mh.callInst(getInfo);
 	}
 
@@ -62,10 +62,10 @@ public abstract class MethodDef implements SerializerDef {
 		if (!handler.options.get(Options.DISABLE_GET) || spark)
 			writer.writeMethod(this.clazz, this.getInfo, spark, false, this::writeMethodGet);
 		if (!handler.options.get(Options.DISABLE_PUT) || spark)
-			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.varOp(ILOAD, "data")));
+			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
 		if (!handler.options.get(Options.DISABLE_MEASURE) && (spark || this.hasDynamicSize())) {
 			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> {
-				this.writeMethodMeasure(mh, () -> mh.varOp(ILOAD, "data"));
+				this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0));
 				if (spark) {
 					mh.visitLdcInsn(getStaticSize());
 					mh.op(IADD);
