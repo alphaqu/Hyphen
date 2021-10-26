@@ -71,8 +71,8 @@ public class ScanUtil {
 		if (out.containsKey(DataGlobalAnnotation.class))
 			out.putAll(handler.globalAnnotations.get(out.get(DataGlobalAnnotation.class)));
 
-		final Class<?> classFrom = getClassFrom(self);
-		if (handler.globalAnnotations.containsKey(classFrom)) {
+		final Class<?> classFrom = getClassFromOrNull(self.getType());
+		if (classFrom != null && handler.globalAnnotations.containsKey(classFrom)) {
 			out.putAll(handler.globalAnnotations.get(classFrom));
 		}
 
@@ -120,10 +120,18 @@ public class ScanUtil {
 	}
 
 	public static Class<?> getClassFrom(Type type) {
+		final Class<?> aClass = getClassFromOrNull(type);
+		if (aClass == null)
+			throw new IllegalArgumentException(type.getClass() + ": " + type);
+		return aClass;
+	}
+
+	@Nullable
+	public static Class<?> getClassFromOrNull(Type type) {
 		if (type instanceof Class<?> c) return c;
 		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
 
-		throw new IllegalArgumentException(type.getClass() + ": " + type);
+		return null;
 	}
 
 	public record FieldAnnotatedType(Field field, AnnotatedType annotatedType) implements AnnotatedType {
