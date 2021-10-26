@@ -9,8 +9,7 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.IADD;
-import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodDef implements SerializerDef {
 	public final Map<Options, Boolean> options;
@@ -19,11 +18,11 @@ public abstract class MethodDef implements SerializerDef {
 	public final MethodInfo measureInfo;
 	public final Clazz clazz;
 
-	public MethodDef(SerializerHandler<?,?> handler, Clazz clazz) {
+	public MethodDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this(handler, clazz, "");
 	}
 
-	public MethodDef(SerializerHandler<?,?> handler, Clazz clazz, String suffix) {
+	public MethodDef(SerializerHandler<?, ?> handler, Clazz clazz, String suffix) {
 		var ch = handler.codegenHandler;
 		var definedClass = clazz.getDefinedClass();
 		this.clazz = clazz;
@@ -63,7 +62,7 @@ public abstract class MethodDef implements SerializerDef {
 			writer.writeMethod(this.clazz, this.getInfo, spark, false, this::writeMethodGet);
 		if (!handler.options.get(Options.DISABLE_PUT) || spark)
 			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
-		if (!handler.options.get(Options.DISABLE_MEASURE) && (spark || this.hasDynamicSize())) {
+		if (!handler.options.get(Options.DISABLE_MEASURE) && this.hasDynamicSize() || spark) {
 			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> {
 				this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0));
 				if (spark) {
