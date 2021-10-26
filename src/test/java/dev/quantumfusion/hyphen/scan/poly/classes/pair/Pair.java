@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.scan.poly.classes.pair;
 
-import dev.quantumfusion.hyphen.scan.annotations.Data;
-
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -9,9 +7,7 @@ import java.util.stream.Stream;
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class Pair<A, B> implements IPair<A, B>, IReversedPair<B, A> {
-	@Data
 	public A a;
-	@Data
 	public B b;
 
 	public Pair(A a, B b) {

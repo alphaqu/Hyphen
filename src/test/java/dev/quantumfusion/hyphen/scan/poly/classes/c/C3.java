@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.scan.poly.classes.c;
 
-import dev.quantumfusion.hyphen.scan.annotations.Data;
-
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -11,7 +9,6 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.reduce;
 
 
 public class C3<C, D> extends C2<C> {
-	@Data
 	public D d;
 
 	public C3(C c, C b1, D d) {

@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.scan.poly.classes.c;
 
-import dev.quantumfusion.hyphen.scan.annotations.Data;
-
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -9,7 +7,6 @@ import java.util.stream.Stream;
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class CoWrappedC1Super<A, CA extends C1<? super A>> extends C1<CA> {
-	@Data
 	public A selfA;
 
 	public CoWrappedC1Super(CA ca, A selfA) {
