@@ -17,12 +17,16 @@ public final class ByteBufferIO implements IOInterface {
 		this.byteBuffer = buffer;
 	}
 
+	public static final ByteBufferIO wrap(final ByteBuffer byteBuffer) {
+		return new ByteBufferIO(byteBuffer.order(ByteOrder.LITTLE_ENDIAN));
+	}
+
 	public static final ByteBufferIO create(final int size) {
-		return new ByteBufferIO(ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN));
+		return wrap(ByteBuffer.allocate(size));
 	}
 
 	public static final ByteBufferIO createDirect(final int size) {
-		return new ByteBufferIO(ByteBuffer.allocateDirect(size).order(ByteOrder.LITTLE_ENDIAN));
+		return wrap(ByteBuffer.allocateDirect(size));
 	}
 
 	public static final <O> ByteBufferIO create(final HyphenSerializer<ByteBufferIO, O> serializer, final O data) {
