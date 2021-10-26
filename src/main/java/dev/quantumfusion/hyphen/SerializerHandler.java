@@ -9,6 +9,7 @@ import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
 import java.lang.annotation.Annotation;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	public ClassDefiner definer = new ClassDefiner(Thread.currentThread().getContextClassLoader());
 	// not null on export
 	public CodegenHandler<IO, D> codegenHandler;
+
+	private String name = "HyphenSerializer";
+	private Path exportPath = null;
 
 	public SerializerHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
 		// Initialize options
@@ -124,12 +128,37 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		return acquireDefNewMethod(new Clazz(this, dataClass));
 	}
 
+	/**
+	 * Sets the name of the produced serializer class.
+	 */
+	public SerializerHandler<IO, D> withName(String name){
+		this.name = name;
+		return this;
+	}
+
+	/**
+	 * Sets the file location to export to.
+	 */
+	public SerializerHandler<IO, D> withExportPath(Path path){
+		this.exportPath = path;
+		return this;
+	}
+
+	/**
+	 * Sets the directory to export to. Uses {@link #withName(String)} to call {@link #withExportPath(Path)}
+	 */
+	public SerializerHandler<IO, D> withExportDir(Path path){
+		return this.withExportPath(path.resolve(this.name + ".class"));
+	}
+
+
+
 	public HyphenSerializer<IO, D> build() {
 		try {
-			this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, options, definer);
+			this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, this.name, options, definer);
 			codegenHandler.setupSpark(this.scan());
 			codegenHandler.writeMethods(methods.values());
-			return codegenHandler.export();
+			return codegenHandler.export(this.exportPath);
 		} catch (Throwable throwable) {
 			HyphenException hyphenException;
 			if (throwable instanceof HyphenException he) hyphenException = he;

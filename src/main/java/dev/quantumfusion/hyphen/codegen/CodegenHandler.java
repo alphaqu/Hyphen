@@ -16,7 +16,6 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -45,13 +44,13 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	private final ClassWriter cw;
 	private final ClassDefiner definer;
 
-	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug, EnumMap<Options, Boolean> options, ClassDefiner definer) {
+	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug, String self, EnumMap<Options, Boolean> options, ClassDefiner definer) {
 		this.ioClass = ioClass;
 		this.dataClass = dataClass;
 		this.debug = debug;
+		this.self = self;
 		this.options = options;
 		this.definer = definer;
-		this.self = "HyphenSerializer";
 		this.methodDedup = this.options.get(Options.SHORT_METHOD_NAMES) ? new HashMap<>() : null;
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 
@@ -65,9 +64,9 @@ public class CodegenHandler<IO extends IOInterface, D> {
 
 		if (options.get(Options.FAST_ALLOC)) {
 			try (var mh = new MethodHandler(this.cw.visitMethod(ACC_STATIC, "<clinit>", GenUtil.methodDesc(Void.TYPE), null, null), this.self, dataClass, ioClass, false)) {
-				mh.visitTypeInsn(NEW, self);
+				mh.visitTypeInsn(NEW, this.self);
 				mh.op(DUP);
-				mh.visitMethodInsn(INVOKESPECIAL, self, "<init>", GenUtil.methodDesc(Void.TYPE), false);
+				mh.visitMethodInsn(INVOKESPECIAL, this.self, "<init>", GenUtil.methodDesc(Void.TYPE), false);
 				mh.visitFieldInsn(PUTSTATIC, ClassDefiner.class, "SERIALIZER", HyphenSerializer.class);
 				mh.op(RETURN);
 			}
@@ -134,13 +133,13 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized <O extends HyphenSerializer<IO, D>> HyphenSerializer<IO, D> export() {
+	public synchronized <O extends HyphenSerializer<IO, D>> HyphenSerializer<IO, D> export(Path exportPath) {
 		final byte[] bytes = cw.toByteArray();
 
 		try {
-			if (debug) {
+			if (exportPath != null) {
 				try {
-					Files.write(Path.of("./" + self + ".class"), bytes, StandardOpenOption.CREATE);
+					Files.write(exportPath, bytes, StandardOpenOption.CREATE);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
