@@ -82,6 +82,11 @@ public class TestUtil {
 		return testAll("dev.quantumfusion.hyphen.scan.simple.map");
 	}
 
+	@TestFactory
+	DynamicNode testSimpleArrays() {
+		return testAll("dev.quantumfusion.hyphen.scan.simple.arrays");
+	}
+
 	public static DynamicNode testAll(String packageName) {
 		return DynamicContainer.dynamicContainer(
 				packageName,

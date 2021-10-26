@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.codegen.def.EnumDef;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
-import dev.quantumfusion.hyphen.scan.poly.general.MissingTypeIgnore;
+import dev.quantumfusion.hyphen.scan.simple.arrays.FixedIntegerArrayTest;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ import static dev.quantumfusion.hyphen.Options.FAST_ALLOC;
 public class ProduceSerializer {
 	public static void main(String[] args) throws IOException {
 		EnumDef.USE_CONSTANT_DYNAMIC = false;
-		var factory = SerializerFactory.createDebug(ByteBufferIO.class, MissingTypeIgnore.class);
+		var factory = SerializerFactory.createDebug(ByteBufferIO.class, FixedIntegerArrayTest.class);
 		factory.setOption(FAST_ALLOC, false);
 		// factory.setOption(DISABLE_GET, true);
 		// factory.setOption(DISABLE_PUT, true);

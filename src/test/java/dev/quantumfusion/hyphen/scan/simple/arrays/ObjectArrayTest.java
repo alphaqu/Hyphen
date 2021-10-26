@@ -1,6 +1,7 @@
-package dev.quantumfusion.hyphen.scan.simple;
+package dev.quantumfusion.hyphen.scan.simple.arrays;
 
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import dev.quantumfusion.hyphen.scan.simple.ObjectTest;
 import dev.quantumfusion.hyphen.util.TestSupplierUtil;
 import dev.quantumfusion.hyphen.util.TestThis;
 

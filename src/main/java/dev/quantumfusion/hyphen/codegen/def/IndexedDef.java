@@ -68,19 +68,26 @@ public abstract class IndexedDef extends MethodDef {
 
 	@Override
 	public int getStaticSize() {
-		return fixedSize == null ? 4 : 0;
+		return this.fixedSize == null ? 4 : this.fixedSize * this.componentDef.getStaticSize();
+	}
+
+	@Override
+	public boolean hasDynamicSize() {
+		return this.fixedSize == null || this.componentDef.hasDynamicSize();
 	}
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		int componentSize = this.componentDef.getStaticSize();
-		if (componentSize != 0) {
-			// TODO: consider sing shifting if component size is a pot
-			mh.visitLdcInsn(componentSize);
-			valueLoad.run();
-			this.lengthFunc.accept(mh);
-			mh.op(IMUL);
+		if (this.fixedSize == null) {
+			int componentSize = this.componentDef.getStaticSize();
 
+			if (componentSize != 0) {
+				// TODO: consider sing shifting if component size is a pot
+				mh.visitLdcInsn(componentSize);
+				valueLoad.run();
+				this.lengthFunc.accept(mh);
+				mh.op(IMUL);
+			} else mh.op(ICONST_0);
 		} else mh.op(ICONST_0);
 
 		if (componentDef.hasDynamicSize()) {
