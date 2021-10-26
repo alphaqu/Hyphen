@@ -1,13 +1,16 @@
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
 }
+
+group 'dev.quantumfusion'
+version '0.2'
+
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
-
-group "dev.quantumfusion"
-version "1.0"
 
 dependencies {
     implementation "org.ow2.asm:asm:${project.asm}"
@@ -18,6 +21,10 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit}"
 }
 
+java {
+    withSourcesJar()
+}
+
 test {
     useJUnitPlatform()
 }
@@ -25,3 +32,16 @@ test {
 tasks.withType(JavaCompile) {
     options.encoding = 'utf-8'
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'dev.quantumfusion'
+            artifactId = 'hyphen'
+            version = '0.1'
+
+            from components.java
+        }
+    }
+}
+
