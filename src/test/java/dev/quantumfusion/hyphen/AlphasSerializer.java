@@ -12,13 +12,12 @@ public class AlphasSerializer {
 
 	@org.junit.jupiter.api.Test
 	void name() {
-		Test data = new Test("fjlfhdsakvbnivr", new String[]{"asjdffsdak", "asjdffdsalk", "asjdflk", "asjdflkfasd"});
+		Test data = new Test(453);
 		test(data);
 	}
 
 	public static <O> void test(O data) {
 		var factory = SerializerFactory.createDebug(UnsafeIO.class, (Class<O>) data.getClass());
-		factory.addGlobalAnnotation(String.class, DataNullable.class, null);
 		factory.setExportDir(Path.of("./"));
 
 		final HyphenSerializer<UnsafeIO, O> serializer = factory.build();
@@ -32,30 +31,21 @@ public class AlphasSerializer {
 	}
 
 
-
 	@Data
-	public static class Test {
-		public String strings;
-		public String[] stringArray;
+	public static final class Test {
+		public final int strings;
+		private transient int[] stringArray;
 
-		public Test(String strings, String[] stringArray) {
+		public Test(int strings) {
 			this.strings = strings;
-			this.stringArray = stringArray;
 		}
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Test test = (Test) o;
-			return Objects.equals(strings, test.strings) && Arrays.equals(stringArray, test.stringArray);
+		public int strings() {
+			return strings;
 		}
 
-		@Override
-		public int hashCode() {
-			int result = Objects.hash(strings);
-			result = 31 * result + Arrays.hashCode(stringArray);
-			return result;
+		public int[] stringArray() {
+			return stringArray;
 		}
 	}
 }

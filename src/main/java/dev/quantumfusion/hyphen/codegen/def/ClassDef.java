@@ -34,25 +34,27 @@ public final class ClassDef extends MethodDef {
 		this.record = aClass.isRecord();
 		try {
 			for (FieldEntry field : clazz.getFields()) {
-				if (!field.clazz().containsAnnotation(Data.class)) continue;
-				try {
-					this.fields.put(field, handler.acquireDef(field.clazz()));
-				} catch (Throwable throwable) {
-					throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
+				if (shouldFieldSerialize(field)) {
+					try {
+						this.fields.put(field, handler.acquireDef(field.clazz()));
+					} catch (Throwable throwable) {
+						throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
+					}
 				}
 			}
 
 			if (!handler.options.get(Options.DISABLE_PUT)) {
 				List<Class<?>> constructorParameters = new ArrayList<>();
 				for (FieldEntry field : new Clazz(handler, clazz.getDefinedClass()).getFields()) {
-					if (!field.clazz().containsAnnotation(Data.class)) continue;
-					constructorParameters.add(field.clazz().getDefinedClass());
+					if (shouldFieldSerialize(field)) {
+						constructorParameters.add(field.clazz().getDefinedClass());
+					}
 				}
 				this.constructorParameters = constructorParameters.toArray(Class[]::new);
 				try {
 					if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers()))
 						throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
-					
+
 				} catch (NoSuchMethodException e) {
 					throw new HyphenException(e.getMessage(), "Check if the constructor holds all of the fields.");
 				}
@@ -62,6 +64,10 @@ public final class ClassDef extends MethodDef {
 		} catch (Throwable throwable) {
 			throw HyphenException.thr("class", Style.LINE_DOWN, clazz, throwable);
 		}
+	}
+
+	private boolean shouldFieldSerialize(FieldEntry field) {
+		return field.clazz().containsAnnotation(Data.class) && !Modifier.isTransient(field.field().getModifiers());
 	}
 
 	@Override
@@ -220,7 +226,8 @@ public final class ClassDef extends MethodDef {
 
 		var fieldName = field.getName();
 		if (record) mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
-		else if (Modifier.isPublic(field.getModifiers())) mh.visitFieldInsn(GETFIELD, aClass, fieldName, field.getType());
+		else if (Modifier.isPublic(field.getModifiers()))
+			mh.visitFieldInsn(GETFIELD, aClass, fieldName, field.getType());
 		else try {
 				definedClass.getDeclaredMethod("get" + GenUtil.upperCase(fieldName));
 				mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
