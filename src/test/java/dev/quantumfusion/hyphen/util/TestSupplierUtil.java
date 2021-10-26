@@ -14,9 +14,10 @@ public final class TestSupplierUtil {
 			"UWU",
 			"uwu",
 			"69696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969",
-			""
-			// TODO add unicodes
-			// , "☃️"
+			"",
+			"TODO add unicodes",
+			"\u2603\uFE0F",
+			"ඞඞඞ<red is sus>ඞඞඞ"
 	});
 
 	public static final Supplier<? extends IntStream> INTS = () -> IntStream.of(

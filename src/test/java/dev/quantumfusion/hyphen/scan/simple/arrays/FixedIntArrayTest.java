@@ -21,7 +21,7 @@ public class FixedIntArrayTest {
 	}
 
 	public static Supplier<Stream<? extends FixedIntArrayTest>> generateFixedIntArrayTest() {
-		return cross(ints(75, 10, 16, 16), FixedIntArrayTest::new);
+		return cross(ints(75, 30, 16, 16), FixedIntArrayTest::new);
 	}
 
 	@Override

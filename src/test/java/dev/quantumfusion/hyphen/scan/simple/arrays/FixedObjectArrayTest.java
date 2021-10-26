@@ -22,7 +22,7 @@ public class FixedObjectArrayTest {
 	}
 
 	public static Supplier<Stream<? extends FixedObjectArrayTest>> generateFixedObjectArrayTest() {
-		return cross(array(ObjectTest.generateObjectTest(), 9852145,  10, 16,16, ObjectTest.class), FixedObjectArrayTest::new);
+		return cross(array(ObjectTest.generateObjectTest(), 9852145,  30, 16,16, ObjectTest.class), FixedObjectArrayTest::new);
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class FixedStringArrayTest {
 	}
 
 	public static Supplier<Stream<? extends FixedStringArrayTest>> generateFixedStringArrayTest() {
-		return cross(array(STRINGS, 1215,  10, 16,16, String.class), FixedStringArrayTest::new);
+		return cross(array(STRINGS, 1215,  30, 16,16, String.class), FixedStringArrayTest::new);
 	}
 
 	@Override

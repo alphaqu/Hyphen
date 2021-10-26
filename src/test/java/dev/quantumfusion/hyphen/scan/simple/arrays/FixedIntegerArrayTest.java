@@ -20,7 +20,7 @@ public class FixedIntegerArrayTest {
 	}
 
 	public static Supplier<Stream<? extends FixedIntegerArrayTest>> generateFixedIntegerArrayTest() {
-		return cross(array(INTEGERS, 125, 10, 16, 16, Integer.class), FixedIntegerArrayTest::new);
+		return cross(array(INTEGERS, 125, 30, 16, 16, Integer.class), FixedIntegerArrayTest::new);
 	}
 
 	@Override

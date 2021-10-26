@@ -20,7 +20,7 @@ public class IntArrayTest {
 	}
 
 	public static Supplier<Stream<? extends IntArrayTest>> generateIntArrayTest() {
-		return cross(ints(75, 10, 0, 16), IntArrayTest::new);
+		return cross(ints(75, 30, 0, 16), IntArrayTest::new);
 	}
 
 	@Override
