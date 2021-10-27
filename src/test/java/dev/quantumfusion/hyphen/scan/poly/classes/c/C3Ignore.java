@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class C3Ignore<C, D> extends C2<C> {
-	public D d;
+	public transient D d;
 
 	public C3Ignore(C c, C b1) {
 		super(c, b1);

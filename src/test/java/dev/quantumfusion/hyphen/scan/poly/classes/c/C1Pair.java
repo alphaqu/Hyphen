@@ -1,7 +1,5 @@
 package dev.quantumfusion.hyphen.scan.poly.classes.c;
 
-import dev.quantumfusion.hyphen.scan.annotations.Data;
-
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -9,7 +7,6 @@ import java.util.stream.Stream;
 import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 
 public class C1Pair<A> extends C1<A> {
-	@Data
 	public A second;
 
 	public C1Pair(A a, A second) {
