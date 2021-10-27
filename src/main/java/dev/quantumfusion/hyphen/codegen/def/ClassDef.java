@@ -72,22 +72,22 @@ public final class ClassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
-		var info = new PackedBooleans();
-		for (var entry : fields.entrySet()) if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) info.countBoolean();
-		info.writeGet(mh);
+		var packedBooleans = new PackedBooleans();
+		for (var entry : fields.entrySet()) if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) packedBooleans.countBoolean();
+		packedBooleans.writeGet(mh);
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
 		for (var entry : fields.entrySet()) {
 			var fieldEntry = entry.getKey();
 			if (fieldEntry.isNullable()) {
-				info.getBoolean(mh);
+				packedBooleans.getBoolean(mh);
 				mh.op(ICONST_0);
 				try (var anIf = new IfElse(mh, IF_ICMPNE)) {
 					entry.getValue().writeGet(mh);
 					anIf.elseStart();
 					mh.op(ACONST_NULL);
 				}
-			} else if (shouldCompactBoolean(fieldEntry)) info.getBoolean(mh);
+			} else if (shouldCompactBoolean(fieldEntry)) packedBooleans.getBoolean(mh);
 			else entry.getValue().writeGet(mh);
 		}
 		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constructorParameters);

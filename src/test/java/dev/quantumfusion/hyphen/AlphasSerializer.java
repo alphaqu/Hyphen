@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.UnsafeIO;
 import dev.quantumfusion.hyphen.scan.annotations.Data;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 
@@ -32,6 +33,6 @@ public class AlphasSerializer {
 
 	@Data
 	public record Test(boolean b0, boolean b1, boolean b2, boolean b3, boolean b4, boolean b5, boolean b6, boolean b7,
-					   boolean b8) {
+					   @Nullable Boolean b8) {
 	}
 }

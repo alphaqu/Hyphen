@@ -24,19 +24,21 @@ public class PackedBooleans {
 			stackVariables.add(i, var);
 			mh.varOp(ISTORE, var);
 		}
-		stacks = 0;
+		stacks = -1;
 		booleansAmount = 0;
 
 	}
 
 	public void getBoolean(MethodHandler mh) {
 		int pos = (booleansAmount++) % 8;
+		if (pos == 0) stacks++;
+
 
 		mh.varOp(ILOAD, stackVariables.get(stacks));
 		if (pos != 0) {
 			mh.visitLdcInsn(pos);
 			mh.op(ISHR);
-		} else stacks++;
+		};
 
 		mh.op(ICONST_1, IAND);
 	}
