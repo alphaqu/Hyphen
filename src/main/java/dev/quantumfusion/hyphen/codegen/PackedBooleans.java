@@ -1,11 +1,14 @@
 package dev.quantumfusion.hyphen.codegen;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class PackedBooleans {
 	private int booleansAmount = 0;
 	private int stacks = 0;
-
+	private List<Variable> stackVariables = new ArrayList<>();
 
 	public void countBoolean() {
 		if (booleansAmount++ % 8 == 0) {
@@ -17,21 +20,23 @@ public class PackedBooleans {
 		for (int i = 0; i < stacks; i++) {
 			mh.loadIO();
 			mh.getIO(byte.class);
-			mh.varOp(ISTORE, mh.addVar("n_" + stacks, int.class));
+			final Variable var = mh.addVar(i + "_n", int.class);
+			stackVariables.add(i, var);
+			mh.varOp(ISTORE, var);
 		}
 		stacks = 0;
 		booleansAmount = 0;
+
 	}
 
 	public void getBoolean(MethodHandler mh) {
 		int pos = (booleansAmount++) % 8;
-		if (pos == 0) stacks++;
 
-		mh.varOp(ILOAD, "n_" + stacks);
+		mh.varOp(ILOAD, stackVariables.get(stacks));
 		if (pos != 0) {
 			mh.visitLdcInsn(pos);
 			mh.op(ISHR);
-		}
+		} else stacks++;
 
 		mh.op(ICONST_1, IAND);
 	}

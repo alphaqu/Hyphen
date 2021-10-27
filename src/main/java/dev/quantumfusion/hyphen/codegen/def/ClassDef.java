@@ -73,7 +73,7 @@ public final class ClassDef extends MethodDef {
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
 		var info = new PackedBooleans();
-		for (var entry : fields.entrySet()) if (entry.getKey().isNullable()) info.countBoolean();
+		for (var entry : fields.entrySet()) if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) info.countBoolean();
 		info.writeGet(mh);
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
@@ -132,7 +132,7 @@ public final class ClassDef extends MethodDef {
 	}
 
 	private boolean shouldCompactBoolean(FieldEntry fieldEntry) {
-		return options.get(Options.COMPACT_BOOLEANS) && fieldEntry.getFieldType() == boolean.class;
+		return (options.get(Options.COMPACT_BOOLEANS) && fieldEntry.getFieldType() == boolean.class);
 	}
 
 	@Override
