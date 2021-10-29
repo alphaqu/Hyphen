@@ -24,7 +24,7 @@ public class MapDef extends MethodDef {
 
 
 	public MapDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		super(handler, clazz);
+		super(handler, clazz, "map");
 	}
 
 	@Override

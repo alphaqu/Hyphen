@@ -13,7 +13,7 @@ public class ArrayDef extends IndexedDef {
 	protected final Clazz component;
 
 	public ArrayDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component) {
-		super(handler, clazz, component, (mh) -> mh.op(AALOAD), (mh) -> mh.op(ARRAYLENGTH));
+		super("arr", handler, clazz, component, (mh) -> mh.op(AALOAD), (mh) -> mh.op(ARRAYLENGTH));
 		this.component = component;
 		this.componentDef = handler.acquireDef(component);
 	}

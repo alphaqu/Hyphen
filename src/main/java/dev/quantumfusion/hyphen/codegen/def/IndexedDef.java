@@ -18,8 +18,8 @@ public abstract class IndexedDef extends MethodDef {
 	protected final Consumer<MethodHandler> lengthFunc;
 	private final Integer fixedSize;
 
-	public IndexedDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component, Consumer<MethodHandler> getterFunc, Consumer<MethodHandler> lengthFunc) {
-		super(handler, clazz);
+	public IndexedDef(String name, SerializerHandler<?, ?> handler, Clazz clazz, Clazz component, Consumer<MethodHandler> getterFunc, Consumer<MethodHandler> lengthFunc) {
+		super(handler, clazz, name);
 		this.component = component;
 		this.getterFunc = getterFunc;
 		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);

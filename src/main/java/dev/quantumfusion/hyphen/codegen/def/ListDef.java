@@ -13,7 +13,7 @@ import static org.objectweb.asm.Opcodes.*;
 public class ListDef extends IndexedDef {
 
 	public ListDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component) {
-		super(handler, clazz, component, (mh) -> {
+		super("list", handler, clazz, component, (mh) -> {
 			mh.callInst(INVOKEINTERFACE, List.class, "get", Object.class, int.class);
 			mh.typeOp(CHECKCAST, component.getBytecodeClass());
 		}, (mh) -> {
