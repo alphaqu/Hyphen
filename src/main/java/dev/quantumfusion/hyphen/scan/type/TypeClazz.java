@@ -31,9 +31,6 @@ public class TypeClazz extends Clazz {
 
 		if (ctx == null) throw new RuntimeException("Type Knowledge Required");
 		final Type bound = type.getBounds()[0];
-		if (bound != Object.class) {
-			System.out.println(bound);
-		}
 		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), ScanUtil.getClassFrom(bound), typeName);
 	}
 
