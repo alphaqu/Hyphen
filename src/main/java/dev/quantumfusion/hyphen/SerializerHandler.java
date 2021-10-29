@@ -88,20 +88,21 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		if (scanDeduplicationMap.containsKey(clazz))
 			return scanDeduplicationMap.get(clazz);
 
-		var out = acquireDefNew(clazz);
-		if (out instanceof MethodDef methodDef)
-			methods.put(clazz, methodDef);
-
-		scanDeduplicationMap.put(clazz, out);
-		return out;
+		return acquireDefNew(clazz);
 	}
 
 	private SerializerDef acquireDefNew(Clazz clazz) {
+
 		var definedClass = clazz.getDefinedClass();
 		//TODO Discuss about inherited definitions
 		if (definitions.containsKey(definedClass))
 			return definitions.get(definedClass).create(clazz, this);
-		return this.acquireDefNewMethod(clazz);
+
+		var methodDef = this.acquireDefNewMethod(clazz);
+		scanDeduplicationMap.put(clazz, methodDef);
+		methods.put(clazz, methodDef);
+		methodDef.scan(this, clazz);
+		return methodDef;
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
@@ -126,7 +127,10 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	private MethodDef scan() {
-		return acquireDefNewMethod(new Clazz(this, dataClass));
+		final Clazz clazz = new Clazz(this, dataClass);
+		final MethodDef methodDef = acquireDefNewMethod(clazz);
+		methodDef.scan(this, clazz);
+		return methodDef;
 	}
 
 	public HyphenSerializer<IO, D> build() {

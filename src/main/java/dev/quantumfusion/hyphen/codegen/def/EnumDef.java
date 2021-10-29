@@ -21,15 +21,18 @@ public final class EnumDef extends MethodDef {
 	public static boolean USE_CONSTANT_DYNAMIC = true;
 	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = true;
 
-	private final Class<? extends Enum<?>> en;
-	private final int enSize;
+	private Class<? extends Enum<?>> en;
+	private int enSize;
+	private Class<?> enumSizePrimitive;
+	private boolean isNullable;
 
-	private final Class<?> enumSizePrimitive;
-	private final boolean isNullable;
-
-	@SuppressWarnings("unchecked")
 	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler, clazz);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
 
 		this.isNullable = clazz.containsAnnotation(DataNullable.class);

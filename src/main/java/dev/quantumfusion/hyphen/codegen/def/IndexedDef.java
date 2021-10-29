@@ -27,6 +27,11 @@ public abstract class IndexedDef extends MethodDef {
 		this.componentDef = handler.acquireDef(component);
 	}
 
+	@Override
+	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+
+	}
+
 	public abstract void writeGetConverter(MethodHandler mh);
 
 	@Override

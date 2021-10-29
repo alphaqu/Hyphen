@@ -24,12 +24,16 @@ import static org.objectweb.asm.Opcodes.*;
 
 public final class ClassDef extends MethodDef {
 	private final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
-	private final Class<?>[] constructorParameters;
-	private final Class<?> aClass;
-	private final boolean record;
+	private Class<?>[] constructorParameters;
+	private Class<?> aClass;
+	private boolean record;
 
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler, clazz);
+	}
+
+	@Override
+	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this.aClass = clazz.getDefinedClass();
 		this.record = aClass.isRecord();
 		try {

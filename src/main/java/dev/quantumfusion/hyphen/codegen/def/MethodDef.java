@@ -32,6 +32,8 @@ public abstract class MethodDef implements SerializerDef {
 		this.measureInfo = ch.createMethodInfo(clazz, "measure", suffix, int.class, definedClass);
 	}
 
+	public abstract void scan(SerializerHandler<?, ?> handler, Clazz clazz);
+
 	protected abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
 
 	protected abstract void writeMethodGet(MethodHandler mh);

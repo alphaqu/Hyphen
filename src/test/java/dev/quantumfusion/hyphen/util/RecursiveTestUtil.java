@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // TODO: cleanup
-public class TestUtil {
+public class RecursiveTestUtil {
 	public static Stream<? extends Class<?>> findAllClassesUsingClassLoader(String packageName) {
 		InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream(packageName.replaceAll("[.]", "/"));
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -90,7 +90,7 @@ public class TestUtil {
 	public static DynamicNode testAll(String packageName) {
 		return DynamicContainer.dynamicContainer(
 				packageName,
-				findTestClasses(packageName).map(TestUtil::test)
+				findTestClasses(packageName).map(RecursiveTestUtil::test)
 		);
 	}
 

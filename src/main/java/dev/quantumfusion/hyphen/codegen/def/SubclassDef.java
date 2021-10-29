@@ -17,12 +17,15 @@ import static org.objectweb.asm.Opcodes.*;
 
 public final class SubclassDef extends MethodDef {
 	private final Class<?>[] subClasses;
-	private final SerializerDef[] subDefs;
-	private final boolean allSameStaticSize;
+	private SerializerDef[] subDefs;
+	private boolean allSameStaticSize;
 
 	public SubclassDef(SerializerHandler<?, ?> handler, Clazz clazz, Class<?>[] subClasses) {
 		super(handler, clazz, "SUB{ # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
 		this.subClasses = subClasses;
+	}
+
+	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
 
 		int size = this.subDefs[0].getStaticSize();
@@ -34,7 +37,6 @@ public final class SubclassDef extends MethodDef {
 			}
 		}
 		this.allSameStaticSize = true;
-
 	}
 
 	@Override

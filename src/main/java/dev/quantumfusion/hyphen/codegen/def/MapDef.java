@@ -16,15 +16,19 @@ import java.util.function.BiConsumer;
 import static org.objectweb.asm.Opcodes.*;
 
 public class MapDef extends MethodDef {
-	private final Clazz keyClazz;
-	private final Clazz valueClazz;
-	private final SerializerDef keyDef;
-	private final SerializerDef valueDef;
-	private final MethodInfo putLambdaMethod;
+	private Clazz keyClazz;
+	private Clazz valueClazz;
+	private SerializerDef keyDef;
+	private SerializerDef valueDef;
+	private MethodInfo putLambdaMethod;
 
 
 	public MapDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
 		super(handler, clazz);
+	}
+
+	@Override
+	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this.keyClazz = clazz.define("K");
 		this.valueClazz = clazz.define("V");
 		this.keyDef = handler.acquireDef(this.keyClazz);
@@ -153,9 +157,9 @@ public class MapDef extends MethodDef {
 		super.writeMethods(handler, writer, spark);
 		if (!handler.options.get(Options.DISABLE_MEASURE))
 			writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
-					mh -> {
-						this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
-						this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
-					});
+							   mh -> {
+								   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
+								   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
+							   });
 	}
 }

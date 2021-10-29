@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-public class TestPoly {
+public class RecursiveTestPoly {
 	C1<C0> s;
 
 	@Test
