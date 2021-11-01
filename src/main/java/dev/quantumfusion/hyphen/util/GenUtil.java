@@ -28,11 +28,11 @@ public final class GenUtil {
 			MethodHandle.class,
 			MethodType.class
 	);
-	private static final Map<Character, Character> SAFE_METHOD_NAME_MAPPER = Map.of('[', '⟦', ']', '⟧',
-																					'<', '❮', '>', '❯',
-																					'(', '❪', ')', '❫',
+	private static final Map<Character, Character> SAFE_METHOD_NAME_MAPPER = Map.of('[', '$', ']', '$',
+																					'<', '$', '>', '$',
+																					'(', '$', ')', '$',
 																					'/', '∕', '.', '•',
-																					';', '\u037E', ':', 'ː');
+																					';', '\u037E', ':', '：');
 
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];

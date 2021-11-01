@@ -24,7 +24,7 @@ public class MapDef extends MethodDef {
 
 
 	public MapDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		super(handler, clazz, "map");
+		super(handler, clazz);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class MapDef extends MethodDef {
 		this.valueClazz = clazz.define("V");
 		this.keyDef = handler.acquireDef(this.keyClazz);
 		this.valueDef = handler.acquireDef(this.valueClazz);
-		this.putLambdaMethod = handler.codegenHandler.createMethodInfo(clazz, "$lambda$put", Void.TYPE, handler.ioClass, this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass());
+		//this.putLambdaMethod = handler.codegenHandler.createMethodInfo(clazz, "$lambda$put", Void.TYPE, handler.ioClass, this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass());
 	}
 
 	@Override
@@ -44,13 +44,38 @@ public class MapDef extends MethodDef {
 		mh.callInst(INVOKEINTERFACE, Map.class, "size", int.class);
 		mh.putIO(int.class);
 
-		GenUtil.createMethodRef(
-				mh,
-				BiConsumer.class, "accept", Void.TYPE, new Class[]{Object.class, Object.class}, // BiConsumer::accept(Object, Object) void
-				mh.self, this.putLambdaMethod.getName(), Void.TYPE, new Class[]{mh.ioClass}, new Class[]{this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass()}
-		);
+		// add dynamic sizes
+		var iterator = mh.addVar("iterator", Iterator.class);
+		var entry = mh.addVar("value", Object.class);
 
-		mh.callInst(INVOKEINTERFACE, Map.class, "forEach", Void.TYPE, BiConsumer.class);
+		// get iterator
+		valueLoad.run();
+		mh.callInst(INVOKEINTERFACE, Map.class, "entrySet", Set.class);
+		mh.callInst(INVOKEINTERFACE, Iterable.class, "iterator", Iterator.class);
+		mh.varOp(ISTORE, iterator);
+
+		try (While aWhile = While.create(mh)) {
+			mh.varOp(ILOAD, iterator);
+			mh.callInst(INVOKEINTERFACE, Iterator.class, "hasNext", boolean.class);
+
+			aWhile.exit(IFEQ); // exit if false
+
+			mh.varOp(ILOAD, iterator);
+			mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
+			mh.typeOp(CHECKCAST, Map.Entry.class);
+			mh.varOp(ISTORE, entry);
+
+			this.keyDef.writePut(mh, () -> {
+				mh.varOp(ILOAD, entry);
+				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getKey", Object.class);
+				GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
+			});
+			this.valueDef.writePut(mh, () -> {
+				mh.varOp(ILOAD, entry);
+				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
+				GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
+			});
+		}
 	}
 
 	@Override
@@ -155,11 +180,11 @@ public class MapDef extends MethodDef {
 	@Override
 	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
 		super.writeMethods(handler, writer, spark);
-		if (!handler.options.get(Options.DISABLE_MEASURE))
-			writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
-							   mh -> {
-								   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
-								   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
-							   });
+	//if (!handler.options.get(Options.DISABLE_MEASURE))
+	//	writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
+	//					   mh -> {
+	//						   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
+	//						   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
+	//					   });
 	}
 }

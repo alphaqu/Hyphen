@@ -60,11 +60,13 @@ public abstract class MethodDef implements SerializerDef {
 	}
 
 	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
-		if (!handler.options.get(Options.DISABLE_GET) || spark)
+		if (!handler.options.get(Options.DISABLE_GET))
 			writer.writeMethod(this.clazz, this.getInfo, spark, false, this::writeMethodGet);
-		if (!handler.options.get(Options.DISABLE_PUT) || spark)
+		else writer.writeMethod(this.clazz, this.getInfo, spark, false, mh -> mh.throwException("get() is disabled."));
+		if (!handler.options.get(Options.DISABLE_PUT))
 			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
-		if (!handler.options.get(Options.DISABLE_MEASURE) && this.hasDynamicSize() || spark) {
+		else writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> mh.throwException("put() is disabled."));
+		if (!handler.options.get(Options.DISABLE_MEASURE) && this.hasDynamicSize()) {
 			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> {
 				this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0));
 				if (spark) {
@@ -72,6 +74,9 @@ public abstract class MethodDef implements SerializerDef {
 					mh.op(IADD);
 				}
 			});
-		}
+		}	else writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> mh.throwException("measure() is disabled."));
+
+
+
 	}
 }

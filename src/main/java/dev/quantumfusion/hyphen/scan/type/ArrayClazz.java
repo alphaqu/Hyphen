@@ -55,9 +55,8 @@ public class ArrayClazz extends Clazz {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
 		ArrayClazz that = (ArrayClazz) o;
-		return Objects.equals(component, that.component);
+		return Objects.equals(component, that.component) && Objects.equals(annotations, that.annotations);
 	}
 
 	@Override

@@ -66,7 +66,7 @@ public class TypeClazz extends Clazz {
 
 	@Override
 	public String toString() {
-		return this.defined.toString();
+		return this.defined.toString() + " = " + typeName + bytecodeBound.getSimpleName();
 	}
 
 	public Clazz getDefined() {

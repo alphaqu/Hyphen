@@ -3,6 +3,7 @@ package dev.quantumfusion.hyphen.io;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,9 @@ public class IOTests {
 	private static final float[] FLOATS = {0, Float.MIN_VALUE, Float.MAX_VALUE, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NaN, Float.MIN_NORMAL};
 	private static final double[] DOUBLES = {0, Double.MIN_VALUE, Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NaN, Double.MIN_NORMAL};
 
-	private static final Object[] ARRAYS = {BOOLEANS, BYTES, SHORTS, CHARS, INTS, LONGS, FLOATS, DOUBLES};
+	private static final String[] STRING = {"", "glosco", "ඞ", "Ayo, Crashnite?"};
+
+	private static final Object[] ARRAYS = {BOOLEANS, BYTES, SHORTS, CHARS, INTS, LONGS, FLOATS, DOUBLES, STRING};
 	private static final int SIZE;
 
 	private static final Map<Class<?>, Function<IOInterface, Object>> GET_ARRAY_FUNC = new HashMap<>();
@@ -31,7 +34,7 @@ public class IOTests {
 	private static final Map<Class<?>, BiConsumer<Object, IOInterface>> PUT_ARRAY_FUNC = new HashMap<>();
 	private static final Map<Class<?>, BiConsumer<Object, IOInterface>> PUT_FUNC = new HashMap<>();
 
-	public static final int TEST_SIZE = 200000;
+	public static final int TEST_SIZE = 1000000;
 
 	static {
 		int size = 0;
@@ -50,6 +53,7 @@ public class IOTests {
 		GET_ARRAY_FUNC.put(float[].class, IOInterface::getFloatArray);
 		GET_ARRAY_FUNC.put(long[].class, IOInterface::getLongArray);
 		GET_ARRAY_FUNC.put(double[].class, IOInterface::getDoubleArray);
+		GET_ARRAY_FUNC.put(String[].class, IOInterface::getStringArray);
 
 		GET_FUNC.put(boolean.class, IOInterface::getBoolean);
 		GET_FUNC.put(byte.class, IOInterface::getByte);
@@ -59,6 +63,7 @@ public class IOTests {
 		GET_FUNC.put(float.class, IOInterface::getFloat);
 		GET_FUNC.put(long.class, IOInterface::getLong);
 		GET_FUNC.put(double.class, IOInterface::getDouble);
+		GET_FUNC.put(String.class, IOInterface::getString);
 
 		PUT_ARRAY_FUNC.put(boolean[].class, (o, io) -> io.putBooleanArray((boolean[]) o));
 		PUT_ARRAY_FUNC.put(byte[].class, (o, io) -> io.putByteArray((byte[]) o));
@@ -68,6 +73,7 @@ public class IOTests {
 		PUT_ARRAY_FUNC.put(float[].class, (o, io) -> io.putFloatArray((float[]) o));
 		PUT_ARRAY_FUNC.put(long[].class, (o, io) -> io.putLongArray((long[]) o));
 		PUT_ARRAY_FUNC.put(double[].class, (o, io) -> io.putDoubleArray((double[]) o));
+		PUT_ARRAY_FUNC.put(String[].class, (o, io) -> io.putStringArray((String[]) o));
 
 		PUT_FUNC.put(boolean.class, (o, io) -> io.putBoolean((boolean) o));
 		PUT_FUNC.put(byte.class, (o, io) -> io.putByte((byte) o));
@@ -77,6 +83,7 @@ public class IOTests {
 		PUT_FUNC.put(float.class, (o, io) -> io.putFloat((float) o));
 		PUT_FUNC.put(long.class, (o, io) -> io.putLong((long) o));
 		PUT_FUNC.put(double.class, (o, io) -> io.putDouble((double) o));
+		PUT_FUNC.put(String.class, (o, io) -> io.putString((String) o));
 	}
 
 	@Test
@@ -155,6 +162,9 @@ public class IOTests {
 		else if (array instanceof float[] i) return i.length * 4;
 		else if (array instanceof long[] i) return i.length * 8;
 		else if (array instanceof double[] i) return i.length * 8;
+		else if (array instanceof String[] i) {
+			return (i.length * 16) + 16;
+		}
 		throw new RuntimeException("what");
 	}
 
@@ -167,6 +177,7 @@ public class IOTests {
 		else if (array instanceof float[] i) return Arrays.equals(i, (float[]) array2);
 		else if (array instanceof long[] i) return Arrays.equals(i, (long[]) array2);
 		else if (array instanceof double[] i) return Arrays.equals(i, (double[]) array2);
+		else if (array instanceof String[] i) return Arrays.equals(i, (String[]) array2);
 		throw new RuntimeException("what");
 	}
 
@@ -194,6 +205,9 @@ public class IOTests {
 			return;
 		} else if (array instanceof double[] i) {
 			for (double v : i) arrayConsumer.accept(v);
+			return;
+		} else if (array instanceof String[] i) {
+			for (String v : i) arrayConsumer.accept(v);
 			return;
 		}
 		throw new RuntimeException("what");

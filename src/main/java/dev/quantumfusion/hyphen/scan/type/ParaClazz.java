@@ -74,8 +74,8 @@ public class ParaClazz extends Clazz {
 
 	@Override
 	public String toString() {
-		var sj = new StringJoiner(", ", "{", "}");
-		parameters.forEach((s, clazz) -> sj.add(s + " = " + clazz.toString()));
+		var sj = new StringJoiner(",", "{", "}");
+		parameters.forEach((s, clazz) -> sj.add(s + "=" + clazz.toString()));
 		return super.toString() + sj;
 	}
 

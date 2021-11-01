@@ -18,8 +18,8 @@ import java.lang.invoke.MethodHandles;
 import static org.objectweb.asm.Opcodes.*;
 
 public final class EnumDef extends MethodDef {
-	public static boolean USE_CONSTANT_DYNAMIC = true;
-	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = true;
+	public static boolean USE_CONSTANT_DYNAMIC = false;
+	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = false;
 
 	private Class<? extends Enum<?>> en;
 	private int enSize;
@@ -86,8 +86,8 @@ public final class EnumDef extends MethodDef {
 				));
 			}
 		} else {
-			// mh.callInst(INVOKESTATIC, this.en, "values", this.en.arrayType());
-			mh.visitFieldInsn(GETSTATIC, this.en, "VAL", this.en.arrayType());
+			mh.callInst(INVOKESTATIC, this.en, "values", this.en.arrayType());
+			//mh.visitFieldInsn(GETSTATIC, this.en, "VAL", this.en.arrayType());
 		}
 
 		if (this.isNullable) {

@@ -88,20 +88,27 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		if (scanDeduplicationMap.containsKey(clazz))
 			return scanDeduplicationMap.get(clazz);
 
-		return acquireDefNew(clazz);
+
+		final SerializerDef serializerDef = acquireDefNew(clazz);
+
+		if (serializerDef instanceof MethodDef methodDef){
+			methodDef.scan(this, clazz);
+			methods.put(clazz, methodDef);
+		}
+
+
+		return serializerDef;
+
 	}
 
 	private SerializerDef acquireDefNew(Clazz clazz) {
 
 		var definedClass = clazz.getDefinedClass();
-		//TODO Discuss about inherited definitions
 		if (definitions.containsKey(definedClass))
 			return definitions.get(definedClass).create(clazz, this);
 
 		var methodDef = this.acquireDefNewMethod(clazz);
 		scanDeduplicationMap.put(clazz, methodDef);
-		methods.put(clazz, methodDef);
-		methodDef.scan(this, clazz);
 		return methodDef;
 	}
 

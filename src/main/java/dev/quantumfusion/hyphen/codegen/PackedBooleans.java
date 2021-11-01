@@ -17,11 +17,11 @@ public class PackedBooleans {
 	}
 
 	public void writeGet(MethodHandler mh) {
-		for (int i = 0; i < stacks; i++) {
+		for (int i = stacks; i > 0; i--) {
 			mh.loadIO();
 			mh.getIO(byte.class);
 			final Variable var = mh.addVar(i + "_n", int.class);
-			stackVariables.add(i, var);
+			stackVariables.add(0, var);
 			mh.varOp(ISTORE, var);
 		}
 		stacks = -1;
@@ -37,7 +37,7 @@ public class PackedBooleans {
 		mh.varOp(ILOAD, stackVariables.get(stacks));
 		if (pos != 0) {
 			mh.visitLdcInsn(pos);
-			mh.op(ISHR);
+			mh.op(IUSHR);
 		};
 
 		mh.op(ICONST_1, IAND);

@@ -115,6 +115,16 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		return "methodparam_" + id;
 	}
 
+
+	// Throwification
+	public void throwException(String error) {
+		this.typeOp(NEW, RuntimeException.class);
+		this.op(DUP);
+		this.visitLdcInsn(error);
+		this.callInst(INVOKESPECIAL, RuntimeException.class, "<init>", void.class, String.class);
+		this.op(ATHROW);
+	}
+
 	// IOgentification:tm:
 	public void getIO(Class<?> primitive) {
 		this.callInst(INVOKEVIRTUAL, this.ioClass, "get" + getIOName(primitive), primitive);

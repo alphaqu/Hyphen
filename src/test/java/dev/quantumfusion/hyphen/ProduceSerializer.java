@@ -8,26 +8,44 @@ import dev.quantumfusion.hyphen.scan.simple.map.MapISTest;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
 
 import static dev.quantumfusion.hyphen.Options.FAST_ALLOC;
 
 public class ProduceSerializer {
 	public static void main(String[] args) throws IOException {
 		EnumDef.USE_CONSTANT_DYNAMIC = false;
-		var factory = SerializerFactory.createDebug(ByteBufferIO.class, MapISTest.class);
+		var factory = SerializerFactory.createDebug(ByteBufferIO.class, Hi.class);
 		factory.setOption(FAST_ALLOC, false);
 		factory.setExportDir(Path.of("./"));
 		// factory.setOption(DISABLE_GET, true);
 		// factory.setOption(DISABLE_PUT, true);
 		// factory.setOption(DISABLE_MEASURE, true);
-		factory.build();
+		factory.build().measure(null);
 
 		Runtime.getRuntime().exec("java -jar K:/IdeaProjects/quiltflower/build/libs/quiltflower-1.6.0+local.jar HyphenSerializer.class .ignore/");
 	}
 
 	@Data
-	static class Hi {
+	public static class Hi {
+		public final int count;
+		public final int dataType;
 		@DataNullable
-		public Integer i;
+		public final int[] intData;
+		@DataNullable
+		public final float[] floatData;
+		public final String name;
+
+
+		public Hi(int count, int dataType, int[] intData, float[] floatData, String name) {
+			this.count = count;
+			this.dataType = dataType;
+			this.intData = intData;
+			this.floatData = floatData;
+			this.name = name;
+		}
+
 	}
+
+
 }

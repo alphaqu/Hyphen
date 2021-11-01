@@ -20,7 +20,7 @@ public class Clazz {
 	public final Class<?> aClass;
 	protected final SerializerHandler<?, ?> handler;
 	// Object is the value
-	private final Map<Class<? extends Annotation>, Object> annotations;
+	protected final Map<Class<? extends Annotation>, Object> annotations;
 
 	protected Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations) {
 		this.aClass = aClass;
@@ -97,11 +97,11 @@ public class Clazz {
 
 	@Override
 	public String toString() {
-		StringJoiner annotationJoiner = new StringJoiner(" ", "<", ">");
+		StringJoiner annotationJoiner = new StringJoiner("_", "<", ">");
 		this.annotations.forEach((aClass1, value) -> {
-			annotationJoiner.add('@' + aClass1.getSimpleName() + hashCode());
+			annotationJoiner.add('@' + aClass1.getSimpleName() + value);
 		});
-		return aClass.getSimpleName() + " " + annotationJoiner;
+		return aClass.getSimpleName() + "_" + annotationJoiner;
 	}
 
 	@Override

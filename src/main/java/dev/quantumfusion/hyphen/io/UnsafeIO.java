@@ -156,8 +156,10 @@ public final class UnsafeIO implements IOInterface {
 	public final String getString() {
 		try {
 			final var infoBytes = UNSAFE.getInt(null, currentAddress);
-			if (infoBytes == 0)
+			if (infoBytes == 0) {
+				currentAddress += 4;
 				return "";
+			}
 			final var string = (String) UNSAFE.allocateInstance(String.class);
 			final var byteArray = new byte[Math.abs(infoBytes) /*length*/];
 			final var arrayLength = byteArray.length;
