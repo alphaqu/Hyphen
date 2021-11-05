@@ -12,6 +12,7 @@ import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedType;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 public class ArrayClazz extends Clazz {
 	public final Clazz component;
@@ -48,7 +49,11 @@ public class ArrayClazz extends Clazz {
 
 	@Override
 	public String toString() {
-		return component.toString() + "]";
+		StringJoiner annotationJoiner = new StringJoiner("_", "<", ">");
+		this.annotations.forEach((aClass1, value) -> {
+			annotationJoiner.add('@' + aClass1.getSimpleName() + value);
+		});
+		return component.toString() + "_" + annotationJoiner;
 	}
 
 	@Override
