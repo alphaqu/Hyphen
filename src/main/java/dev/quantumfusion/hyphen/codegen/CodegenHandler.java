@@ -72,11 +72,6 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			}
 		}
 	}
-
-	public MethodInfo createMethodInfo(Clazz clazz, String prefix, Class<?> returnClass, Class<?>... parameters) {
-		return createMethodInfo(clazz, prefix, "", returnClass, parameters);
-	}
-
 	public MethodInfo createMethodInfo(Clazz clazz, String prefix, String suffix, Class<?> returnClass, Class<?>... parameters) {
 		var info = new MethodInfo(GenUtil.makeSafe(prefix + clazz.toString() + suffix), returnClass, parameters);
 		if (methodDedup != null)

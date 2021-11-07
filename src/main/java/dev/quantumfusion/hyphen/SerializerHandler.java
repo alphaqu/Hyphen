@@ -80,6 +80,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	public SerializerDef acquireDef(Clazz clazz) {
+		if (methods.containsKey(clazz)) {
+			return methods.get(clazz);
+		}
 		checkDefined(clazz);
 
 		if (clazz instanceof TypeClazz t)
