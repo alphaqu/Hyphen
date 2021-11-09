@@ -106,8 +106,9 @@ public final class ArrayIO implements IOInterface {
 
 	@Override
 	public final String getString() {
-		final byte[] byteArray = getByteArray();
-		return new String(byteArray, 0, byteArray.length, StandardCharsets.UTF_8);
+		final int length = getInt();
+		final byte[] byteArray = getByteArray(length);
+		return new String(byteArray, 0, length, StandardCharsets.UTF_8);
 	}
 
 
@@ -180,14 +181,16 @@ public final class ArrayIO implements IOInterface {
 
 	@Override
 	public final void putString(final String value) {
-		putByteArray(value.getBytes(StandardCharsets.UTF_8));
+		final byte[] array = value.getBytes(StandardCharsets.UTF_8);
+		final int length = array.length;
+		putInt(length);
+		putByteArray(array, length);
 	}
 
 
 	// ====================================== GET_ARR ======================================== //
 	@Override
-	public final boolean[] getBooleanArray() {
-		final int length = getInt();
+	public final boolean[] getBooleanArray(final int length) {
 		final boolean[] out = new boolean[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getByte() == 1;
@@ -196,8 +199,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final byte[] getByteArray() {
-		final int length = getInt();
+	public final byte[] getByteArray(final int length) {
 		final byte[] out = new byte[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getByte();
@@ -206,8 +208,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final char[] getCharArray() {
-		final int length = getInt();
+	public final char[] getCharArray(final int length) {
 		final char[] out = new char[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getChar();
@@ -216,8 +217,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final short[] getShortArray() {
-		final int length = getInt();
+	public final short[] getShortArray(final int length) {
 		final short[] out = new short[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getShort();
@@ -226,8 +226,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final int[] getIntArray() {
-		final int length = getInt();
+	public final int[] getIntArray(final int length) {
 		final int[] out = new int[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getInt();
@@ -236,8 +235,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final long[] getLongArray() {
-		final int length = getInt();
+	public final long[] getLongArray(final int length) {
 		final long[] out = new long[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getLong();
@@ -246,8 +244,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final float[] getFloatArray() {
-		final int length = getInt();
+	public final float[] getFloatArray(final int length) {
 		final float[] out = new float[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getFloat();
@@ -256,8 +253,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final double[] getDoubleArray() {
-		final int length = getInt();
+	public final double[] getDoubleArray(final int length) {
 		final double[] out = new double[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getDouble();
@@ -266,8 +262,7 @@ public final class ArrayIO implements IOInterface {
 
 
 	@Override
-	public final String[] getStringArray() {
-		final int length = getInt();
+	public final String[] getStringArray(final int length) {
 		final String[] out = new String[length];
 		for (int i = 0; i < length; i++)
 			out[i] = getString();
@@ -277,64 +272,55 @@ public final class ArrayIO implements IOInterface {
 
 	// ====================================== PUT_ARR ======================================== //
 	@Override
-	public final void putBooleanArray(final boolean[] value) {
-		putInt(value.length);
-		for (final boolean b : value) putByte((byte) (b ? 1 : 0));
+	public final void putBooleanArray(final boolean[] value, final int length) {
+		for (int i = 0; i < length; i++) putByte((byte) (value[i] ? 1 : 0));
 	}
 
 
 	@Override
-	public final void putByteArray(final byte[] value) {
-		putInt(value.length);
-		for (final byte b : value) putByte(b);
+	public final void putByteArray(final byte[] value, final int length) {
+		for (int i = 0; i < length; i++) putByte(value[i]);
 	}
 
 
 	@Override
-	public final void putCharArray(final char[] value) {
-		putInt(value.length);
-		for (final char c : value) putChar(c);
+	public final void putCharArray(final char[] value, final int length) {
+		for (int i = 0; i < length; i++) putChar(value[i]);
 	}
 
 
 	@Override
-	public final void putShortArray(final short[] value) {
-		putInt(value.length);
-		for (final short s : value) putShort(s);
+	public final void putShortArray(final short[] value, final int length) {
+		for (int i = 0; i < length; i++) putShort(value[i]);
 	}
 
 
 	@Override
-	public final void putIntArray(final int[] value) {
-		putInt(value.length);
-		for (final int i : value) putInt(i);
+	public final void putIntArray(final int[] value, final int length) {
+		for (int i = 0; i < length; i++) putInt(value[i]);
 	}
 
 
 	@Override
-	public final void putLongArray(final long[] value) {
-		putInt(value.length);
-		for (final long l : value) putLong(l);
+	public final void putLongArray(final long[] value, final int length) {
+		for (int i = 0; i < length; i++) putLong(value[i]);
 	}
 
 
 	@Override
-	public final void putFloatArray(final float[] value) {
-		putInt(value.length);
-		for (final float f : value) putFloat(f);
+	public final void putFloatArray(final float[] value, final int length) {
+		for (int i = 0; i < length; i++) putFloat(value[i]);
 	}
 
 
 	@Override
-	public final void putDoubleArray(final double[] value) {
-		putInt(value.length);
-		for (final double d : value) putDouble(d);
+	public final void putDoubleArray(final double[] value, final int length) {
+		for (int i = 0; i < length; i++) putDouble(value[i]);
 	}
 
 
 	@Override
-	public final void putStringArray(final String[] value) {
-		putInt(value.length);
-		for (final String s : value) putString(s);
+	public final void putStringArray(final String[] value, final int length) {
+		for (int i = 0; i < length; i++) putString(value[i]);
 	}
 }

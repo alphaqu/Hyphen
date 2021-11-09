@@ -7,7 +7,6 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -127,11 +126,20 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	// IOgentification:tm:
 	public void getIO(Class<?> primitive) {
-		this.callInst(INVOKEVIRTUAL, this.ioClass, "get" + getIOName(primitive), primitive);
+
+		Class<?>[] parameters = new Class[primitive.isArray() ? 1 : 0];
+		if (primitive.isArray()) parameters[0] = int.class;
+
+		this.callInst(INVOKEVIRTUAL, this.ioClass, "get" + getIOName(primitive), primitive, parameters);
 	}
 
 	public void putIO(Class<?> primitive) {
-		this.callInst(INVOKEVIRTUAL, this.ioClass, "put" + getIOName(primitive), Void.TYPE, primitive);
+		Class<?>[] parameters = new Class[primitive.isArray() ? 2 : 1];
+		parameters[0] = primitive;
+		if (primitive.isArray()) parameters[1] = int.class;
+
+
+		this.callInst(INVOKEVIRTUAL, this.ioClass, "put" + getIOName(primitive), Void.TYPE, parameters);
 	}
 
 	private static String getIOName(Class<?> primitive) {

@@ -31,7 +31,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	static {
 		addStaticDef(PrimitiveIODef::new,
 					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
-		addStaticDef(PrimitiveArrayIODef::new,
+		addDynamicDef(PrimitiveArrayIODef::new,
 					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
@@ -76,6 +76,12 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
 		for (Class<?> aClass : clazz) {
 			BUILD_IN_DEFINITIONS.put(aClass, (c, sh) -> creator.apply(aClass));
+		}
+	}
+
+	private static void addDynamicDef(SerializerFactory.DynamicDefCreator creator, Class<?>... clazz) {
+		for (Class<?> aClass : clazz) {
+			BUILD_IN_DEFINITIONS.put(aClass, creator);
 		}
 	}
 

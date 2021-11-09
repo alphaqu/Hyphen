@@ -1,26 +1,41 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
+import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class PrimitiveArrayIODef implements SerializerDef {
 	protected final Class<?> primitiveArray;
+	protected final Integer fixedSize;
 
-	public PrimitiveArrayIODef(Class<?> primitiveArray) {
-		this.primitiveArray = primitiveArray;
+	public PrimitiveArrayIODef(Clazz clazz, SerializerHandler<?, ?> serializerHandler) {
+		this.primitiveArray = clazz.getDefinedClass();
+		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
 	}
 
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
+		if (fixedSize == null) {
+			mh.op(DUP, ARRAYLENGTH, DUP);
+			mh.loadIO();
+			mh.op(SWAP);
+			mh.putIO(int.class);
+		} else mh.visitLdcInsn(fixedSize);
 		mh.putIO(this.primitiveArray);
 	}
 
 	@Override
 	public void writeGet(MethodHandler mh) {
 		mh.loadIO();
+		if (fixedSize == null) {
+			mh.op(DUP);
+			mh.getIO(int.class);
+		} else mh.visitLdcInsn(fixedSize);
 		mh.getIO(this.primitiveArray);
 	}
 
@@ -34,6 +49,6 @@ public class PrimitiveArrayIODef implements SerializerDef {
 
 	@Override
 	public int getStaticSize() {
-		return 4;
+		return fixedSize == null ? 4 : 0;
 	}
 }

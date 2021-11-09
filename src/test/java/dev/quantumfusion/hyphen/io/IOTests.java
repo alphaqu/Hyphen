@@ -3,11 +3,11 @@ package dev.quantumfusion.hyphen.io;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -29,12 +29,17 @@ public class IOTests {
 	private static final Object[] ARRAYS = {BOOLEANS, BYTES, SHORTS, CHARS, INTS, LONGS, FLOATS, DOUBLES, STRING};
 	private static final int SIZE;
 
-	private static final Map<Class<?>, Function<IOInterface, Object>> GET_ARRAY_FUNC = new HashMap<>();
+	private static final Map<Class<?>, BiFunction<IOInterface, Integer, Object>> GET_ARRAY_FUNC = new HashMap<>();
 	private static final Map<Class<?>, Function<IOInterface, Object>> GET_FUNC = new HashMap<>();
-	private static final Map<Class<?>, BiConsumer<Object, IOInterface>> PUT_ARRAY_FUNC = new HashMap<>();
+	private static final Map<Class<?>, PutArrayConsumer> PUT_ARRAY_FUNC = new HashMap<>();
 	private static final Map<Class<?>, BiConsumer<Object, IOInterface>> PUT_FUNC = new HashMap<>();
 
 	public static final int TEST_SIZE = 1000000;
+
+	@FunctionalInterface
+	public interface PutArrayConsumer {
+		void put(IOInterface ioInterface, Object obj, Integer length);
+	}
 
 	static {
 		int size = 0;
@@ -65,15 +70,15 @@ public class IOTests {
 		GET_FUNC.put(double.class, IOInterface::getDouble);
 		GET_FUNC.put(String.class, IOInterface::getString);
 
-		PUT_ARRAY_FUNC.put(boolean[].class, (o, io) -> io.putBooleanArray((boolean[]) o));
-		PUT_ARRAY_FUNC.put(byte[].class, (o, io) -> io.putByteArray((byte[]) o));
-		PUT_ARRAY_FUNC.put(short[].class, (o, io) -> io.putShortArray((short[]) o));
-		PUT_ARRAY_FUNC.put(char[].class, (o, io) -> io.putCharArray((char[]) o));
-		PUT_ARRAY_FUNC.put(int[].class, (o, io) -> io.putIntArray((int[]) o));
-		PUT_ARRAY_FUNC.put(float[].class, (o, io) -> io.putFloatArray((float[]) o));
-		PUT_ARRAY_FUNC.put(long[].class, (o, io) -> io.putLongArray((long[]) o));
-		PUT_ARRAY_FUNC.put(double[].class, (o, io) -> io.putDoubleArray((double[]) o));
-		PUT_ARRAY_FUNC.put(String[].class, (o, io) -> io.putStringArray((String[]) o));
+		PUT_ARRAY_FUNC.put(boolean[].class, (io, o, i) -> io.putBooleanArray((boolean[]) o, i));
+		PUT_ARRAY_FUNC.put(byte[].class, (io, o, i) -> io.putByteArray((byte[]) o, i));
+		PUT_ARRAY_FUNC.put(short[].class, (io, o, i) -> io.putShortArray((short[]) o, i));
+		PUT_ARRAY_FUNC.put(char[].class, (io, o, i) -> io.putCharArray((char[]) o, i));
+		PUT_ARRAY_FUNC.put(int[].class, (io, o, i) -> io.putIntArray((int[]) o, i));
+		PUT_ARRAY_FUNC.put(float[].class, (io, o, i) -> io.putFloatArray((float[]) o, i));
+		PUT_ARRAY_FUNC.put(long[].class, (io, o, i) -> io.putLongArray((long[]) o, i));
+		PUT_ARRAY_FUNC.put(double[].class, (io, o, i) -> io.putDoubleArray((double[]) o, i));
+		PUT_ARRAY_FUNC.put(String[].class, (io, o, i) -> io.putStringArray((String[]) o, i));
 
 		PUT_FUNC.put(boolean.class, (o, io) -> io.putBoolean((boolean) o));
 		PUT_FUNC.put(byte.class, (o, io) -> io.putByte((byte) o));
@@ -134,13 +139,13 @@ public class IOTests {
 	}
 
 	private static <IO extends IOInterface> void testArrayPut(IO io, Object array) {
-		PUT_ARRAY_FUNC.get(array.getClass()).accept(array, io);
+		PUT_ARRAY_FUNC.get(array.getClass()).put(io, array, getLength(array));
 		var put = PUT_FUNC.get(array.getClass().getComponentType());
 		iterate(array, o -> put.accept(o, io));
 	}
 
 	private static <IO extends IOInterface> void testArrayGet(IO io, Object arrayRaw) {
-		Object result = GET_ARRAY_FUNC.get(arrayRaw.getClass()).apply(io);
+		Object result = GET_ARRAY_FUNC.get(arrayRaw.getClass()).apply(io, getLength(arrayRaw));
 		var get = GET_FUNC.get(arrayRaw.getClass().getComponentType());
 		iterate(arrayRaw, o -> {
 			final Object apply = get.apply(io);
@@ -164,6 +169,21 @@ public class IOTests {
 		else if (array instanceof double[] i) return i.length * 8;
 		else if (array instanceof String[] i) {
 			return (i.length * 16) + 16;
+		}
+		throw new RuntimeException("what");
+	}
+
+	public static int getLength(Object array) {
+		if (array instanceof boolean[] i) return i.length;
+		else if (array instanceof byte[] i) return i.length;
+		else if (array instanceof short[] i) return i.length;
+		else if (array instanceof char[] i) return i.length;
+		else if (array instanceof int[] i) return i.length;
+		else if (array instanceof float[] i) return i.length;
+		else if (array instanceof long[] i) return i.length;
+		else if (array instanceof double[] i) return i.length;
+		else if (array instanceof String[] i) {
+			return (i.length);
 		}
 		throw new RuntimeException("what");
 	}
