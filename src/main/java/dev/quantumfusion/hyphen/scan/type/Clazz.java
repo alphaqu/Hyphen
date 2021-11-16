@@ -15,6 +15,18 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.util.*;
 
+/**
+ * This is a basic Class which is a class and holds annotations.
+ * There are multiple implementations of this and all are listed in the {@link dev.quantumfusion.hyphen.scan.type} package.
+ * <br> <br>
+ * Any Clazz instance may be an {@link UnknownClazz#UNKNOWN} which is when Hyphen cannot find out what the class is.
+ *
+ * @see ArrayClazz An Array. It may be an array or a Type Array which comes from a parameter.
+ * @see ParaClazz A Parameterised class. This is a class which holds class parameters.
+ * These parameters may be {@link UnknownClazz#UNKNOWN} and that means they were unable to be determended
+ * @see TypeClazz A Type Class. This is a class which comes from a Type of the parent class. To get its actual clazz use {@link TypeClazz#getDefinedClass()}
+ * @see UnknownClazz An Unknown class that may be caused of using wildcards or raw types.
+ */
 public class Clazz {
 	@NotNull
 	public final Class<?> aClass;
@@ -40,22 +52,52 @@ public class Clazz {
 		return new Clazz(handler, (Class<?>) type.getType(), ScanUtil.acquireAnnotations(handler, type, ctx));
 	}
 
+	/**
+	 * Get an annotation value. To see if the value is null or the annotation does not exist use
+	 * {@link Clazz#containsAnnotation(Class)} before using this
+	 *
+	 * @param aClass The Annotation class
+	 * @return The value. If the annotation does not hold a value the value might be {@code null}
+	 */
 	public Object getAnnotationValue(Class<? extends Annotation> aClass) {
 		return annotations.get(aClass);
 	}
 
+	/**
+	 * Checks if the Annotation exists on this clazz.
+	 *
+	 * @param aClass The Annotation class
+	 * @return if it exists on this clazz
+	 */
 	public boolean containsAnnotation(Class<? extends Annotation> aClass) {
 		return annotations.containsKey(aClass);
 	}
+
+	/**
+	 * Gets the class that may have been tracked across parameters and types. This is the class you want to encode/decode.
+	 *
+	 * @return The Defined class
+	 */
 
 	public Class<?> getDefinedClass() {
 		return aClass;
 	}
 
+	/**
+	 * Gets the class that is in actual bytecode. In the case of types it may be {@link Object} but it may also be the bound.
+	 *
+	 * @return The Bytecode class
+	 */
 	public Class<?> getBytecodeClass() {
 		return aClass;
 	}
 
+	/**
+	 * Tries to define a type.
+	 *
+	 * @param typeName The Class Type name
+	 * @return The Possible Clazz. Else {@link UnknownClazz#UNKNOWN}
+	 */
 	public Clazz define(String typeName) {
 		return UnknownClazz.UNKNOWN;
 	}

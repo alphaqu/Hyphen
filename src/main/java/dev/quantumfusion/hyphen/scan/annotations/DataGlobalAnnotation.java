@@ -9,5 +9,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.TYPE, ElementType.PACKAGE})
 @HyphenAnnotation
 public @interface DataGlobalAnnotation {
+	/**
+	 * Global Annotation id
+	 */
 	String value();
 }

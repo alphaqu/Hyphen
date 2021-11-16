@@ -26,7 +26,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	// Options, Shares with codegenHandler
 
-	private static final Map<Class<?>, SerializerFactory.DynamicDefCreator> BUILD_IN_DEFINITIONS = new HashMap<>();
+	private static final Map<Class<?>, SerializerFactory.DynamicDefFactory> BUILD_IN_DEFINITIONS = new HashMap<>();
 
 	static {
 		addStaticDef(PrimitiveIODef::new,
@@ -43,7 +43,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	public final Class<D> dataClass;
 	public final Class<IO> ioClass;
 	public final boolean debug;
-	public final Map<Class<?>, SerializerFactory.DynamicDefCreator> definitions;
+	public final Map<Class<?>, SerializerFactory.DynamicDefFactory> definitions;
 	// String for annotation or the Class to apply
 	public final Map<Object, Map<Class<? extends Annotation>, Object>> globalAnnotations;
 	public final Map<Clazz, SerializerDef> scanDeduplicationMap = new HashMap<>();
@@ -79,7 +79,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		}
 	}
 
-	private static void addDynamicDef(SerializerFactory.DynamicDefCreator creator, Class<?>... clazz) {
+	private static void addDynamicDef(SerializerFactory.DynamicDefFactory creator, Class<?>... clazz) {
 		for (Class<?> aClass : clazz) {
 			BUILD_IN_DEFINITIONS.put(aClass, creator);
 		}
