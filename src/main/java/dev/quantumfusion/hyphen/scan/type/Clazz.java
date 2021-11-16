@@ -20,12 +20,13 @@ import java.util.*;
  * There are multiple implementations of this and all are listed in the {@link dev.quantumfusion.hyphen.scan.type} package.
  * <br> <br>
  * Any Clazz instance may be an {@link UnknownClazz#UNKNOWN} which is when Hyphen cannot find out what the class is.
- *
- * @see ArrayClazz An Array. It may be an array or a Type Array which comes from a parameter.
- * @see ParaClazz A Parameterised class. This is a class which holds class parameters.
+ * <p>
+ * {@link ArrayClazz} An Array. It may be an array or a Type Array which comes from a parameter. <br>
+ * {@link ParaClazz} A Parameterised class. This is a class which holds class parameters. <br>
  * These parameters may be {@link UnknownClazz#UNKNOWN} and that means they were unable to be determended
- * @see TypeClazz A Type Class. This is a class which comes from a Type of the parent class. To get its actual clazz use {@link TypeClazz#getDefinedClass()}
- * @see UnknownClazz An Unknown class that may be caused of using wildcards or raw types.
+ * {@link TypeClazz} A Type Class. This is a class which comes from a Type of the parent class.
+ * To get its actual clazz use {@link TypeClazz#getDefinedClass()} <br>
+ * {@link UnknownClazz} An Unknown class that may be caused of using wildcards or raw types.
  */
 public class Clazz {
 	@NotNull
