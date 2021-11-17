@@ -85,6 +85,12 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		}
 	}
 
+	/**
+	 * Acquires a definition for the given Clazz
+	 *
+	 * @param clazz The Clazz to serialize
+	 * @return A Serializer Def to handle it.
+	 */
 	public SerializerDef acquireDef(Clazz clazz) {
 		if (methods.containsKey(clazz)) {
 			return methods.get(clazz);
@@ -151,7 +157,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	public HyphenSerializer<IO, D> build() {
 		try {
-			this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, debug, this.name, options, definer);
+			this.codegenHandler = new CodegenHandler<>(ioClass, dataClass, this.name, options, definer);
 			codegenHandler.setupSpark(this.scan());
 			codegenHandler.writeMethods(methods.values());
 			return codegenHandler.export(this.exportPath);

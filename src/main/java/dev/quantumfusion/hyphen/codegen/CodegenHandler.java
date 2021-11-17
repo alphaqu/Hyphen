@@ -28,9 +28,14 @@ import java.util.function.Consumer;
 
 import static org.objectweb.asm.Opcodes.*;
 
+/**
+ * The codegen handler handles all of the code generation Hyphen does.
+ *
+ * @param <IO> IO Class
+ * @param <D>  The Data Class
+ */
 public class CodegenHandler<IO extends IOInterface, D> {
 	// Settings
-	private final boolean debug;
 	public final Class<IO> ioClass;
 	public final Class<D> dataClass;
 	public final String self;
@@ -44,10 +49,9 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	private final ClassWriter cw;
 	private final ClassDefiner definer;
 
-	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug, String self, EnumMap<Options, Boolean> options, ClassDefiner definer) {
+	public CodegenHandler(Class<IO> ioClass, Class<D> dataClass, String self, EnumMap<Options, Boolean> options, ClassDefiner definer) {
 		this.ioClass = ioClass;
 		this.dataClass = dataClass;
-		this.debug = debug;
 		this.self = self;
 		this.options = options;
 		this.definer = definer;
@@ -72,6 +76,10 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			}
 		}
 	}
+
+	/**
+	 * Applies changes to MethodInfo. For example if method deduplication is used it will change the name on the method to the compact variant.
+	 */
 	public MethodInfo createMethodInfo(Clazz clazz, String prefix, String suffix, Class<?> returnClass, Class<?>... parameters) {
 		var info = new MethodInfo(GenUtil.makeSafe(prefix + clazz.toString() + suffix), returnClass, parameters);
 		if (methodDedup != null)

@@ -12,6 +12,9 @@ import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
+/**
+ * Our enhanced MethodVisitor with some helper functions for Hyphen Serializer Generation
+ */
 public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	private static final char SHORT_VAR_NAME = '\u0D9E'; // amogus
 	public final String self;

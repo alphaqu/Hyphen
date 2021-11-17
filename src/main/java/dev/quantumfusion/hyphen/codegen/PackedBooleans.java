@@ -5,6 +5,9 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
+/**
+ * Allows us to pack single bit values into a byte
+ */
 public class PackedBooleans {
 	private int booleansAmount = 0;
 	private int stacks = 0;
