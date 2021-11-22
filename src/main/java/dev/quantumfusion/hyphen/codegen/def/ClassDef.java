@@ -15,21 +15,26 @@ import dev.quantumfusion.hyphen.util.GenUtil;
 import dev.quantumfusion.hyphen.util.Style;
 
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public final class ClassDef extends MethodDef {
 	private final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
+	private final Set<String> forcedFields;
+
 	private Class<?>[] constructorParameters;
 	private Class<?> aClass;
 	private boolean record;
 
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler, clazz);
+		this.forcedFields = Set.of();
+	}
+
+	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz, String... forcedFields) {
+		super(handler, clazz);
+		this.forcedFields = Set.of(forcedFields);
 	}
 
 	@Override
@@ -71,7 +76,7 @@ public final class ClassDef extends MethodDef {
 	}
 
 	private boolean shouldFieldSerialize(FieldEntry field) {
-		return field.clazz().containsAnnotation(Data.class) && !Modifier.isTransient(field.field().getModifiers());
+		return forcedFields.contains(field.getFieldName()) || (field.clazz().containsAnnotation(Data.class) && !Modifier.isTransient(field.field().getModifiers()));
 	}
 
 	@Override
