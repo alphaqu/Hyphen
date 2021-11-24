@@ -25,6 +25,10 @@ public final class ArrayIO implements IOInterface {
 		return create(serializer.measure(data));
 	}
 
+	public static final ArrayIO wrap(final byte[] array) {
+		return new ArrayIO(array, 0);
+	}
+
 
 	// ======================================= FUNC ======================================= //
 	@Override
