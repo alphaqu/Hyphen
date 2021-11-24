@@ -47,6 +47,10 @@ public final class ArrayIO implements IOInterface {
 		// Hey jvm. GC the array. thx.
 	}
 
+	public final byte[] export() {
+		return bytes;
+	}
+
 
 	// ======================================== GET ======================================== //
 	@Override
