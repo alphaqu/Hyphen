@@ -1,3 +1,6 @@
 # Hyphen
-This serializer is highly inspired by ActiveJ and Kryo. It aims to bring insane serialization speed while being easy to use and maintainable.
-It uses bytecode generation to create the serializer code at runtime (fully cachable) and then you can use those serializer classes to serialize your object.
+Hyphen is a serializer which is designed for unreal performance while having a maintainable codebase and a user-friendly experience. 
+
+## Documentation 
+All of the documentation is available on
+https://quantumfusion.dev/docs/site/hyphen/
