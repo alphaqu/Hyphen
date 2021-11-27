@@ -99,6 +99,10 @@ public final class UnsafeIO implements IOInterface {
 		UNSAFE.freeMemory(address);
 	}
 
+	public long address() {
+		return address;
+	}
+
 	// ======================================== GET ======================================== //
 	@Override
 	public final boolean getBoolean() {
