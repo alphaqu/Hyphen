@@ -10,10 +10,7 @@ import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
 import java.lang.annotation.Annotation;
 import java.nio.file.Path;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -37,6 +34,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
 		BUILD_IN_DEFINITIONS.put(Map.class, (c, sh) -> new MapDef(sh, (ParaClazz) c));
+		BUILD_IN_DEFINITIONS.put(Set.class, (c, sh) -> new SetDef(sh, (ParaClazz) c));
 	}
 
 	public final EnumMap<Options, Boolean> options;
