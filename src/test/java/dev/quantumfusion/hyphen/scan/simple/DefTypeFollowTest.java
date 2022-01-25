@@ -5,7 +5,6 @@ import dev.quantumfusion.hyphen.util.TestThis;
 import java.util.ArrayList;
 import java.util.Objects;
 
-@TestThis
 public class DefTypeFollowTest {
     public final Test test;
 
