@@ -27,9 +27,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 	static {
 		addStaticDef(PrimitiveIODef::new,
-					 boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
+				boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
 		addDynamicDef(PrimitiveArrayIODef::new,
-					 boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));
@@ -104,7 +104,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 
 		final SerializerDef serializerDef = acquireDefNew(clazz);
 
-		if (serializerDef instanceof MethodDef methodDef){
+		if (serializerDef instanceof MethodDef methodDef) {
 			methodDef.scan(this, clazz);
 			methods.put(clazz, methodDef);
 		}
@@ -138,11 +138,11 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private void checkDefined(Clazz clazz) {
 		if (clazz == UnknownClazz.UNKNOWN)
 			throw new UnknownTypeException("Type could not be identified",
-										   "Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
+					"Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
 
 		if ((clazz instanceof TypeClazz t && (t.defined == UnknownClazz.UNKNOWN))) {
 			throw new UnknownTypeException("Type " + t.typeName + " could not be identified",
-										   "Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
+					"Trace the path of \"" + t.typeName + "\" in the path below. And see if you can define that path.");
 		}
 	}
 

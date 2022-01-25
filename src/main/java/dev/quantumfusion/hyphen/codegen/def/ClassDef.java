@@ -8,20 +8,21 @@ import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
-import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import dev.quantumfusion.hyphen.util.Style;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public final class ClassDef extends MethodDef {
 	private final Map<FieldEntry, SerializerDef> fields = new LinkedHashMap<>();
-	private final Set<String> forcedFields;
 
 	private Class<?>[] constructorParameters;
 	private Class<?> aClass;
@@ -29,12 +30,6 @@ public final class ClassDef extends MethodDef {
 
 	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
 		super(handler, clazz);
-		this.forcedFields = Set.of();
-	}
-
-	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz, String... forcedFields) {
-		super(handler, clazz);
-		this.forcedFields = Set.of(forcedFields);
 	}
 
 	@Override
@@ -76,13 +71,14 @@ public final class ClassDef extends MethodDef {
 	}
 
 	private boolean shouldFieldSerialize(FieldEntry field) {
-		return forcedFields.contains(field.getFieldName()) || (field.clazz().containsAnnotation(Data.class) && !Modifier.isTransient(field.field().getModifiers()));
+		return !Modifier.isTransient(field.field().getModifiers());
 	}
 
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
 		var packedBooleans = new PackedBooleans();
-		for (var entry : fields.entrySet()) if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) packedBooleans.countBoolean();
+		for (var entry : fields.entrySet())
+			if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) packedBooleans.countBoolean();
 		packedBooleans.writeGet(mh);
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
@@ -242,7 +238,7 @@ public final class ClassDef extends MethodDef {
 				mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
 			} catch (NoSuchMethodException ignored) {
 				throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
-										  "Try making the field public or add a getter");
+						"Try making the field public or add a getter");
 			}
 
 		GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);

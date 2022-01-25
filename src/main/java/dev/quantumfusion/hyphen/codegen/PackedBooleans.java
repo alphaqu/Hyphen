@@ -41,7 +41,8 @@ public class PackedBooleans {
 		if (pos != 0) {
 			mh.visitLdcInsn(pos);
 			mh.op(IUSHR);
-		};
+		}
+		;
 
 		mh.op(ICONST_1, IAND);
 	}

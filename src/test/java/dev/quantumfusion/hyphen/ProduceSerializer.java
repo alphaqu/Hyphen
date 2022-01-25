@@ -2,13 +2,10 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.codegen.def.EnumDef;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
-import dev.quantumfusion.hyphen.scan.simple.map.MapISTest;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 import static dev.quantumfusion.hyphen.Options.FAST_ALLOC;
 
@@ -26,8 +23,7 @@ public class ProduceSerializer {
 		Runtime.getRuntime().exec("java -jar K:/IdeaProjects/quiltflower/build/libs/quiltflower-1.6.0+local.jar HyphenSerializer.class .ignore/");
 	}
 
-	@Data
-	public static class Hi {
+		public static class Hi {
 		public final int count;
 		public final int dataType;
 		@DataNullable

@@ -2,8 +2,6 @@ package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 
-import static org.objectweb.asm.Opcodes.ILOAD;
-
 public class PrimitiveIODef implements SerializerDef {
 	protected final Class<?> primitive;
 	protected final int size;

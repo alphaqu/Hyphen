@@ -1,7 +1,6 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.simple.arrays.IntArrayTest;
 
 import java.nio.file.Path;
@@ -38,8 +37,7 @@ public class AlphasSerializer {
 
 	}
 
-	@Data
-	public static class DashShader {
+		public static class DashShader {
 		public final List<String> thing;
 		public final List<String> thing1;
 

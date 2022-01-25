@@ -138,9 +138,10 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	/**
 	 * This adds annotations to the global annotation id. If a {@link DataGlobalAnnotation#value()}
 	 * contains this {@code id} it will apply this and the previous annotations that were added to this id
-	 * @param id The {@link DataGlobalAnnotation#value()} that is targeted
+	 *
+	 * @param id         The {@link DataGlobalAnnotation#value()} that is targeted
 	 * @param annotation The Annotation you are adding to the applications
-	 * @param value The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
+	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
 	public void addGlobalAnnotation(String id, Class<? extends Annotation> annotation, Object value) {
 		addGlobalAnnotationInternal(id, annotation, value);
@@ -149,9 +150,10 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	/**
 	 * This adds annotations to the global annotation which targets a class. If a {@link DataGlobalAnnotation}
 	 * is applied to a {@code clazz} field. it will apply this and the previous annotations that were added to this {@code clazz}
-	 * @param clazz The {@link DataGlobalAnnotation} field class that is targeted
+	 *
+	 * @param clazz      The {@link DataGlobalAnnotation} field class that is targeted
 	 * @param annotation The Annotation you are adding to the applications
-	 * @param value The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
+	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
 	public void addGlobalAnnotation(Class<?> clazz, Class<? extends Annotation> annotation, Object value) {
 		addGlobalAnnotationInternal(clazz, annotation, value);
@@ -171,6 +173,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 
 	/**
 	 * Builds a {@link HyphenSerializer}. Any options that are set at this point will be applied to the final {@link HyphenSerializer}
+	 *
 	 * @return A Serializer Powered by Hyphen.
 	 */
 	public HyphenSerializer<IO, D> build() {
@@ -185,7 +188,8 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	public interface DynamicDefFactory {
 		/**
 		 * Create a SerializerDef dependant on the field
-		 * @param clazz The Clazz that the field is. Read more at {@link Clazz}
+		 *
+		 * @param clazz             The Clazz that the field is. Read more at {@link Clazz}
 		 * @param serializerHandler The SerializerHandler. Used to request another definition, as an example it may be used to serialize a parameter in the object.
 		 * @return SerializerDef
 		 */

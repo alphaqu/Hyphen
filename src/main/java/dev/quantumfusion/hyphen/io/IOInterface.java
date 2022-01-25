@@ -39,22 +39,39 @@ public interface IOInterface {
 	void putString(String value);
 
 	boolean[] getBooleanArray(int length);
+
 	byte[] getByteArray(int length);
+
 	char[] getCharArray(int length);
+
 	short[] getShortArray(int length);
+
 	int[] getIntArray(int length);
+
 	long[] getLongArray(int length);
+
 	float[] getFloatArray(int length);
+
 	double[] getDoubleArray(int length);
+
 	String[] getStringArray(int length);
+
 	void putBooleanArray(boolean[] value, int length);
+
 	void putByteArray(byte[] value, int length);
+
 	void putCharArray(char[] value, int length);
+
 	void putShortArray(short[] value, int length);
+
 	void putIntArray(int[] value, int length);
+
 	void putLongArray(long[] value, int length);
+
 	void putFloatArray(float[] value, int length);
+
 	void putDoubleArray(double[] value, int length);
+
 	void putStringArray(String[] value, int length);
 
 	void rewind();

@@ -46,9 +46,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			boolean spark, boolean synthetic
 	) {
 		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (spark ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
-							methodInfo.getName(),
-							GenUtil.methodDesc(convert(methodInfo.returnClass, spark), parameters(methodInfo.parameters, spark)),
-							null, null), self, dataClass, ioClass, spark);
+				methodInfo.getName(),
+				GenUtil.methodDesc(convert(methodInfo.returnClass, spark), parameters(methodInfo.parameters, spark)),
+				null, null), self, dataClass, ioClass, spark);
 
 		if (spark) this.addVar("this", Object.class);
 		this.compactVars = compactVars;

@@ -9,7 +9,8 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.IADD;
+import static org.objectweb.asm.Opcodes.ILOAD;
 
 public abstract class MethodDef implements SerializerDef {
 	public final Map<Options, Boolean> options;
@@ -74,8 +75,8 @@ public abstract class MethodDef implements SerializerDef {
 					mh.op(IADD);
 				}
 			});
-		}	else writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> mh.throwException("measure() is disabled."));
-
+		} else
+			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> mh.throwException("measure() is disabled."));
 
 
 	}

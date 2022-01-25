@@ -1,17 +1,15 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.annotations.Data;
 import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
 import dev.quantumfusion.hyphen.scan.poly.classes.c.C3Def;
 
-@Data
+
 public record TestGen(C3Def<Integer>[] def) {
 
 	public static void main(String[] args) {
 		var factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
 		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
-		factory.addGlobalAnnotation("id", Data.class, null);
 
 		TestGen test = null;
 		var serializer = factory.build();

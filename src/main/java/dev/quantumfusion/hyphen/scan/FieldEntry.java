@@ -23,6 +23,7 @@ public record FieldEntry(Field field, Clazz clazz) {
 	public Class<?> getFieldType() {
 		return field.getType();
 	}
+
 	@Override
 	public String toString() {
 		return field.getName() + " : " + clazz;

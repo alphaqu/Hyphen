@@ -29,10 +29,10 @@ public final class GenUtil {
 			MethodType.class
 	);
 	private static final Map<Character, Character> SAFE_METHOD_NAME_MAPPER = Map.of('[', '$', ']', '$',
-																					'<', '$', '>', '$',
-																					'(', '$', ')', '$',
-																					'/', '∕', '.', '•',
-																					';', '\u037E', ':', '：');
+			'<', '$', '>', '$',
+			'(', '$', ')', '$',
+			'/', '∕', '.', '•',
+			';', '\u037E', ':', '：');
 
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];

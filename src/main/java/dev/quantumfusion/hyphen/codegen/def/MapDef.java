@@ -1,6 +1,5 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.CodegenHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
@@ -11,7 +10,6 @@ import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -180,11 +178,11 @@ public class MapDef extends MethodDef {
 	@Override
 	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
 		super.writeMethods(handler, writer, spark);
-	//if (!handler.options.get(Options.DISABLE_MEASURE))
-	//	writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
-	//					   mh -> {
-	//						   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
-	//						   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
-	//					   });
+		//if (!handler.options.get(Options.DISABLE_MEASURE))
+		//	writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
+		//					   mh -> {
+		//						   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
+		//						   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
+		//					   });
 	}
 }

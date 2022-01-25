@@ -23,5 +23,6 @@ public class ArrayDef extends IndexedDef {
 	}
 
 	@Override
-	public void writeGetConverter(MethodHandler mh) {}
+	public void writeGetConverter(MethodHandler mh) {
+	}
 }
