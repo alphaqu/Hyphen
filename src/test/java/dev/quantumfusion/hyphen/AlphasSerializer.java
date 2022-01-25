@@ -2,6 +2,7 @@ package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.simple.arrays.IntArrayTest;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.nio.file.Path;
 import java.util.List;

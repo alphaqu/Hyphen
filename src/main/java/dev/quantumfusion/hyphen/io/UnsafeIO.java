@@ -96,7 +96,9 @@ public final class UnsafeIO implements IOInterface {
 	@Override
 	public final void close() {
 		if (bb != null) bb.clear();
-		UNSAFE.freeMemory(address);
+		else {
+			UNSAFE.freeMemory(address);
+		}
 	}
 
 	public long address() {
