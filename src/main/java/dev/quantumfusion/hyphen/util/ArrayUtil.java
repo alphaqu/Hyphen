@@ -16,7 +16,7 @@ public class ArrayUtil {
 	 * you can use this method.<br> <br>
 	 * <p>
 	 * This is the version with the index included.<br>
-	 * To exclude the index use {@link ArrayUtil#dualFor(Object[], Object[], BiConsumer)} instead
+	 * To exclude the index use the method below instead
 	 *
 	 * @param a           Array 1
 	 * @param b           Array 2
@@ -32,7 +32,7 @@ public class ArrayUtil {
 	}
 
 	/**
-	 * Same as {@link ArrayUtil#dualForEach(A[], B[], DualForEach)} but with the index excluded.
+	 * Same as above but with the index excluded.
 	 */
 	public static <A, B> void dualFor(A[] a, B[] b, BiConsumer<? super A, ? super B> dualFor) {
 		checkMatchingLength(a, b);

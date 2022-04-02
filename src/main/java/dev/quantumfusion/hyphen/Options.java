@@ -1,14 +1,16 @@
 package dev.quantumfusion.hyphen;
 
+import dev.quantumfusion.hyphen.io.IOInterface;
+
 public enum Options {
 
 
 	/**
-	 * Disables the {@link HyphenSerializer#put(Object, Object)} Method. Usage will result in a {@link UnsupportedOperationException}
+	 * Disables the {@link HyphenSerializer#put(IOInterface, Object)} (Object, Object)} Method. Usage will result in a {@link UnsupportedOperationException}
 	 */
 	DISABLE_PUT(false),
 	/**
-	 * Disables the {@link HyphenSerializer#get(Object)} Method. Usage will result in a {@link UnsupportedOperationException}
+	 * Disables the {@link HyphenSerializer#get(IOInterface)} Method. Usage will result in a {@link UnsupportedOperationException}
 	 */
 	DISABLE_GET(false),
 	/**
