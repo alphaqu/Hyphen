@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
  */
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod", "unused"})
 public final class ByteBufferIO implements IOInterface {
-	private final ByteBuffer byteBuffer;
+	public final ByteBuffer byteBuffer;
 
 	private ByteBufferIO(final ByteBuffer buffer) {
 		this.byteBuffer = buffer;
