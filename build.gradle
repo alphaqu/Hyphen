@@ -37,6 +37,12 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
 
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
 publishing {
     publications {
         hyphen(MavenPublication) {
