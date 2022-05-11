@@ -57,7 +57,7 @@ publishing {
         }
     }
     publications {
-        mavenJava(MavenPublication) {
+        hyphen(MavenPublication) {
             from components.java
 
             pom {
@@ -98,6 +98,6 @@ signing {
             it.equals(PublishToMavenRepository) 
         }
     }
-    sign publishing.publications.mavenJava
+    sign publishing.publications.hyphen
     sign configurations.archives
 }
