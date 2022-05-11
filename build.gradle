@@ -93,6 +93,11 @@ artifacts {
 }
 
 signing {
+    setRequired {
+        gradle.taskGraph.allTasks.any { 
+            it.equals(PublishToMavenRepository) 
+        }
+    }
     sign publishing.publications.mavenJava
     sign configurations.archives
 }
