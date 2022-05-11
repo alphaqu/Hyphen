@@ -16,12 +16,12 @@ repositories {
 }
 
 dependencies {
-    implementation "org.ow2.asm:asm:${project.asm}"
-    implementation "org.ow2.asm:asm-util:${project.asm}"
-    implementation "org.jetbrains:annotations:${project.jetbrainsAnnotations}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit}"
+    implementation libs.asm
+    implementation libs.asm.util
+    implementation libs.jetbrains.annotations
+    
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
 }
 
 test {

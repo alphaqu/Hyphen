@@ -1,0 +1,24 @@
+[versions]
+asm = "9.2"
+jetbrains-annotations = "22.0.0"
+junit-jupiter = "5.8.2"
+
+[libraries.asm]
+module = "org.ow2.asm:asm"
+version.ref = "asm"
+
+[libraries.asm-util]
+module = "org.ow2.asm:asm-util"
+version.ref = "asm"
+
+[libraries.jetbrains-annotations]
+module = "org.jetbrains:annotations"
+version.ref = "jetbrains-annotations"
+
+[libraries.junit-jupiter-api]
+module = "org.junit.jupiter:junit-jupiter-api"
+version.ref = "junit-jupiter"
+
+[libraries.junit-jupiter-engine]
+module = "org.junit.jupiter:junit-jupiter-engine"
+version.ref = "junit-jupiter"
