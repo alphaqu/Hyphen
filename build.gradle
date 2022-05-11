@@ -1,18 +1,16 @@
 plugins {
-    id 'java-library'
-
-    // Publishing
-    id 'maven-publish'
-    id 'signing'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+    id "java-library"
+    id "maven-publish"
+    id "signing"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 group 'dev.quantumfusion'
 version '0.2.1'
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
@@ -28,26 +26,49 @@ test {
     useJUnitPlatform()
 }
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'utf-8'
-}
-
 java {
     withSourcesJar()
     withJavadocJar()
 }
 
-// Publishing
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    options.encoding = "UTF-8"
+}
 
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+publishing {
+    publications {
+        hyphen(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = "Serialize at the speed of light."
+                url = "https://github.com/TeamQuantumFusion/Hyphen"
+
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "http://www.opensource.org/licenses/mit-license.php"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/TeamQuantumFusion/Hyphen.git"
+                    developerConnection = "scm:git:ssh://github.com:TeamQuantumFusion/Hyphen.git"
+                    url = "http://github.com/TeamQuantumFusion/Hyphen/tree/rework-9"
+                }
+                developers {
+                    developer {
+                        id = "notalpha"
+                        name = "Yan Chubikov"
+                        email = "yan.gyunashyan@gmail.com"
+                    }
+                }
+            }
         }
     }
-}
-publishing {
+
     repositories {
         maven {
             credentials {
@@ -56,34 +77,13 @@ publishing {
             }
         }
     }
-    publications {
-        hyphen(MavenPublication) {
-            from components.java
+}
 
-            pom {
-                name = project.name
-                description = 'Serialize at the speed of light.'
-                url = 'https://github.com/TeamQuantumFusion/Hyphen'
-
-                licenses {
-                    license {
-                        name = 'MIT License'
-                        url = 'http://www.opensource.org/licenses/mit-license.php'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/TeamQuantumFusion/Hyphen.git'
-                    developerConnection = 'scm:git:ssh://github.com:TeamQuantumFusion/Hyphen.git'
-                    url = 'http://github.com/TeamQuantumFusion/Hyphen/tree/rework-9'
-                }
-                developers {
-                    developer {
-                        id = 'notalpha'
-                        name = 'Yan Chubikov'
-                        email = 'yan.gyunashyan@gmail.com'
-                    }
-                }
-            }
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
         }
     }
 }
