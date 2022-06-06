@@ -95,11 +95,13 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		}
 		checkDefined(clazz);
 
-		if (clazz instanceof TypeClazz t)
-			return this.acquireDef(t.getDefined());
+		if (clazz instanceof TypeClazz t) {
+			return this.acquireDef( t.getDefined());
+		}
 
-		if (scanDeduplicationMap.containsKey(clazz))
+		if (scanDeduplicationMap.containsKey(clazz)) {
 			return scanDeduplicationMap.get(clazz);
+		}
 
 
 		final SerializerDef serializerDef = acquireDefNew(clazz);

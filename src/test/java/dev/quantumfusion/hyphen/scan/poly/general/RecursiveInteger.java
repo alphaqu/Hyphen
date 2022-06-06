@@ -16,7 +16,7 @@ import static dev.quantumfusion.hyphen.util.TestSupplierUtil.cross;
 @TestThis
 @FailTest // FIXME infinite toString()
 public class RecursiveInteger {
-    @DataSubclasses({C1.class, RecursiveC.class})
+    //@DataSubclasses({C1.class, RecursiveC.class})
     public C1<Integer> data;
 
     public RecursiveInteger(C1<Integer> data) {
@@ -38,19 +38,19 @@ public class RecursiveInteger {
         return this.data.hashCode();
     }
 
-    public static Supplier<? extends Stream<? extends RecursiveInteger>> generateRecursiveInteger(
-            int depth
-    ) {
-        return cross(TestSupplierUtil.<C1<Integer>>subClasses(
-                        C1.generateC1(INTEGERS),
-                        RecursiveC.generateRecursiveC(INTEGERS, depth - 1))
-                , RecursiveInteger::new);
-    }
+  //  public static Supplier<? extends Stream<? extends RecursiveInteger>> generateRecursiveInteger(
+  //          int depth
+  //  ) {
+  //      return cross(TestSupplierUtil.<C1<Integer>>subClasses(
+  //                      C1.generateC1(INTEGERS),
+  //                      RecursiveC.generateRecursiveC(INTEGERS, depth - 1))
+  //              , RecursiveInteger::new);
+  //  }
 
     @Override
     public String toString() {
         return "Recursive{" +
-                "data=" + this.data +
+                "data=" +
                 '}';
     }
 }

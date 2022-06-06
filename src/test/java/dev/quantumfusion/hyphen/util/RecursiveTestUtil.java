@@ -129,7 +129,7 @@ public class RecursiveTestUtil {
 
 			Assertions.assertFalse(clazz.isAnnotationPresent(FailTest.class), "Expected test to fail");
 			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
-					datas.limit(10000).map(data -> {
+					datas.limit(10).map(data -> {
 						String displayName;
 						try {
 							displayName = data.toString();
