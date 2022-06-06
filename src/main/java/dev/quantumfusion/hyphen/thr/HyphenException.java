@@ -33,7 +33,9 @@ public class HyphenException extends RuntimeException {
 	}
 
 	public static HyphenException thr(String type, String separator, Object clazz, Throwable throwable) {
-		if (throwable instanceof HyphenException exception) return exception.append(type, separator, clazz);
+		if (throwable instanceof HyphenException exception) {
+			return exception.append(type, separator, clazz);
+		}
 		var exception = new HyphenException(throwable, null);
 		exception.append(type, separator, clazz);
 		return exception;
@@ -58,13 +60,15 @@ public class HyphenException extends RuntimeException {
 		StringBuilder sb = new StringBuilder("now handled as a " + Style.YELLOW + "<$ Hyphen Fatal Exception $>" + Style.RESET + "\n\n");
 		List<Entry> main = new ArrayList<>();
 		main.add(new Entry(null, null, this.getMessage()));
-		if (getCause() != null)
+		if (getCause() != null) {
 			main.add(new Entry("cause: ", null, getCause().getClass().getSimpleName()));
+		}
 
 		new Group(this.getClass().getSimpleName() + " Reason", null, main).append(sb);
 
-		if (possibleSolution != null)
+		if (possibleSolution != null) {
 			new Group("Possible Solution", null, Collections.singletonList(new Entry(null, null, possibleSolution))).append(sb);
+		}
 
 		new Group("Path", Style.RED_BACKGROUND, this.path).append(sb);
 		new Group("Stacktrace", Style.RED_BACKGROUND, Arrays.stream(this.getStackTrace()).map(Entry::create).collect(Collectors.toList())).append(sb);

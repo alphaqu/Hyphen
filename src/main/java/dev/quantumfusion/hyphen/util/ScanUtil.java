@@ -29,12 +29,16 @@ public class ScanUtil {
 			var parent = parentPath[parentPathLength - 1];
 
 			// check if the current class is matching and return its path
-			if (matcher.test(parent)) return parentPath;
+			if (matcher.test(parent)) {
+				return parentPath;
+			}
 
 			// iterate through children
 			for (AnnotatedType child : splitter.apply(parent)) {
 				//if its already explored skip
-				if (explored.contains(child)) continue;
+				if (explored.contains(child)) {
+					continue;
+				}
 				explored.add(child);
 
 				// Use parents path and add itself to the last entry
@@ -58,18 +62,22 @@ public class ScanUtil {
 		if (parent != null) {
 			final Class<?> parentClass = parent.getDefinedClass();
 			Package pack = parentClass.getPackage();
-			if (pack != null)
+			if (pack != null) {
 				addAnnotations(pack, out);
+			}
 			addAnnotations(parentClass, out);
 		}
 		if (self instanceof FieldAnnotatedType fieldAnnotatedType) {
 			addAnnotations(fieldAnnotatedType.field, out);
 			addAnnotations(fieldAnnotatedType.annotatedType, out);
-		} else addAnnotations(self, out);
+		} else {
+			addAnnotations(self, out);
+		}
 
 
-		if (out.containsKey(DataGlobalAnnotation.class))
+		if (out.containsKey(DataGlobalAnnotation.class)) {
 			out.putAll(handler.globalAnnotations.get(out.get(DataGlobalAnnotation.class)));
+		}
 
 		final Class<?> classFrom = getClassFromOrNull(self.getType());
 		if (classFrom != null && handler.globalAnnotations.containsKey(classFrom)) {
@@ -83,11 +91,14 @@ public class ScanUtil {
 		try {
 			for (Annotation annotation : annotations.getDeclaredAnnotations()) {
 				var annotatedType = annotation.annotationType();
-				if (!annotatedType.isAnnotationPresent(HyphenAnnotation.class)) continue;
+				if (!annotatedType.isAnnotationPresent(HyphenAnnotation.class)) {
+					continue;
+				}
 				Object value = null;
 				final Method valueGetter = getAnnotationValueGetter(annotatedType);
-				if (valueGetter != null)
+				if (valueGetter != null) {
 					value = valueGetter.invoke(annotation);
+				}
 
 
 				map.put(annotatedType, value);
@@ -101,9 +112,12 @@ public class ScanUtil {
 	public static Method getAnnotationValueGetter(Class<? extends Annotation> annotation) {
 		Method methodOut = null;
 		for (Method method : annotation.getMethods()) {
-			if (method.getDeclaringClass() == Annotation.class) continue;
-			if (methodOut != null)
+			if (method.getDeclaringClass() == Annotation.class) {
+				continue;
+			}
+			if (methodOut != null) {
 				throw new RuntimeException("Annotation " + annotation.getSimpleName() + " has more than 1 field");
+			}
 			methodOut = method;
 		}
 
@@ -121,15 +135,20 @@ public class ScanUtil {
 
 	public static Class<?> getClassFrom(Type type) {
 		final Class<?> aClass = getClassFromOrNull(type);
-		if (aClass == null)
+		if (aClass == null) {
 			throw new IllegalArgumentException(type.getClass() + ": " + type);
+		}
 		return aClass;
 	}
 
 	@Nullable
 	public static Class<?> getClassFromOrNull(Type type) {
-		if (type instanceof Class<?> c) return c;
-		if (type instanceof ParameterizedType pt) return getClassFrom(pt.getRawType());
+		if (type instanceof Class<?> c) {
+			return c;
+		}
+		if (type instanceof ParameterizedType pt) {
+			return getClassFrom(pt.getRawType());
+		}
 
 		return null;
 	}

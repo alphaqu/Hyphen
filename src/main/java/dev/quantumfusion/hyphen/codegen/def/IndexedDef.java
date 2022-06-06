@@ -43,7 +43,9 @@ public abstract class IndexedDef extends MethodDef {
 			mh.getIO(int.class);
 			mh.op(DUP);
 			mh.varOp(ISTORE, length);
-		} else mh.visitLdcInsn(fixedSize);
+		} else {
+			mh.visitLdcInsn(fixedSize);
+		}
 		mh.typeOp(ANEWARRAY, component.getBytecodeClass());
 		loopArray(mh, length, (i) -> {
 			mh.op(DUP);
@@ -92,8 +94,12 @@ public abstract class IndexedDef extends MethodDef {
 				valueLoad.run();
 				this.lengthFunc.accept(mh);
 				mh.op(IMUL);
-			} else mh.op(ICONST_0);
-		} else mh.op(ICONST_0);
+			} else {
+				mh.op(ICONST_0);
+			}
+		} else {
+			mh.op(ICONST_0);
+		}
 
 		if (componentDef.hasDynamicSize()) {
 			final Variable length = mh.addVar("length", int.class);
@@ -120,8 +126,11 @@ public abstract class IndexedDef extends MethodDef {
 		final Variable i = mh.addVar("i", int.class, ICONST_0);
 		var top = mh.defineLabel();
 		mh.varOp(ILOAD, i);
-		if (fixedSize == null) mh.varOp(ILOAD, length);
-		else mh.visitLdcInsn(fixedSize);
+		if (fixedSize == null) {
+			mh.varOp(ILOAD, length);
+		} else {
+			mh.visitLdcInsn(fixedSize);
+		}
 		var end = mh.jump(IF_ICMPGE);
 
 		value.accept(i);

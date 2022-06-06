@@ -53,11 +53,13 @@ public final class UnsafeIO implements IOInterface {
 	private static sun.misc.Unsafe getUnsafeInstance() {
 		Class<sun.misc.Unsafe> clazz = sun.misc.Unsafe.class;
 		for (Field field : clazz.getDeclaredFields()) {
-			if (!field.getType().equals(clazz))
+			if (!field.getType().equals(clazz)) {
 				continue;
+			}
 			final int modifiers = field.getModifiers();
-			if (!(Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers)))
+			if (!(Modifier.isStatic(modifiers) && Modifier.isFinal(modifiers))) {
 				continue;
+			}
 			try {
 				field.setAccessible(true);
 				return (sun.misc.Unsafe) field.get(null);
@@ -74,7 +76,9 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public static final UnsafeIO wrap(final Buffer directByteBuffer) {
-		if (!directByteBuffer.isDirect()) throw new IllegalArgumentException("Bytebuffer is not direct");
+		if (!directByteBuffer.isDirect()) {
+			throw new IllegalArgumentException("Bytebuffer is not direct");
+		}
 		return new UnsafeIO(UNSAFE.getLong(directByteBuffer, BUFFER_ADDRESS_OFFSET), directByteBuffer);
 	}
 
@@ -95,8 +99,9 @@ public final class UnsafeIO implements IOInterface {
 
 	@Override
 	public final void close() {
-		if (bb != null) bb.clear();
-		else {
+		if (bb != null) {
+			bb.clear();
+		} else {
 			UNSAFE.freeMemory(address);
 		}
 	}
@@ -244,7 +249,11 @@ public final class UnsafeIO implements IOInterface {
 		if (length > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(null, currentAddress, array, BOOLEAN_OFFSET, length);
 			currentAddress += length;
-		} else for (int i = 0; i < length; i++) array[i] = getBoolean();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getBoolean();
+			}
+		}
 		return array;
 	}
 
@@ -254,7 +263,11 @@ public final class UnsafeIO implements IOInterface {
 		if (length > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(null, currentAddress, array, BYTE_OFFSET, length);
 			currentAddress += length;
-		} else for (int i = 0; i < length; i++) array[i] = getByte();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getByte();
+			}
+		}
 		return array;
 	}
 
@@ -265,7 +278,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(null, currentAddress, array, CHAR_OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getChar();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getChar();
+			}
+		}
 		return array;
 	}
 
@@ -276,7 +293,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(null, currentAddress, array, SHORT_OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getShort();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getShort();
+			}
+		}
 		return array;
 	}
 
@@ -287,7 +308,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(null, currentAddress, array, INT__OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getInt();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getInt();
+			}
+		}
 		return array;
 	}
 
@@ -298,7 +323,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(null, currentAddress, array, LONG_OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getLong();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getLong();
+			}
+		}
 		return array;
 	}
 
@@ -309,7 +338,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(null, currentAddress, array, FLOAT_OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getFloat();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getFloat();
+			}
+		}
 		return array;
 	}
 
@@ -321,14 +354,20 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(null, currentAddress, array, DOUBLE_OFFSET, bytes);
 			currentAddress += bytes;
-		} else for (int i = 0; i < length; i++) array[i] = getDouble();
+		} else {
+			for (int i = 0; i < length; i++) {
+				array[i] = getDouble();
+			}
+		}
 		return array;
 	}
 
 	@Override
 	public final String[] getStringArray(final int length) {
 		final String[] array = new String[length];
-		for (int i = 0; i < length; i++) array[i] = getString();
+		for (int i = 0; i < length; i++) {
+			array[i] = getString();
+		}
 		return array;
 	}
 
@@ -338,7 +377,11 @@ public final class UnsafeIO implements IOInterface {
 		if (length > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(value, BOOLEAN_OFFSET, null, currentAddress, length);
 			currentAddress += length;
-		} else for (var v : value) putBoolean(v);
+		} else {
+			for (var v : value) {
+				putBoolean(v);
+			}
+		}
 	}
 
 	@Override
@@ -346,7 +389,11 @@ public final class UnsafeIO implements IOInterface {
 		if (length > COPY_MEMORY_THRESHOLD) {
 			UNSAFE.copyMemory(value, BYTE_OFFSET, null, currentAddress, length);
 			currentAddress += length;
-		} else for (var v : value) putByte(v);
+		} else {
+			for (var v : value) {
+				putByte(v);
+			}
+		}
 	}
 
 	@Override
@@ -355,7 +402,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(value, CHAR_OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putChar(v);
+		} else {
+			for (var v : value) {
+				putChar(v);
+			}
+		}
 	}
 
 	@Override
@@ -364,7 +415,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 2;
 			UNSAFE.copyMemory(value, SHORT_OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putShort(v);
+		} else {
+			for (var v : value) {
+				putShort(v);
+			}
+		}
 	}
 
 	@Override
@@ -373,7 +428,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(value, INT__OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putInt(v);
+		} else {
+			for (var v : value) {
+				putInt(v);
+			}
+		}
 	}
 
 	@Override
@@ -382,7 +441,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(value, LONG_OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putLong(v);
+		} else {
+			for (var v : value) {
+				putLong(v);
+			}
+		}
 	}
 
 	@Override
@@ -391,7 +454,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 4;
 			UNSAFE.copyMemory(value, FLOAT_OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putFloat(v);
+		} else {
+			for (var v : value) {
+				putFloat(v);
+			}
+		}
 	}
 
 	@Override
@@ -400,7 +467,11 @@ public final class UnsafeIO implements IOInterface {
 			final int bytes = length * 8;
 			UNSAFE.copyMemory(value, DOUBLE_OFFSET, null, currentAddress, bytes);
 			currentAddress += bytes;
-		} else for (var v : value) putDouble(v);
+		} else {
+			for (var v : value) {
+				putDouble(v);
+			}
+		}
 	}
 
 	@Override

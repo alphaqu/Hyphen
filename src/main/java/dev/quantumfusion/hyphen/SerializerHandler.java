@@ -56,7 +56,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	public SerializerHandler(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
 		// Initialize options
 		this.options = new EnumMap<>(Options.class);
-		for (Options value : Options.values()) this.options.put(value, value.defaultValue);
+		for (Options value : Options.values()) {
+			this.options.put(value, value.defaultValue);
+		}
 
 		this.dataClass = dataClass;
 		this.ioClass = ioClass;
@@ -96,7 +98,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 		checkDefined(clazz);
 
 		if (clazz instanceof TypeClazz t) {
-			return this.acquireDef( t.getDefined());
+			return this.acquireDef(t.getDefined());
 		}
 
 		if (scanDeduplicationMap.containsKey(clazz)) {
@@ -119,8 +121,9 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	private SerializerDef acquireDefNew(Clazz clazz) {
 
 		var definedClass = clazz.getDefinedClass();
-		if (definitions.containsKey(definedClass))
+		if (definitions.containsKey(definedClass)) {
 			return definitions.get(definedClass).create(clazz, this);
+		}
 
 		var methodDef = this.acquireDefNewMethod(clazz);
 		scanDeduplicationMap.put(clazz, methodDef);
@@ -128,19 +131,24 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	private MethodDef acquireDefNewMethod(Clazz clazz) {
-		if (clazz.containsAnnotation(DataSubclasses.class))
+		if (clazz.containsAnnotation(DataSubclasses.class)) {
 			return new SubclassDef(this, clazz, (Class<?>[]) clazz.getAnnotationValue(DataSubclasses.class));
-		if (clazz instanceof ArrayClazz arrayClazz)
+		}
+		if (clazz instanceof ArrayClazz arrayClazz) {
 			return new ArrayDef(this, arrayClazz);
-		if (clazz.getDefinedClass().isEnum())
+		}
+		if (clazz.getDefinedClass().isEnum()) {
 			return new EnumDef(this, clazz);
-		else return new ClassDef(this, clazz);
+		} else {
+			return new ClassDef(this, clazz);
+		}
 	}
 
 	private void checkDefined(Clazz clazz) {
-		if (clazz == UnknownClazz.UNKNOWN)
+		if (clazz == UnknownClazz.UNKNOWN) {
 			throw new UnknownTypeException("Type could not be identified",
 					"Check the Path for the source of \"UNKNOWN\" which is when a type is not known");
+		}
 
 		if ((clazz instanceof TypeClazz t && (t.defined == UnknownClazz.UNKNOWN))) {
 			throw new UnknownTypeException("Type " + t.typeName + " could not be identified",
@@ -163,8 +171,11 @@ public class SerializerHandler<IO extends IOInterface, D> {
 			return codegenHandler.export(this.exportPath);
 		} catch (Throwable throwable) {
 			HyphenException hyphenException;
-			if (throwable instanceof HyphenException he) hyphenException = he;
-			else hyphenException = new HyphenException(throwable, null);
+			if (throwable instanceof HyphenException he) {
+				hyphenException = he;
+			} else {
+				hyphenException = new HyphenException(throwable, null);
+			}
 			throw hyphenException;
 		}
 	}

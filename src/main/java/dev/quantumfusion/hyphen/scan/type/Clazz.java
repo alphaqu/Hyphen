@@ -105,8 +105,9 @@ public class Clazz {
 
 	public Clazz asSub(Class<?> sub) {
 		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, clazz -> ClassCache.getInherited(ScanUtil.getClassFrom(clazz)));
-		if (path == null)
+		if (path == null) {
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
+		}
 
 		var ctx = this;
 		for (int i = path.length - 1; i >= 0; i--) {
@@ -119,10 +120,10 @@ public class Clazz {
 	public List<FieldEntry> getFields() {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		final AnnotatedType aSuper = ClassCache.getSuperClass(aClass);
-		if (aSuper != null)
+		if (aSuper != null) {
 			fieldEntries.addAll(Clazzifier.create(handler, aSuper, this, Direction.SUPER).getFields());
-
-
+		}
+		
 		for (var field : ClassCache.getFields(aClass)) {
 			try {
 				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(handler, new ScanUtil.FieldAnnotatedType(field.field(), field.type()), this, Direction.NORMAL)));
@@ -149,8 +150,12 @@ public class Clazz {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		Clazz clazz = (Clazz) o;
 		return aClass.equals(clazz.aClass) && Objects.equals(annotations, clazz.annotations);
 	}

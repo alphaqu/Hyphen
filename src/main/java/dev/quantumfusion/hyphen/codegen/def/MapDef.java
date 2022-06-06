@@ -111,9 +111,9 @@ public class MapDef extends MethodDef {
 		int x = (this.keyDef.hasDynamicSize() ? 1 : 0) | (this.valueDef.hasDynamicSize() ? 2 : 0);
 
 		int staticSize = this.keyDef.getStaticSize() + this.valueDef.getStaticSize();
-		if (staticSize == 0)
+		if (staticSize == 0) {
 			mh.op(ICONST_0);
-		else {
+		} else {
 			valueLoad.run();
 			mh.callInst(INVOKEINTERFACE, Map.class, "size", int.class);
 			mh.visitLdcInsn(staticSize);
@@ -127,9 +127,15 @@ public class MapDef extends MethodDef {
 
 			// get iterator
 			valueLoad.run();
-			if (x == 1) mh.callInst(INVOKEINTERFACE, Map.class, "keySet", Set.class);
-			if (x == 2) mh.callInst(INVOKEINTERFACE, Map.class, "values", Collection.class);
-			if (x == 3) mh.callInst(INVOKEINTERFACE, Map.class, "entrySet", Set.class);
+			if (x == 1) {
+				mh.callInst(INVOKEINTERFACE, Map.class, "keySet", Set.class);
+			}
+			if (x == 2) {
+				mh.callInst(INVOKEINTERFACE, Map.class, "values", Collection.class);
+			}
+			if (x == 3) {
+				mh.callInst(INVOKEINTERFACE, Map.class, "entrySet", Set.class);
+			}
 			mh.callInst(INVOKEINTERFACE, Iterable.class, "iterator", Iterator.class);
 			mh.varOp(ISTORE, iterator);
 
@@ -141,17 +147,23 @@ public class MapDef extends MethodDef {
 
 				mh.varOp(ILOAD, iterator);
 				mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
-				if (x == 3) mh.typeOp(CHECKCAST, Map.Entry.class);
+				if (x == 3) {
+					mh.typeOp(CHECKCAST, Map.Entry.class);
+				}
 				mh.varOp(ISTORE, entry);
 
-				if (x == 1) this.keyDef.writeMeasure(mh, () -> {
-					mh.varOp(ILOAD, entry);
-					GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
-				});
-				if (x == 2) this.valueDef.writeMeasure(mh, () -> {
-					mh.varOp(ILOAD, entry);
-					GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
-				});
+				if (x == 1) {
+					this.keyDef.writeMeasure(mh, () -> {
+						mh.varOp(ILOAD, entry);
+						GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
+					});
+				}
+				if (x == 2) {
+					this.valueDef.writeMeasure(mh, () -> {
+						mh.varOp(ILOAD, entry);
+						GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
+					});
+				}
 				if (x == 3) {
 					this.keyDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);

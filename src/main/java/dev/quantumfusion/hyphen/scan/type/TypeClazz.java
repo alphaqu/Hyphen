@@ -29,7 +29,9 @@ public class TypeClazz extends Clazz {
 		var type = (TypeVariable<?>) typeVariable.getType();
 		var typeName = type.getTypeName();
 
-		if (ctx == null) throw new RuntimeException("Type Knowledge Required");
+		if (ctx == null) {
+			throw new RuntimeException("Type Knowledge Required");
+		}
 		final Type bound = type.getBounds()[0];
 		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), ScanUtil.getClassFrom(bound), typeName);
 	}
@@ -75,9 +77,15 @@ public class TypeClazz extends Clazz {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || this.getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
+		if (!super.equals(o)) {
+			return false;
+		}
 		TypeClazz typeClazz = (TypeClazz) o;
 		return Objects.equals(this.bytecodeBound, typeClazz.bytecodeBound) && Objects.equals(this.defined, typeClazz.defined);
 	}

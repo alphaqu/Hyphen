@@ -61,12 +61,16 @@ public abstract class MethodDef implements SerializerDef {
 	}
 
 	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
-		if (!handler.options.get(Options.DISABLE_GET))
+		if (!handler.options.get(Options.DISABLE_GET)) {
 			writer.writeMethod(this.clazz, this.getInfo, spark, false, this::writeMethodGet);
-		else writer.writeMethod(this.clazz, this.getInfo, spark, false, mh -> mh.throwException("get() is disabled."));
-		if (!handler.options.get(Options.DISABLE_PUT))
+		} else {
+			writer.writeMethod(this.clazz, this.getInfo, spark, false, mh -> mh.throwException("get() is disabled."));
+		}
+		if (!handler.options.get(Options.DISABLE_PUT)) {
 			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
-		else writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> mh.throwException("put() is disabled."));
+		} else {
+			writer.writeMethod(this.clazz, this.putInfo, spark, false, mh -> mh.throwException("put() is disabled."));
+		}
 		if (!handler.options.get(Options.DISABLE_MEASURE) && this.hasDynamicSize()) {
 			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> {
 				this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0));
@@ -75,8 +79,9 @@ public abstract class MethodDef implements SerializerDef {
 					mh.op(IADD);
 				}
 			});
-		} else
+		} else {
 			writer.writeMethod(this.clazz, this.measureInfo, spark, false, mh -> mh.throwException("measure() is disabled."));
+		}
 
 
 	}

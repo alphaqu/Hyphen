@@ -36,8 +36,9 @@ public final class GenUtil {
 
 	public static Type[] of(Class<?>[] classes) {
 		var out = new Type[classes.length];
-		for (int i = 0; i < classes.length; i++)
+		for (int i = 0; i < classes.length; i++) {
 			out[i] = of(classes[i]);
+		}
 		return out;
 	}
 

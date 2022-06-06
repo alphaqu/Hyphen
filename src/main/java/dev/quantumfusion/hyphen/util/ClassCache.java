@@ -22,29 +22,36 @@ public class ClassCache {
 
 	public static AnnotatedType[] getInherited(Class<?> clazz) {
 		return cache(INHERITED_CACHE, clazz, (c) -> {
-			if (c.isArray())
+			if (c.isArray()) {
 				return ArrayUtil.map(getInherited(clazz.componentType()), AnnotatedType[]::new, annotatedType ->
 						ScanUtil.wrap(ScanUtil.getClassFrom(annotatedType).arrayType()));
+			}
 
 			var classInterface = ClassCache.getInterfaces(clazz);
 			var classSuper = ClassCache.getSuperClass(clazz);
-			if (classSuper != null) return ScanUtil.append(classInterface, classSuper);
+			if (classSuper != null) {
+				return ScanUtil.append(classInterface, classSuper);
+			}
 			return classInterface;
 		});
 	}
 
 	public static AnnotatedType getSuperClass(Class<?> clazz) {
 		return cache(SUPER_CACHE, clazz, (c) -> {
-			if (clazz.getDeclaredAnnotation(IgnoreSuperclass.class) == null)
-				if (c.getSuperclass() != null) return c.getAnnotatedSuperclass();
+			if (clazz.getDeclaredAnnotation(IgnoreSuperclass.class) == null) {
+				if (c.getSuperclass() != null) {
+					return c.getAnnotatedSuperclass();
+				}
+			}
 			return null;
 		});
 	}
 
 	public static AnnotatedType[] getInterfaces(Class<?> clazz) {
 		return cache(INTERFACE_CACHE, clazz, (c) -> {
-			if (clazz.getDeclaredAnnotation(IgnoreInterfaces.class) == null)
+			if (clazz.getDeclaredAnnotation(IgnoreInterfaces.class) == null) {
 				return clazz.getAnnotatedInterfaces();
+			}
 			return new AnnotatedType[0];
 		});
 	}
@@ -53,15 +60,18 @@ public class ClassCache {
 		return cache(FIELD_CACHE, clazz, (c) -> {
 			var out = new ArrayList<FieldInfo>();
 			for (Field field : clazz.getDeclaredFields()) {
-				if ((field.getModifiers() & ACC_STATIC) == 0)
+				if ((field.getModifiers() & ACC_STATIC) == 0) {
 					out.add(new FieldInfo(field, field.getAnnotatedType()));
+				}
 			}
 			return out;
 		});
 	}
 
 	private static <K, O> O cache(Map<K, O> cache, K key, Function<K, O> creator) {
-		if (cache.containsKey(key)) return cache.get(key);
+		if (cache.containsKey(key)) {
+			return cache.get(key);
+		}
 		final O apply = creator.apply(key);
 		cache.put(key, apply);
 		return apply;

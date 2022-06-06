@@ -56,8 +56,9 @@ public final class ClassDef extends MethodDef {
 				}
 				this.constructorParameters = constructorParameters.toArray(Class[]::new);
 				try {
-					if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers()))
+					if (!Modifier.isPublic(aClass.getConstructor(this.constructorParameters).getModifiers())) {
 						throw new HyphenException("Could not access constructor", "Check if the constructor is public.");
+					}
 
 				} catch (NoSuchMethodException e) {
 					throw new HyphenException(e.getMessage(), "Check if the constructor holds all of the fields.");
@@ -77,8 +78,11 @@ public final class ClassDef extends MethodDef {
 	@Override
 	protected void writeMethodGet(MethodHandler mh) {
 		var packedBooleans = new PackedBooleans();
-		for (var entry : fields.entrySet())
-			if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) packedBooleans.countBoolean();
+		for (var entry : fields.entrySet()) {
+			if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) {
+				packedBooleans.countBoolean();
+			}
+		}
 		packedBooleans.writeGet(mh);
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
@@ -92,8 +96,11 @@ public final class ClassDef extends MethodDef {
 					anIf.elseStart();
 					mh.op(ACONST_NULL);
 				}
-			} else if (shouldCompactBoolean(fieldEntry)) packedBooleans.getBoolean(mh);
-			else entry.getValue().writeGet(mh);
+			} else if (shouldCompactBoolean(fieldEntry)) {
+				packedBooleans.getBoolean(mh);
+			} else {
+				entry.getValue().writeGet(mh);
+			}
 		}
 		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constructorParameters);
 	}
@@ -123,7 +130,9 @@ public final class ClassDef extends MethodDef {
 
 		for (var entry : fields.entrySet()) {
 			var fieldEntry = entry.getKey();
-			if (shouldCompactBoolean(fieldEntry)) continue;
+			if (shouldCompactBoolean(fieldEntry)) {
+				continue;
+			}
 			if (fieldEntry.isNullable()) {
 				final Variable cache = mh.getVar(fieldEntry.getFieldName() + "_cache");
 				mh.varOp(ILOAD, cache);
@@ -142,13 +151,18 @@ public final class ClassDef extends MethodDef {
 
 	@Override
 	public int getStaticSize() {
-		if (this.fields.isEmpty()) return 0;
+		if (this.fields.isEmpty()) {
+			return 0;
+		}
 
 		int size = 0;
 		int booleans = 0;
 		for (var entry : this.fields.entrySet()) {
-			if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) booleans++;
-			else size += entry.getValue().getStaticSize();
+			if (entry.getKey().isNullable() || shouldCompactBoolean(entry.getKey())) {
+				booleans++;
+			} else {
+				size += entry.getValue().getStaticSize();
+			}
 		}
 
 		return size + ((booleans + 7) >> 3);
@@ -162,11 +176,14 @@ public final class ClassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (this.fields.isEmpty()) mh.op(ICONST_0);
-		else {
+		if (this.fields.isEmpty()) {
+			mh.op(ICONST_0);
+		} else {
 			int i = 0;
 			for (var entry : this.fields.entrySet()) {
-				if (shouldCompactBoolean(entry.getKey())) continue;
+				if (shouldCompactBoolean(entry.getKey())) {
+					continue;
+				}
 
 				var fieldEntry = entry.getKey();
 				var fieldDef = entry.getValue();
@@ -199,7 +216,9 @@ public final class ClassDef extends MethodDef {
 				} else {
 					if (isDynamicSize) {
 						fieldDef.writeMeasure(mh, () -> loadField(mh, fieldEntry, valueLoad));
-						if (i++ > 0) mh.op(IADD);
+						if (i++ > 0) {
+							mh.op(IADD);
+						}
 					}
 				}
 			}
@@ -230,16 +249,19 @@ public final class ClassDef extends MethodDef {
 		var bytecodeClass = clazz.getBytecodeClass();
 
 		var fieldName = field.getName();
-		if (record) mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
-		else if (Modifier.isPublic(field.getModifiers()))
+		if (record) {
+			mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
+		} else if (Modifier.isPublic(field.getModifiers())) {
 			mh.visitFieldInsn(GETFIELD, aClass, fieldName, field.getType());
-		else try {
+		} else {
+			try {
 				definedClass.getDeclaredMethod("get" + GenUtil.upperCase(fieldName));
 				mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
 			} catch (NoSuchMethodException ignored) {
 				throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
 						"Try making the field public or add a getter");
 			}
+		}
 
 		GenUtil.shouldCastGeneric(mh, definedClass, bytecodeClass);
 	}

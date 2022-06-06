@@ -31,23 +31,26 @@ public class ParaClazz extends Clazz {
 
 		AnnotatedType annType;
 
-		if (rawAnnotatedType instanceof ScanUtil.FieldAnnotatedType fieldAnnotatedType)
+		if (rawAnnotatedType instanceof ScanUtil.FieldAnnotatedType fieldAnnotatedType) {
 			annType = fieldAnnotatedType.annotatedType();
-		else
+		} else {
 			annType = rawAnnotatedType;
+		}
 
-		if (annType instanceof AnnotatedParameterizedType annotatedType)
+		if (annType instanceof AnnotatedParameterizedType annotatedType) {
 			ArrayUtil.dualFor(annotatedType.getAnnotatedActualTypeArguments(), rawType.getTypeParameters(), (actual, internal) -> {
 				final String key = (dir == Direction.SUB) ? actual.getType().getTypeName() : internal.getTypeName();
 				final Clazz value = Clazzifier.create(handler, (dir == Direction.SUB) ? ScanUtil.wrap(internal) : actual, ctx, dir);
 				parameters.put(key, value);
 			});
-		else {
-			if (dir != Direction.SUB)
+		} else {
+			if (dir != Direction.SUB) {
 				throw new UnknownTypeException("Class with parameters comes from a non parameterized source.",
 						"Check if you forgot to declare the parameters and left the type raw in any of the fields.");
-			for (var typeParameter : rawType.getTypeParameters())
+			}
+			for (var typeParameter : rawType.getTypeParameters()) {
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(handler, ScanUtil.wrap(typeParameter), ctx, dir));
+			}
 		}
 
 		return new ParaClazz(handler, rawType, ScanUtil.acquireAnnotations(handler, rawAnnotatedType, ctx), parameters);
@@ -59,7 +62,9 @@ public class ParaClazz extends Clazz {
 		if (orDefault == UnknownClazz.UNKNOWN) {
 			for (Clazz value : parameters.values()) {
 				final Clazz define = value.define(typeName);
-				if (define != UnknownClazz.UNKNOWN) return define;
+				if (define != UnknownClazz.UNKNOWN) {
+					return define;
+				}
 			}
 		}
 		return orDefault;
@@ -68,7 +73,9 @@ public class ParaClazz extends Clazz {
 	@Override
 	public int defined() {
 		int i = 1;
-		for (Clazz value : parameters.values()) i += value.defined();
+		for (Clazz value : parameters.values()) {
+			i += value.defined();
+		}
 		return i;
 	}
 
@@ -81,9 +88,15 @@ public class ParaClazz extends Clazz {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		if (!super.equals(o)) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		if (!super.equals(o)) {
+			return false;
+		}
 		ParaClazz paraClazz = (ParaClazz) o;
 		return Objects.equals(parameters, paraClazz.parameters);
 	}

@@ -32,8 +32,12 @@ public class MethodInfo {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
 		MethodInfo that = (MethodInfo) o;
 		return Objects.equals(returnClass, that.returnClass) && Arrays.equals(parameters, that.parameters);
 	}

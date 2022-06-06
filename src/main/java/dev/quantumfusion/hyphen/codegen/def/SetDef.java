@@ -91,9 +91,9 @@ public class SetDef extends MethodDef {
 		boolean hasDynamic = this.keyDef.hasDynamicSize();
 
 		int staticSize = this.keyDef.getStaticSize();
-		if (staticSize == 0)
+		if (staticSize == 0) {
 			mh.op(ICONST_0);
-		else {
+		} else {
 			valueLoad.run();
 			mh.callInst(INVOKEINTERFACE, Set.class, "size", int.class);
 			mh.visitLdcInsn(staticSize);

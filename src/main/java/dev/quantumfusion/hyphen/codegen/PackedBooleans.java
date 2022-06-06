@@ -34,7 +34,9 @@ public class PackedBooleans {
 
 	public void getBoolean(MethodHandler mh) {
 		int pos = (booleansAmount++) % 8;
-		if (pos == 0) stacks++;
+		if (pos == 0) {
+			stacks++;
+		}
 
 
 		mh.varOp(ILOAD, stackVariables.get(stacks));
@@ -61,14 +63,17 @@ public class PackedBooleans {
 	}
 
 	public void falseBoolean(MethodHandler mh) {
-		if ((booleansAmount - 1) % 8 == 0) mh.op(ICONST_0);
+		if ((booleansAmount - 1) % 8 == 0) {
+			mh.op(ICONST_0);
+		}
 	}
 
 	public void trueBoolean(MethodHandler mh) {
 		final int pos = (booleansAmount - 1) % 8;
 		// iload boolean
-		if (pos == 0) mh.op(ICONST_1);
-		else {
+		if (pos == 0) {
+			mh.op(ICONST_1);
+		} else {
 			mh.visitLdcInsn((byte) Math.pow(2, pos));
 			mh.op(IOR);
 		}
@@ -79,7 +84,9 @@ public class PackedBooleans {
 		// iload boolean
 		mh.visitLdcInsn(pos);
 		mh.op(ISHL);
-		if (pos != 0) mh.op(IOR);
+		if (pos != 0) {
+			mh.op(IOR);
+		}
 	}
 
 	public int getBytes() {

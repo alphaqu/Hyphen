@@ -25,7 +25,9 @@ public class PrimitiveArrayIODef implements SerializerDef {
 			mh.loadIO();
 			mh.op(SWAP);
 			mh.putIO(int.class);
-		} else mh.visitLdcInsn(fixedSize);
+		} else {
+			mh.visitLdcInsn(fixedSize);
+		}
 		mh.putIO(this.primitiveArray);
 	}
 
@@ -35,7 +37,9 @@ public class PrimitiveArrayIODef implements SerializerDef {
 		if (fixedSize == null) {
 			mh.op(DUP);
 			mh.getIO(int.class);
-		} else mh.visitLdcInsn(fixedSize);
+		} else {
+			mh.visitLdcInsn(fixedSize);
+		}
 		mh.getIO(this.primitiveArray);
 	}
 

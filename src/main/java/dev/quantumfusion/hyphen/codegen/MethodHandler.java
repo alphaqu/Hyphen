@@ -50,7 +50,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 				GenUtil.methodDesc(convert(methodInfo.returnClass, spark), parameters(methodInfo.parameters, spark)),
 				null, null), self, dataClass, ioClass, spark);
 
-		if (spark) this.addVar("this", Object.class);
+		if (spark) {
+			this.addVar("this", Object.class);
+		}
 		this.compactVars = compactVars;
 	}
 
@@ -66,7 +68,11 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	private static Class<?> convert(Class<?> parameters, boolean raw) {
-		if (raw) if (!parameters.isPrimitive()) return Object.class;
+		if (raw) {
+			if (!parameters.isPrimitive()) {
+				return Object.class;
+			}
+		}
 		return parameters;
 	}
 
@@ -90,7 +96,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	// Elegentification:tm:
 	public void op(int... op) {
-		for (int i : op) this.visitInsn(i);
+		for (int i : op) {
+			this.visitInsn(i);
+		}
 	}
 
 	public void parameterOp(int op, int parameter) {
@@ -98,7 +106,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	public void varOp(int op, Variable... vars) {
-		for (var var : vars) varOp(op, var);
+		for (var var : vars) {
+			varOp(op, var);
+		}
 	}
 
 	void varOp(int op, String var) {
@@ -131,7 +141,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public void getIO(Class<?> primitive) {
 
 		Class<?>[] parameters = new Class[primitive.isArray() ? 1 : 0];
-		if (primitive.isArray()) parameters[0] = int.class;
+		if (primitive.isArray()) {
+			parameters[0] = int.class;
+		}
 
 		this.callInst(INVOKEVIRTUAL, this.ioClass, "get" + getIOName(primitive), primitive, parameters);
 	}
@@ -139,15 +151,18 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public void putIO(Class<?> primitive) {
 		Class<?>[] parameters = new Class[primitive.isArray() ? 2 : 1];
 		parameters[0] = primitive;
-		if (primitive.isArray()) parameters[1] = int.class;
+		if (primitive.isArray()) {
+			parameters[1] = int.class;
+		}
 
 
 		this.callInst(INVOKEVIRTUAL, this.ioClass, "put" + getIOName(primitive), Void.TYPE, parameters);
 	}
 
 	private static String getIOName(Class<?> primitive) {
-		if (primitive.isArray())
+		if (primitive.isArray()) {
 			return GenUtil.upperCase(primitive.getComponentType().getSimpleName()) + "Array";
+		}
 		return GenUtil.upperCase(primitive.getSimpleName());
 	}
 
@@ -196,7 +211,9 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 
 	public Variable getVar(String name) {
 		var var = variableMap.get(name);
-		if (var == null) throw new RuntimeException("Variable " + name + " does not exist.");
+		if (var == null) {
+			throw new RuntimeException("Variable " + name + " does not exist.");
+		}
 		return var;
 	}
 

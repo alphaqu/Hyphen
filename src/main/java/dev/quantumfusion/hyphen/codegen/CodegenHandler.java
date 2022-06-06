@@ -82,8 +82,9 @@ public class CodegenHandler<IO extends IOInterface, D> {
 	 */
 	public MethodInfo createMethodInfo(Clazz clazz, String prefix, String suffix, Class<?> returnClass, Class<?>... parameters) {
 		var info = new MethodInfo(GenUtil.makeSafe(prefix + clazz.toString() + suffix), returnClass, parameters);
-		if (methodDedup != null)
+		if (methodDedup != null) {
 			info.setName(GenUtil.hyphenShortMethodName(methodDedup.computeIfAbsent(info, info1 -> new AtomicInteger(0)).getAndIncrement()));
+		}
 		return info;
 	}
 

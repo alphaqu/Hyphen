@@ -74,16 +74,21 @@ public final class SubclassDef extends MethodDef {
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		ifChainClasses(mh, valueLoad, (clz, serializerDef, i) -> {
-			if (serializerDef.hasDynamicSize())
+			if (serializerDef.hasDynamicSize()) {
 				serializerDef.writeMeasure(mh, () -> {
 					valueLoad.run();
 					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
 				});
+			}
 			int ss = serializerDef.getStaticSize();
 			if (!this.allSameStaticSize && ss != 0) {
 				mh.visitLdcInsn(ss);
-				if (serializerDef.hasDynamicSize()) mh.op(IADD);
-			} else if (!serializerDef.hasDynamicSize()) mh.op(ICONST_0);
+				if (serializerDef.hasDynamicSize()) {
+					mh.op(IADD);
+				}
+			} else if (!serializerDef.hasDynamicSize()) {
+				mh.op(ICONST_0);
+			}
 			mh.op(IRETURN);
 		});
 		// TODO: throw
@@ -106,18 +111,28 @@ public final class SubclassDef extends MethodDef {
 
 	@Override
 	public int getStaticSize() {
-		if (this.subDefs.length == 0) return 0;
-		if (this.allSameStaticSize) return this.subDefs[0].getStaticSize() + 1;
+		if (this.subDefs.length == 0) {
+			return 0;
+		}
+		if (this.allSameStaticSize) {
+			return this.subDefs[0].getStaticSize() + 1;
+		}
 		return 1;
 	}
 
 	@Override
 	public boolean hasDynamicSize() {
-		if (this.subDefs.length == 0) return false;
-		if (!this.allSameStaticSize) return true;
+		if (this.subDefs.length == 0) {
+			return false;
+		}
+		if (!this.allSameStaticSize) {
+			return true;
+		}
 
 		for (SerializerDef subDef : this.subDefs) {
-			if (subDef.hasDynamicSize()) return true;
+			if (subDef.hasDynamicSize()) {
+				return true;
+			}
 		}
 
 		return false;

@@ -20,17 +20,27 @@ public class Clazzifier {
 	public static Clazz create(SerializerHandler<?, ?> handler, @NotNull AnnotatedType annotatedType, @Nullable Clazz ctx, Direction dir) {
 		try {
 			var type = annotatedType.getType();
-			if (type instanceof ParameterizedType) return ParaClazz.create(handler, annotatedType, ctx, dir);
-			if (type instanceof GenericArrayType) return ArrayClazz.create(handler, annotatedType, ctx, dir);
-			if (type instanceof WildcardType)
-				return Clazzifier.create(handler, ((AnnotatedWildcardType) annotatedType).getAnnotatedUpperBounds()[0], ctx, dir);
-			if (type instanceof TypeVariable) return TypeClazz.create(handler, annotatedType, ctx);
-			if (type instanceof Class<?> c && c.getTypeParameters().length > 0)
+			if (type instanceof ParameterizedType) {
 				return ParaClazz.create(handler, annotatedType, ctx, dir);
-			if (type instanceof Class<?> c && c.isArray())
+			}
+			if (type instanceof GenericArrayType) {
 				return ArrayClazz.create(handler, annotatedType, ctx, dir);
-			if (type instanceof Class<?>)
+			}
+			if (type instanceof WildcardType) {
+				return Clazzifier.create(handler, ((AnnotatedWildcardType) annotatedType).getAnnotatedUpperBounds()[0], ctx, dir);
+			}
+			if (type instanceof TypeVariable) {
+				return TypeClazz.create(handler, annotatedType, ctx);
+			}
+			if (type instanceof Class<?> c && c.getTypeParameters().length > 0) {
+				return ParaClazz.create(handler, annotatedType, ctx, dir);
+			}
+			if (type instanceof Class<?> c && c.isArray()) {
+				return ArrayClazz.create(handler, annotatedType, ctx, dir);
+			}
+			if (type instanceof Class<?>) {
 				return Clazz.create(handler, annotatedType, ctx);
+			}
 			throw new RuntimeException("Can not handle: " + annotatedType.getClass().getSimpleName());
 		} catch (Throwable throwable) {
 			throw HyphenException.thr("class", ":", annotatedType, throwable);

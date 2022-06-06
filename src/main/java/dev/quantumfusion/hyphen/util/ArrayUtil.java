@@ -27,8 +27,9 @@ public class ArrayUtil {
 	 */
 	public static <A, B> void dualForEach(A[] a, B[] b, DualForEach<? super A, ? super B> dualForEach) {
 		checkMatchingLength(a, b);
-		for (int i = 0; i < a.length; i++)
+		for (int i = 0; i < a.length; i++) {
 			dualForEach.apply(a[i], b[i], i);
+		}
 	}
 
 	/**
@@ -58,8 +59,9 @@ public class ArrayUtil {
 	 */
 	public static <A, B> B[] map(A[] a, IntFunction<B[]> creator, IndexedMap<? super A, ? extends B> mapper) {
 		final B[] out = creator.apply(a.length);
-		for (int i = 0; i < a.length; i++)
+		for (int i = 0; i < a.length; i++) {
 			out[i] = mapper.apply(a[i], i);
+		}
 		return out;
 	}
 
@@ -124,13 +126,15 @@ public class ArrayUtil {
 	 * @return The Filtered array.
 	 */
 	public static <T> T[] filter(T[] array, Predicate<? super T> predicate) {
-		if (array.length == 0)
+		if (array.length == 0) {
 			return array;
+		}
 		int count = 0;
 		T[] clone = array.clone();
 		for (T t : array) {
-			if (predicate.test(t))
+			if (predicate.test(t)) {
 				clone[count++] = t;
+			}
 		}
 		return Arrays.copyOf(clone, count);
 	}

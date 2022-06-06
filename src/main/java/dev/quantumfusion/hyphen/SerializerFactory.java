@@ -164,8 +164,9 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		if (valueGetter != null) {
 			var returnType = valueGetter.getReturnType();
 			var valueType = value.getClass();
-			if (valueType != returnType)
+			if (valueType != returnType) {
 				throw new RuntimeException("Annotation " + annotation.getSimpleName() + " value type " + returnType.getSimpleName() + " does not match parameter " + valueType.getSimpleName());
+			}
 		}
 
 		this.sh.globalAnnotations.computeIfAbsent(id, s -> new HashMap<>()).put(annotation, value);

@@ -12,11 +12,17 @@ public class PrimitiveIODef implements SerializerDef {
 	}
 
 	public static int getSize(Class<?> primitive) {
-		if (primitive == boolean.class || primitive == byte.class) return 1;
-		else if (primitive == short.class || primitive == char.class) return 2;
-		else if (primitive == int.class || primitive == float.class) return 4;
-		else if (primitive == long.class || primitive == double.class) return 8;
-		else throw new IllegalArgumentException();
+		if (primitive == boolean.class || primitive == byte.class) {
+			return 1;
+		} else if (primitive == short.class || primitive == char.class) {
+			return 2;
+		} else if (primitive == int.class || primitive == float.class) {
+			return 4;
+		} else if (primitive == long.class || primitive == double.class) {
+			return 8;
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 
 	@Override

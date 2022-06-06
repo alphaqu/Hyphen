@@ -15,7 +15,9 @@ public class TableSwitch implements AutoCloseable {
 
 	public TableSwitch(MethodHandler mh, int min, int max) {
 		this.mh = mh;
-		for (int i = min; i < max; i++) labels.add(new Label());
+		for (int i = min; i < max; i++) {
+			labels.add(new Label());
+		}
 		mh.visitTableSwitchInsn(min, max - 1, defaultLabel, labels.toArray(Label[]::new));
 	}
 

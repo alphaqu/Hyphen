@@ -38,10 +38,15 @@ public final class EnumDef extends MethodDef {
 		this.isNullable = clazz.containsAnnotation(DataNullable.class);
 		this.enSize = this.en.getEnumConstants().length + (this.isNullable ? 1 : 0);
 
-		if (this.enSize == 0) throw new HyphenException("Enum does not contain any values", "Make the enum nullable");
-		else if (this.enSize <= 0xff) this.enumSizePrimitive = byte.class;
-		else if (this.enSize <= 0xffff) this.enumSizePrimitive = short.class;
-		else this.enumSizePrimitive = int.class;
+		if (this.enSize == 0) {
+			throw new HyphenException("Enum does not contain any values", "Make the enum nullable");
+		} else if (this.enSize <= 0xff) {
+			this.enumSizePrimitive = byte.class;
+		} else if (this.enSize <= 0xffff) {
+			this.enumSizePrimitive = short.class;
+		} else {
+			this.enumSizePrimitive = int.class;
+		}
 	}
 
 	@SuppressWarnings({"unchecked", "unused"})
@@ -104,8 +109,9 @@ public final class EnumDef extends MethodDef {
 		// enumValues | index
 
 		mh.op(AALOAD);
-		if (end != null)
+		if (end != null) {
 			mh.visitLabel(end);
+		}
 	}
 
 	@Override
