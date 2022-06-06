@@ -1,35 +1,29 @@
 plugins {
-    id 'java-library'
-
-    // Publishing
-    id 'maven-publish'
-    id 'signing'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+    id "java-library"
+    id "maven-publish"
+    id "signing"
+    id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 group 'dev.quantumfusion'
 version '0.2.1'
 
 repositories {
-    mavenCentral()
     mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
-    implementation "org.ow2.asm:asm:${project.asm}"
-    implementation "org.ow2.asm:asm-util:${project.asm}"
-    implementation "org.jetbrains:annotations:${project.jetbrainsAnnotations}"
-
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit}"
+    implementation libs.asm
+    implementation libs.asm.util
+    implementation libs.jetbrains.annotations
+    
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
 }
 
 test {
     useJUnitPlatform()
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'utf-8'
 }
 
 java {
@@ -37,7 +31,59 @@ java {
     withJavadocJar()
 }
 
-// Publishing
+tasks.withType(JavaCompile) {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    options.encoding = "UTF-8"
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.archivesBaseName}" }
+    }
+}
+
+publishing {
+    publications {
+        hyphen(MavenPublication) {
+            from components.java
+
+            pom {
+                name = project.name
+                description = "Serialize at the speed of light."
+                url = "https://github.com/TeamQuantumFusion/Hyphen"
+
+                licenses {
+                    license {
+                        name = "MIT License"
+                        url = "http://www.opensource.org/licenses/mit-license.php"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/TeamQuantumFusion/Hyphen.git"
+                    developerConnection = "scm:git:ssh://github.com:TeamQuantumFusion/Hyphen.git"
+                    url = "http://github.com/TeamQuantumFusion/Hyphen/tree/rework-9"
+                }
+                developers {
+                    developer {
+                        id = "notalpha"
+                        name = "Yan Chubikov"
+                        email = "yan.gyunashyan@gmail.com"
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
+        }
+    }
+}
 
 nexusPublishing {
     repositories {
@@ -47,52 +93,17 @@ nexusPublishing {
         }
     }
 }
-publishing {
-    repositories {
-        maven {
-            credentials {
-                username = sonatypeUsername
-                password = sonatypePassword
-            }
-        }
-    }
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-
-            pom {
-                name = project.name
-                description = 'Serialize at the speed of light.'
-                url = 'https://github.com/TeamQuantumFusion/Hyphen'
-
-                licenses {
-                    license {
-                        name = 'MIT License'
-                        url = 'http://www.opensource.org/licenses/mit-license.php'
-                    }
-                }
-                scm {
-                    connection = 'scm:git:git://github.com/TeamQuantumFusion/Hyphen.git'
-                    developerConnection = 'scm:git:ssh://github.com:TeamQuantumFusion/Hyphen.git'
-                    url = 'http://github.com/TeamQuantumFusion/Hyphen/tree/rework-9'
-                }
-                developers {
-                    developer {
-                        id = 'notalpha'
-                        name = 'Yan Chubikov'
-                        email = 'yan.gyunashyan@gmail.com'
-                    }
-                }
-            }
-        }
-    }
-}
 
 artifacts {
     archives javadocJar, sourcesJar
 }
 
 signing {
-    sign publishing.publications.mavenJava
+    setRequired {
+        gradle.taskGraph.allTasks.any { 
+            it.equals(PublishToMavenRepository) 
+        }
+    }
+    sign publishing.publications.hyphen
     sign configurations.archives
 }
