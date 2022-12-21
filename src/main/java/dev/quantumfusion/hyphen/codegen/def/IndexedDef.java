@@ -3,7 +3,10 @@ package dev.quantumfusion.hyphen.codegen.def;
 import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.Variable;
+import dev.quantumfusion.hyphen.codegen.statement.If;
+import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
@@ -16,6 +19,7 @@ public abstract class IndexedDef extends MethodDef {
 	protected final Clazz component;
 	protected final Consumer<MethodHandler> getterFunc;
 	protected final Consumer<MethodHandler> lengthFunc;
+	protected final boolean componentNullable;
 	private final Integer fixedSize;
 
 	public IndexedDef(String name, SerializerHandler<?, ?> handler, Clazz clazz, Clazz component, Consumer<MethodHandler> getterFunc, Consumer<MethodHandler> lengthFunc) {
@@ -25,6 +29,7 @@ public abstract class IndexedDef extends MethodDef {
 		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
 		this.lengthFunc = lengthFunc;
 		this.componentDef = handler.acquireDef(component);
+		this.componentNullable = component.containsAnnotation(DataNullable.class);
 	}
 
 	@Override
@@ -49,9 +54,21 @@ public abstract class IndexedDef extends MethodDef {
 		mh.typeOp(ANEWARRAY, component.getBytecodeClass());
 		loopArray(mh, length, (i) -> {
 			mh.op(DUP);
-			mh.varOp(ILOAD, i);
-			componentDef.writeGet(mh);
-			mh.op(AASTORE);
+			if (componentNullable) {
+				mh.loadIO();
+				mh.getIO(byte.class);
+				try (var anIf = new IfElse(mh, IFEQ)) {
+					mh.varOp(ILOAD, i);
+					componentDef.writeGet(mh);
+					mh.op(AASTORE);
+					anIf.elseEnd();
+					mh.op(POP);
+				}
+			} else {
+				mh.varOp(ILOAD, i);
+				componentDef.writeGet(mh);
+				mh.op(AASTORE);
+			}
 		});
 
 		writeGetConverter(mh);
@@ -70,22 +87,49 @@ public abstract class IndexedDef extends MethodDef {
 			mh.putIO(int.class);
 		}
 
-		loopArray(mh, length, (i) -> componentDef.writePut(mh, () -> loadArrayValue(mh, valueLoad, i)));
+		loopArray(mh, length, (i) -> {
+			Variable entryTemp = mh.addVar("entry", Object.class);
+			loadArrayValue(mh, valueLoad, i);
+			mh.varOp(ISTORE, entryTemp);
+
+			if (componentNullable) {
+				mh.varOp(ILOAD, entryTemp);
+				try (var anIf = new IfElse(mh, IFNONNULL)) {
+					mh.loadIO();
+					mh.op(ICONST_0);
+					mh.putIO(byte.class);
+					anIf.elseEnd();
+
+					mh.loadIO();
+					mh.op(ICONST_1);
+					mh.putIO(byte.class);
+					componentDef.writePut(mh, () -> mh.varOp(ILOAD, entryTemp));
+				}
+			} else {
+				componentDef.writePut(mh, () -> mh.varOp(ILOAD, entryTemp));
+			}
+		});
 	}
 
 	@Override
 	public int getStaticSize() {
-		return this.fixedSize == null ? 4 : this.fixedSize * this.componentDef.getStaticSize();
+		if (this.fixedSize == null) {
+			return 4;
+		} else if (!this.componentNullable) {
+			return this.fixedSize * this.componentDef.getStaticSize();
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
 	public boolean hasDynamicSize() {
-		return this.fixedSize == null || this.componentDef.hasDynamicSize();
+		return this.fixedSize == null || this.componentDef.hasDynamicSize() || componentNullable;
 	}
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		if (this.fixedSize == null) {
+		if (this.fixedSize == null && !componentNullable) {
 			int componentSize = this.componentDef.getStaticSize();
 
 			if (componentSize != 0) {
@@ -101,7 +145,7 @@ public abstract class IndexedDef extends MethodDef {
 			mh.op(ICONST_0);
 		}
 
-		if (componentDef.hasDynamicSize()) {
+		if (componentDef.hasDynamicSize() || componentNullable) {
 			final Variable length = mh.addVar("length", int.class);
 			if (fixedSize == null) {
 				valueLoad.run();
@@ -109,7 +153,21 @@ public abstract class IndexedDef extends MethodDef {
 				mh.varOp(ISTORE, length);
 			}
 			loopArray(mh, length, (i) -> {
-				componentDef.writeMeasure(mh, () -> loadArrayValue(mh, valueLoad, i));
+				Variable entryTemp = mh.addVar("entry", Object.class);
+				loadArrayValue(mh, valueLoad, i);
+				mh.varOp(ISTORE, entryTemp);
+
+				if (componentNullable) {
+					mh.op(ICONST_1);
+					mh.varOp(ILOAD, entryTemp);
+					try (var anIf = new If(mh, IFNULL)) {
+						componentDef.writeMeasure(mh, () -> loadArrayValue(mh, valueLoad, i));
+						mh.op(IADD);
+					}
+
+				} else {
+					componentDef.writeMeasure(mh, () -> loadArrayValue(mh, valueLoad, i));
+				}
 				mh.op(IADD);
 			});
 		}

@@ -17,7 +17,7 @@ public class IfElse implements AutoCloseable {
 	}
 
 
-	public void elseStart() {
+	public void elseEnd() {
 		mh.visitJumpInsn(GOTO, endLabel);
 		mh.visitLabel(elseLabel);
 	}

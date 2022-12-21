@@ -90,10 +90,9 @@ public final class ClassDef extends MethodDef {
 			var fieldEntry = entry.getKey();
 			if (fieldEntry.isNullable()) {
 				packedBooleans.getBoolean(mh);
-				mh.op(ICONST_0);
-				try (var anIf = new IfElse(mh, IF_ICMPNE)) {
+				try (var anIf = new IfElse(mh, IFNE)) {
 					entry.getValue().writeGet(mh);
-					anIf.elseStart();
+					anIf.elseEnd();
 					mh.op(ACONST_NULL);
 				}
 			} else if (shouldCompactBoolean(fieldEntry)) {
@@ -114,10 +113,10 @@ public final class ClassDef extends MethodDef {
 				info.initBoolean(mh);
 				loadField(mh, fieldEntry, valueLoad);
 				mh.op(DUP);
-				mh.varOp(ISTORE, mh.addVar(fieldEntry.getFieldName() + "_cache", fieldEntry.getFieldType()));
+				mh.varOp(ISTORE, mh.addVar(fieldEntry.getFieldName() + "temp", fieldEntry.getFieldType()));
 				try (var anIf = new IfElse(mh, IFNULL)) {
 					info.falseBoolean(mh);
-					anIf.elseStart();
+					anIf.elseEnd();
 					info.trueBoolean(mh);
 				}
 			} else if (shouldCompactBoolean(fieldEntry)) {
@@ -134,7 +133,7 @@ public final class ClassDef extends MethodDef {
 				continue;
 			}
 			if (fieldEntry.isNullable()) {
-				final Variable cache = mh.getVar(fieldEntry.getFieldName() + "_cache");
+				final Variable cache = mh.getVar(fieldEntry.getFieldName() + "temp");
 				mh.varOp(ILOAD, cache);
 				try (var i = new If(mh, IFNULL)) {
 					entry.getValue().writePut(mh, () -> mh.varOp(ILOAD, cache));
@@ -192,7 +191,7 @@ public final class ClassDef extends MethodDef {
 				if (fieldEntry.isNullable()) {
 					if (isDynamicSize) {
 						loadField(mh, fieldEntry, valueLoad);
-						var cache = mh.addVar(fieldEntry.getFieldName() + "_cache", fieldEntry.getFieldType());
+						var cache = mh.addVar(fieldEntry.getFieldName() + "temp", fieldEntry.getFieldType());
 						mh.op(DUP);
 						mh.varOp(ISTORE, cache);
 						try (var anIf = new IfElse(mh, IFNULL)) {
@@ -233,10 +232,10 @@ public final class ClassDef extends MethodDef {
 		// if we arent the first, just add
 		if (i > 0) {
 			mh.op(IADD);
-			anIf.elseStart();
+			anIf.elseEnd();
 		} else {
 			// else we need to push 0 for the null case
-			anIf.elseStart();
+			anIf.elseEnd();
 			mh.op(ICONST_0);
 		}
 	}

@@ -124,7 +124,7 @@ public final class EnumDef extends MethodDef {
 				// if null
 				mh.op(ICONST_M1);
 
-				ifElse.elseStart();
+				ifElse.elseEnd();
 				// if not null
 				valueLoad.run();
 				mh.callInst(INVOKEVIRTUAL, Enum.class, "ordinal", int.class);

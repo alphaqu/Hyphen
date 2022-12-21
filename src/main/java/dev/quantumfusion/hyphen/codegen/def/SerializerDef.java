@@ -29,7 +29,11 @@ public interface SerializerDef {
 	 * @param valueLoad A Runnable which pushes the Clazz value onto the stack.
 	 */
 	default void writeMeasure(MethodHandler mh, Runnable valueLoad) {
-		throw new UnsupportedOperationException();
+		if (!hasDynamicSize()) {
+			mh.visitLdcInsn(getStaticSize());
+		} else {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	/**

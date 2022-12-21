@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @HyphenAnnotation
-@Target({ElementType.FIELD, ElementType.TYPE, ElementType.PACKAGE})
+@Target({ElementType.TYPE, ElementType.PACKAGE, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DataNullable {
 }
