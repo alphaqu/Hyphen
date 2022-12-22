@@ -12,7 +12,7 @@ public class IOTests {
 	private static final byte[] BYTES = {0, Byte.MIN_VALUE, Byte.MAX_VALUE};
 	private static final short[] SHORTS = {0, Short.MIN_VALUE, Short.MAX_VALUE};
 	private static final char[] CHARS = {0, Character.MIN_VALUE, Character.MAX_VALUE, '\uD83E', '\uDD80'};
-	private static final int[] INTS = {0, Integer.MIN_VALUE, Integer.MAX_VALUE};
+	private static final int[] INTS = {69, 0, Integer.MIN_VALUE, Integer.MAX_VALUE};
 	private static final long[] LONGS = {0, Long.MIN_VALUE, Long.MAX_VALUE};
 	private static final float[] FLOATS = {0, Float.MIN_VALUE, Float.MAX_VALUE, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NaN, Float.MIN_NORMAL};
 	private static final double[] DOUBLES = {0, Double.MIN_VALUE, Double.MAX_VALUE, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NaN, Double.MIN_NORMAL};
@@ -131,6 +131,13 @@ public class IOTests {
 			io.putFloatBuffer(floats, FLOATS.length);
 			io.putLongBuffer(longs, LONGS.length);
 			io.putDoubleBuffer(doubles, DOUBLES.length);
+			bytes.rewind();
+			shorts.rewind();
+			chars.rewind();
+			ints.rewind();
+			floats.rewind();
+			longs.rewind();
+			doubles.rewind();
 		}
 
 		io.rewind();
@@ -139,36 +146,43 @@ public class IOTests {
 				var buffer = ByteBuffer.allocate(BYTES.length);
 				io.getByteBuffer(buffer, BYTES.length);
 				Assertions.assertArrayEquals(buffer.array(), BYTES, "Byte Array did not match");
+				Assertions.assertEquals(buffer.position(), BYTES.length);
 			}
 			{
 				var buffer = ShortBuffer.allocate(SHORTS.length);
 				io.getShortBuffer(buffer, SHORTS.length);
 				Assertions.assertArrayEquals(buffer.array(), SHORTS, "Short Array did not match");
+				Assertions.assertEquals(buffer.position(), SHORTS.length);
 			}
 			{
 				var buffer = CharBuffer.allocate(CHARS.length);
 				io.getCharBuffer(buffer, CHARS.length);
 				Assertions.assertArrayEquals(buffer.array(), CHARS, "Char Array did not match");
+				Assertions.assertEquals(buffer.position(), CHARS.length);
 			}
 			{
 				var buffer = IntBuffer.allocate(INTS.length);
 				io.getIntBuffer(buffer, INTS.length);
 				Assertions.assertArrayEquals(buffer.array(), INTS, "Int Array did not match");
+				Assertions.assertEquals(buffer.position(), INTS.length);
 			}
 			{
 				var buffer = FloatBuffer.allocate(FLOATS.length);
 				io.getFloatBuffer(buffer, FLOATS.length);
 				Assertions.assertArrayEquals(buffer.array(), FLOATS, "Float Array did not match");
+				Assertions.assertEquals(buffer.position(), FLOATS.length);
 			}
 			{
 				var buffer = LongBuffer.allocate(LONGS.length);
 				io.getLongBuffer(buffer, LONGS.length);
 				Assertions.assertArrayEquals(buffer.array(), LONGS, "Long Array did not match");
+				Assertions.assertEquals(buffer.position(), LONGS.length);
 			}
 			{
 				var buffer = DoubleBuffer.allocate(DOUBLES.length);
 				io.getDoubleBuffer(buffer, DOUBLES.length);
 				Assertions.assertArrayEquals(buffer.array(), DOUBLES, "Double Array did not match");
+				Assertions.assertEquals(buffer.position(), DOUBLES.length);
 			}
 		}
 

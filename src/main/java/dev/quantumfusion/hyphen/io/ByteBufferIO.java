@@ -326,6 +326,7 @@ public final class ByteBufferIO implements IOInterface, IOBufferInterface {
 	@Override
 	public void getByteBuffer(ByteBuffer buffer, int length) {
 		buffer.put(buffer.position(), byteBuffer, byteBuffer.position(), length);
+		buffer.position(buffer.position() + length);
 		byteBuffer.position(byteBuffer.position() + length);
 	}
 
@@ -375,47 +376,48 @@ public final class ByteBufferIO implements IOInterface, IOBufferInterface {
 	public void putByteBuffer(ByteBuffer buffer, int length) {
 		byteBuffer.put(byteBuffer.position(), buffer, buffer.position(), length);
 		byteBuffer.position(byteBuffer.position() + length);
+		buffer.position(buffer.position() + length);
 	}
 
 	@Override
 	public void putCharBuffer(CharBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putChar(buffer.get(i));
+			putChar(buffer.get());
 		}
 	}
 
 	@Override
 	public void putShortBuffer(ShortBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putShort(buffer.get(i));
+			putShort(buffer.get());
 		}
 	}
 
 	@Override
 	public void putIntBuffer(IntBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putInt(buffer.get(i));
+			putInt(buffer.get());
 		}
 	}
 
 	@Override
 	public void putLongBuffer(LongBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putLong(buffer.get(i));
+			putLong(buffer.get());
 		}
 	}
 
 	@Override
 	public void putFloatBuffer(FloatBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putFloat(buffer.get(i));
+			putFloat(buffer.get());
 		}
 	}
 
 	@Override
 	public void putDoubleBuffer(DoubleBuffer buffer, int length) {
 		for (int i = 0; i < length; i++) {
-			putDouble(buffer.get(i));
+			putDouble(buffer.get());
 		}
 	}
 }

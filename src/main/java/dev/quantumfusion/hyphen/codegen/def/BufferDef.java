@@ -58,7 +58,7 @@ public class BufferDef implements SerializerDef {
 		mh.putIO(int.class);
 		// IO | VALUE | INT
 
-		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "put" + buffer.getSimpleName(),  Void.TYPE, ByteBuffer.class, int.class);
+		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "put" + buffer.getSimpleName(),  Void.TYPE, buffer, int.class);
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class BufferDef implements SerializerDef {
 		mh.op(Opcodes.DUP_X2);
 		// BYTEBUFFER | IO | LENGTH | BYTEBUFFER
 		mh.op(Opcodes.SWAP);
-		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "get" + buffer.getSimpleName(), Void.TYPE, ByteBuffer.class, int.class);
+		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "get" + buffer.getSimpleName(), Void.TYPE, buffer, int.class);
 		// BYTEBUFFER
 	}
 
