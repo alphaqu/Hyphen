@@ -11,9 +11,9 @@ import org.objectweb.asm.Opcodes;
 import java.nio.*;
 
 public class BufferDef implements SerializerDef {
-	private final Class<?> buffer;
-	private final Class<?> primitive;
-	private final BufferType type;
+	protected final Class<?> buffer;
+	protected final Class<?> primitive;
+	protected final BufferType type;
 
 	public BufferDef(Clazz clazz, SerializerHandler<?, ?> serializerHandler) {
 		if (!IOBufferInterface.class.isAssignableFrom(serializerHandler.ioClass)) {
@@ -68,6 +68,16 @@ public class BufferDef implements SerializerDef {
 		mh.getIO(int.class);
 		mh.op(Opcodes.DUP);
 		// IO | LENGTH | LENGTH
+		allocateBuffer(mh);
+		// IO | LENGTH | BYTEBUFFER
+		mh.op(Opcodes.DUP_X2);
+		// BYTEBUFFER | IO | LENGTH | BYTEBUFFER
+		mh.op(Opcodes.SWAP);
+		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "get" + buffer.getSimpleName(), Void.TYPE, buffer, int.class);
+		// BYTEBUFFER
+	}
+
+	protected void allocateBuffer(MethodHandler mh) {
 		switch (type) {
 			case HEAP -> mh.callInst(Opcodes.INVOKESTATIC, buffer, "allocate", buffer, int.class);
 			case NATIVE -> {
@@ -75,12 +85,6 @@ public class BufferDef implements SerializerDef {
 				mh.callInst(Opcodes.INVOKESTATIC, ByteBuffer.class, "allocateDirect", ByteBuffer.class, int.class);
 			}
 		}
-		// IO | LENGTH | BYTEBUFFER
-		mh.op(Opcodes.DUP_X2);
-		// BYTEBUFFER | IO | LENGTH | BYTEBUFFER
-		mh.op(Opcodes.SWAP);
-		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "get" + buffer.getSimpleName(), Void.TYPE, buffer, int.class);
-		// BYTEBUFFER
 	}
 
 	@Override

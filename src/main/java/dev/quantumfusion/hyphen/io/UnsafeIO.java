@@ -14,7 +14,7 @@ import java.nio.Buffer;
 @SuppressWarnings({"AccessStaticViaInstance", "FinalMethodInFinalClass", "unused", "FinalStaticMethod"})
 // if the jvm sees us import unsafe, it will explode:tm::tm:
 public final class UnsafeIO implements IOInterface {
-	public static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
+	private static final sun.misc.Unsafe UNSAFE = getUnsafeInstance();
 	private static final int BOOLEAN_OFFSET = UNSAFE.ARRAY_BOOLEAN_BASE_OFFSET;
 	private static final int BYTE_OFFSET = UNSAFE.ARRAY_BYTE_BASE_OFFSET;
 	private static final int CHAR_OFFSET = UNSAFE.ARRAY_CHAR_BASE_OFFSET;
