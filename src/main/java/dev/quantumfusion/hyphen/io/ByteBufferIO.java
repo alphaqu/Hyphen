@@ -29,11 +29,11 @@ public final class ByteBufferIO implements IOInterface, IOBufferInterface {
 	}
 
 	public static final <O> ByteBufferIO create(final HyphenSerializer<ByteBufferIO, O> serializer, final O data) {
-		return create(serializer.measure(data));
+		return create((int) serializer.measure(data));
 	}
 
 	public static final <O> ByteBufferIO createDirect(final HyphenSerializer<ByteBufferIO, O> serializer, final O data) {
-		return createDirect(serializer.measure(data));
+		return createDirect((int) serializer.measure(data));
 	}
 
 	// ======================================= FUNC ======================================= //

@@ -42,7 +42,7 @@ public interface SerializerDef {
 	 *
 	 * @return Object Minimum encoding size
 	 */
-	default int getStaticSize() {
+	default long getStaticSize() {
 		return 0;
 	}
 

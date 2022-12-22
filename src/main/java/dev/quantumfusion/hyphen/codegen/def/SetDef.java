@@ -90,7 +90,7 @@ public class SetDef extends MethodDef {
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		boolean hasDynamic = this.keyDef.hasDynamicSize();
 
-		int staticSize = this.keyDef.getStaticSize();
+		long staticSize = this.keyDef.getStaticSize();
 		if (staticSize == 0) {
 			mh.op(ICONST_0);
 		} else {
@@ -118,13 +118,13 @@ public class SetDef extends MethodDef {
 				GenUtil.shouldCastGeneric(mh, this.key.getDefinedClass(), Object.class);
 				mh.varOp(ISTORE, entry);
 				this.keyDef.writeMeasure(mh, () -> mh.varOp(ILOAD, entry));
-				mh.op(IADD);
+				mh.op(LADD);
 			}
 		}
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		return 4;
 	}
 }

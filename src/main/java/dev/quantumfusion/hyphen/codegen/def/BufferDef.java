@@ -88,19 +88,20 @@ public class BufferDef implements SerializerDef {
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		return 4;
 	}
 
 	@Override
 	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
-		int primitiveSize = PrimitiveIODef.getSize(primitive);
+		long primitiveSize = PrimitiveIODef.getSize(primitive);
 
 		valueLoad.run();
 		mh.callInst(Opcodes.INVOKEVIRTUAL, buffer, "limit", int.class);
+		mh.op(Opcodes.I2L);
 		if (primitiveSize != 1) {
 			mh.visitLdcInsn(primitiveSize);
-			mh.op(Opcodes.IMUL);
+			mh.op(Opcodes.LMUL);
 		}
 	}
 

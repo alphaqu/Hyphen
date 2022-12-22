@@ -161,7 +161,7 @@ public class RecursiveTestUtil {
 								}
 
 								// adding extra room
-								var io = ByteBufferIO.create((measuredSize + 64) * 4);
+								var io = ByteBufferIO.create((int) ((measuredSize + 64) * 4));
 
 								// put
 								serializer.put(io, data);

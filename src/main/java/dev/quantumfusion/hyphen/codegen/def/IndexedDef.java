@@ -112,7 +112,7 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		if (this.fixedSize == null) {
 			return 4;
 		} else if (!this.componentNullable) {
@@ -130,19 +130,20 @@ public abstract class IndexedDef extends MethodDef {
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		if (this.fixedSize == null && !componentNullable) {
-			int componentSize = this.componentDef.getStaticSize();
+			long componentSize = this.componentDef.getStaticSize();
 
 			if (componentSize != 0) {
 				// TODO: consider sing shifting if component size is a pot
 				mh.visitLdcInsn(componentSize);
 				valueLoad.run();
 				this.lengthFunc.accept(mh);
-				mh.op(IMUL);
+				mh.op(I2L);
+				mh.op(LMUL);
 			} else {
-				mh.op(ICONST_0);
+				mh.op(LCONST_0);
 			}
 		} else {
-			mh.op(ICONST_0);
+			mh.op(LCONST_0);
 		}
 
 		if (componentDef.hasDynamicSize() || componentNullable) {
@@ -158,17 +159,17 @@ public abstract class IndexedDef extends MethodDef {
 				mh.varOp(ISTORE, entryTemp);
 
 				if (componentNullable) {
-					mh.op(ICONST_1);
+					mh.op(LCONST_1);
 					mh.varOp(ILOAD, entryTemp);
 					try (var anIf = new If(mh, IFNULL)) {
 						componentDef.writeMeasure(mh, () -> loadArrayValue(mh, valueLoad, i));
-						mh.op(IADD);
+						mh.op(LADD);
 					}
 
 				} else {
 					componentDef.writeMeasure(mh, () -> loadArrayValue(mh, valueLoad, i));
 				}
-				mh.op(IADD);
+				mh.op(LADD);
 			});
 		}
 	}

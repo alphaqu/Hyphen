@@ -9,8 +9,7 @@ import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.IADD;
-import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.*;
 
 public abstract class MethodDef implements SerializerDef {
 	public final Map<Options, Boolean> options;
@@ -30,7 +29,7 @@ public abstract class MethodDef implements SerializerDef {
 		this.options = ch.options;
 		this.getInfo = ch.createMethodInfo(clazz, "get", suffix, definedClass, ch.ioClass);
 		this.putInfo = ch.createMethodInfo(clazz, "put", suffix, Void.TYPE, ch.ioClass, definedClass);
-		this.measureInfo = ch.createMethodInfo(clazz, "measure", suffix, int.class, definedClass);
+		this.measureInfo = ch.createMethodInfo(clazz, "measure", suffix, long.class, definedClass);
 	}
 
 	public abstract void scan(SerializerHandler<?, ?> handler, Clazz clazz);
@@ -76,7 +75,7 @@ public abstract class MethodDef implements SerializerDef {
 				this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0));
 				if (spark) {
 					mh.visitLdcInsn(getStaticSize());
-					mh.op(IADD);
+					mh.op(LADD);
 				}
 			});
 		} else {

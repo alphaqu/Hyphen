@@ -149,7 +149,7 @@ public final class ClassDef extends MethodDef {
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		if (this.fields.isEmpty()) {
 			return 0;
 		}
@@ -176,7 +176,7 @@ public final class ClassDef extends MethodDef {
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		if (this.fields.isEmpty()) {
-			mh.op(ICONST_0);
+			mh.op(LCONST_0);
 		} else {
 			int i = 0;
 			for (var entry : this.fields.entrySet()) {
@@ -199,7 +199,7 @@ public final class ClassDef extends MethodDef {
 
 							if (staticSize != 0) {
 								mh.visitLdcInsn(staticSize);
-								mh.op(IADD);
+								mh.op(LADD);
 							}
 							ifNullMeasureWrite(mh, i++, anIf);
 						}
@@ -216,14 +216,14 @@ public final class ClassDef extends MethodDef {
 					if (isDynamicSize) {
 						fieldDef.writeMeasure(mh, () -> loadField(mh, fieldEntry, valueLoad));
 						if (i++ > 0) {
-							mh.op(IADD);
+							mh.op(LADD);
 						}
 					}
 				}
 			}
 			if (i == 0) {
 				// TODO: missed constant size
-				mh.op(ICONST_0);
+				mh.op(LCONST_0);
 			}
 		}
 	}
@@ -231,12 +231,12 @@ public final class ClassDef extends MethodDef {
 	private void ifNullMeasureWrite(MethodHandler mh, int i, IfElse anIf) {
 		// if we arent the first, just add
 		if (i > 0) {
-			mh.op(IADD);
+			mh.op(LADD);
 			anIf.elseEnd();
 		} else {
 			// else we need to push 0 for the null case
 			anIf.elseEnd();
-			mh.op(ICONST_0);
+			mh.op(LCONST_0);
 		}
 	}
 

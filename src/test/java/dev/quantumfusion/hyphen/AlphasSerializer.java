@@ -25,7 +25,7 @@ public class AlphasSerializer {
 		for (int i = 0; i < 20; i++) {
 			try {
 				long time = System.nanoTime();
-				final int measure = serializer.measure(data);
+				final int measure = (int) serializer.measure(data);
 				final ByteBufferIO unsafeIO = ByteBufferIO.create(measure);
 				serializer.put(unsafeIO, data);
 				unsafeIO.rewind();

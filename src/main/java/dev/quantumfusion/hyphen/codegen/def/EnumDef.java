@@ -137,7 +137,7 @@ public final class EnumDef extends MethodDef {
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		return this.enumSizePrimitive == null ? 0 : PrimitiveIODef.getSize(this.enumSizePrimitive);
 	}
 

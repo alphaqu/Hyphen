@@ -31,7 +31,9 @@ public class StringIODef implements SerializerDef {
 			// kinda bad for speed, but it's kinda our only option here
 			mh.visitFieldInsn(GETSTATIC, StandardCharsets.class, "UTF_8", Charset.class);
 			mh.callInst(INVOKEVIRTUAL, String.class, "getBytes", byte[].class, Charset.class);
-			mh.op(ARRAYLENGTH, ICONST_4, IADD);
+			mh.op(ARRAYLENGTH, I2L);
+			mh.visitLdcInsn(4L);
+			mh.op(LADD);
 		}
 	}
 }

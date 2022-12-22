@@ -110,14 +110,15 @@ public class MapDef extends MethodDef {
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
 		int x = (this.keyDef.hasDynamicSize() ? 1 : 0) | (this.valueDef.hasDynamicSize() ? 2 : 0);
 
-		int staticSize = this.keyDef.getStaticSize() + this.valueDef.getStaticSize();
+		long staticSize = this.keyDef.getStaticSize() + this.valueDef.getStaticSize();
 		if (staticSize == 0) {
-			mh.op(ICONST_0);
+			mh.op(LCONST_0);
 		} else {
 			valueLoad.run();
 			mh.callInst(INVOKEINTERFACE, Map.class, "size", int.class);
+			mh.op(I2L);
 			mh.visitLdcInsn(staticSize);
-			mh.op(IMUL);
+			mh.op(LMUL);
 		}
 
 		if (x > 0) {
@@ -175,15 +176,15 @@ public class MapDef extends MethodDef {
 						mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
 						GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
 					});
-					mh.op(IADD);
+					mh.op(LADD);
 				}
-				mh.op(IADD);
+				mh.op(LADD);
 			}
 		}
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		return 4; // size of the map
 	}
 

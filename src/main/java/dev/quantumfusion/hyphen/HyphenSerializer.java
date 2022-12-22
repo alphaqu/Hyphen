@@ -13,5 +13,5 @@ public interface HyphenSerializer<IO extends IOInterface, D> {
 
 	void put(IO io, D data);
 
-	int measure(D data);
+	long measure(D data);
 }

@@ -23,7 +23,7 @@ public final class ArrayIO implements IOInterface, IOBufferInterface {
 	}
 
 	public static final <O> ArrayIO create(final HyphenSerializer<ArrayIO, O> serializer, final O data) {
-		return create(serializer.measure(data));
+		return create((int) serializer.measure(data));
 	}
 
 	public static final ArrayIO wrap(final byte[] array) {

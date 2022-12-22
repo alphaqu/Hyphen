@@ -83,7 +83,7 @@ public final class UnsafeIO implements IOInterface {
 	}
 
 	public static final <O> UnsafeIO create(final HyphenSerializer<UnsafeIO, O> serializer, final O data) {
-		return create(serializer.measure(data));
+		return create((int) serializer.measure(data));
 	}
 
 	// ======================================= FUNC ======================================= //

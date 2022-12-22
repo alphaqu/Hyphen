@@ -48,11 +48,11 @@ public class PrimitiveArrayIODef implements SerializerDef {
 		int size = PrimitiveIODef.getSize(this.primitiveArray.getComponentType());
 
 		valueLoad.run();
-		mh.op(ARRAYLENGTH, ICONST_0 + Integer.numberOfTrailingZeros(size), ISHL);
+		mh.op(ARRAYLENGTH, I2L, ICONST_0 + Integer.numberOfTrailingZeros(size), LSHL);
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		return fixedSize == null ? 4 : 0;
 	}
 }

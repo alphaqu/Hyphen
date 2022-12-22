@@ -28,7 +28,7 @@ public final class SubclassDef extends MethodDef {
 	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
 
-		int size = this.subDefs[0].getStaticSize();
+		long size = this.subDefs[0].getStaticSize();
 
 		for (int i = 1; i < this.subDefs.length; i++) {
 			if (size != this.subDefs[i].getStaticSize()) {
@@ -80,19 +80,19 @@ public final class SubclassDef extends MethodDef {
 					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
 				});
 			}
-			int ss = serializerDef.getStaticSize();
+			long ss = serializerDef.getStaticSize();
 			if (!this.allSameStaticSize && ss != 0) {
 				mh.visitLdcInsn(ss);
 				if (serializerDef.hasDynamicSize()) {
-					mh.op(IADD);
+					mh.op(LADD);
 				}
 			} else if (!serializerDef.hasDynamicSize()) {
-				mh.op(ICONST_0);
+				mh.op(LCONST_0);
 			}
-			mh.op(IRETURN);
+			mh.op(LRETURN);
 		});
 		// TODO: throw
-		mh.op(ICONST_0);
+		mh.op(LCONST_0);
 	}
 
 	private void ifChainClasses(MethodHandler mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
@@ -110,7 +110,7 @@ public final class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	public int getStaticSize() {
+	public long getStaticSize() {
 		if (this.subDefs.length == 0) {
 			return 0;
 		}
