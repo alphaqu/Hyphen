@@ -3,7 +3,8 @@ package dev.quantumfusion.hyphen.io;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.nio.ByteBuffer;
+import java.nio.*;
+import java.util.Arrays;
 import java.util.function.Function;
 
 public class IOTests {
@@ -32,16 +33,20 @@ public class IOTests {
 	@Test
 	void directBytebuffer() {
 		testIO(ByteBufferIO::createDirect);
+		testIOByteBuffer(ByteBufferIO::create);
 	}
 
 	@Test
 	void heapBytebuffer() {
 		testIO(ByteBufferIO::create);
+		testIOByteBuffer(ByteBufferIO::create);
 	}
+
 
 	@Test
 	void array() {
 		testIO(ArrayIO::create);
+		testIOByteBuffer(ArrayIO::create);
 	}
 
 	private static <IO extends IOInterface> void testIO(Function<Integer, IO> ioCreator) {
@@ -96,6 +101,75 @@ public class IOTests {
 			Assertions.assertArrayEquals(io.getLongArray(LONGS.length), LONGS, "Long Array did not match");
 			Assertions.assertArrayEquals(io.getDoubleArray(DOUBLES.length), DOUBLES, "Double Array did not match");
 			Assertions.assertArrayEquals(io.getStringArray(STRING.length), STRING, "String Array did not match");
+		}
+
+		io.close();
+	}
+
+
+	private static <IO extends IOBufferInterface> void testIOByteBuffer(Function<Integer, IO> ioCreator) {
+		var bytes = ByteBuffer.wrap(BYTES);
+		var shorts = ShortBuffer.wrap(SHORTS);
+		var chars = CharBuffer.wrap(CHARS);
+		var ints = IntBuffer.wrap(INTS);
+		var floats = FloatBuffer.wrap(FLOATS);
+		var longs = LongBuffer.wrap(LONGS);
+		var doubles = DoubleBuffer.wrap(DOUBLES);
+
+		int entriesSize = (((BYTES.length))) +
+				(((SHORTS.length) + (CHARS.length)) * 2) +
+				(((INTS.length) + (FLOATS.length)) * 4) +
+				(((LONGS.length) + (DOUBLES.length)) * 8);
+
+		final IO io = ioCreator.apply((entriesSize) * TEST_SIZE);
+		// Primitives
+		for (int i = 0; i < TEST_SIZE; i++) {
+			io.putByteBuffer(bytes, BYTES.length);
+			io.putShortBuffer(shorts, SHORTS.length);
+			io.putCharBuffer(chars, CHARS.length);
+			io.putIntBuffer(ints, INTS.length);
+			io.putFloatBuffer(floats, FLOATS.length);
+			io.putLongBuffer(longs, LONGS.length);
+			io.putDoubleBuffer(doubles, DOUBLES.length);
+		}
+
+		io.rewind();
+		for (int i = 0; i < TEST_SIZE; i++) {
+			{
+				var buffer = ByteBuffer.allocate(BYTES.length);
+				io.getByteBuffer(buffer, BYTES.length);
+				Assertions.assertArrayEquals(buffer.array(), BYTES, "Byte Array did not match");
+			}
+			{
+				var buffer = ShortBuffer.allocate(SHORTS.length);
+				io.getShortBuffer(buffer, SHORTS.length);
+				Assertions.assertArrayEquals(buffer.array(), SHORTS, "Short Array did not match");
+			}
+			{
+				var buffer = CharBuffer.allocate(CHARS.length);
+				io.getCharBuffer(buffer, CHARS.length);
+				Assertions.assertArrayEquals(buffer.array(), CHARS, "Char Array did not match");
+			}
+			{
+				var buffer = IntBuffer.allocate(INTS.length);
+				io.getIntBuffer(buffer, INTS.length);
+				Assertions.assertArrayEquals(buffer.array(), INTS, "Int Array did not match");
+			}
+			{
+				var buffer = FloatBuffer.allocate(FLOATS.length);
+				io.getFloatBuffer(buffer, FLOATS.length);
+				Assertions.assertArrayEquals(buffer.array(), FLOATS, "Float Array did not match");
+			}
+			{
+				var buffer = LongBuffer.allocate(LONGS.length);
+				io.getLongBuffer(buffer, LONGS.length);
+				Assertions.assertArrayEquals(buffer.array(), LONGS, "Long Array did not match");
+			}
+			{
+				var buffer = DoubleBuffer.allocate(DOUBLES.length);
+				io.getDoubleBuffer(buffer, DOUBLES.length);
+				Assertions.assertArrayEquals(buffer.array(), DOUBLES, "Double Array did not match");
+			}
 		}
 
 		io.close();

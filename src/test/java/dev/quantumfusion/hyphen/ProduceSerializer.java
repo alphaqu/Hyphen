@@ -5,6 +5,7 @@ import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
 import dev.quantumfusion.hyphen.scan.simple.arrays.FixedNullableIntArrayTest;
 import dev.quantumfusion.hyphen.scan.simple.arrays.NullableIntArrayTest;
+import dev.quantumfusion.hyphen.scan.simple.buffer.ByteBufferTest;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,7 +15,7 @@ import static dev.quantumfusion.hyphen.Options.FAST_ALLOC;
 public class ProduceSerializer {
 	public static void main(String[] args) throws IOException {
 		EnumDef.USE_CONSTANT_DYNAMIC = false;
-		var factory = SerializerFactory.createDebug(ByteBufferIO.class, FixedNullableIntArrayTest.class);
+		var factory = SerializerFactory.createDebug(ByteBufferIO.class, ByteBufferTest.class);
 		factory.setOption(FAST_ALLOC, false);
 		factory.setExportDir(Path.of("./"));
 		// factory.setOption(DISABLE_GET, true);

@@ -87,6 +87,11 @@ public class RecursiveTestUtil {
 		return testAll("dev.quantumfusion.hyphen.scan.simple.arrays");
 	}
 
+	@TestFactory
+	DynamicNode testSimpleBuffers() {
+		return testAll("dev.quantumfusion.hyphen.scan.simple.buffer");
+	}
+
 	public static DynamicNode testAll(String packageName) {
 		return DynamicContainer.dynamicContainer(
 				packageName,

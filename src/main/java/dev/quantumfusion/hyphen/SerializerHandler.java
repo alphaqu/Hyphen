@@ -9,6 +9,7 @@ import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 
 import java.lang.annotation.Annotation;
+import java.nio.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
@@ -30,6 +31,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 				boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
 		addDynamicDef(PrimitiveArrayIODef::new,
 				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+		addDynamicDef(BufferDef::new, ByteBuffer.class, ShortBuffer.class, CharBuffer.class, IntBuffer.class, FloatBuffer.class, LongBuffer.class, DoubleBuffer.class);
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c, sh) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, (c, sh) -> new ListDef(sh, (ParaClazz) c));

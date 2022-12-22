@@ -2,13 +2,14 @@ package dev.quantumfusion.hyphen.io;
 
 import dev.quantumfusion.hyphen.HyphenSerializer;
 
+import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
 /**
  * ArrayIO. An IO that internally uses Array.
  */
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod", "unused"})
-public final class ArrayIO implements IOInterface {
+public final class ArrayIO implements IOInterface, IOBufferInterface {
 	private final byte[] bytes;
 	private int pos;
 
@@ -119,7 +120,6 @@ public final class ArrayIO implements IOInterface {
 		return new String(byteArray, 0, length, StandardCharsets.UTF_8);
 	}
 
-
 	// ======================================== PUT ======================================== //
 	@Override
 	public final void putBoolean(final boolean value) {
@@ -193,6 +193,105 @@ public final class ArrayIO implements IOInterface {
 		final int length = array.length;
 		putInt(length);
 		putByteArray(array, length);
+	}
+
+
+	@Override
+	public void getByteBuffer(ByteBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getByte());
+		}
+	}
+
+	@Override
+	public void getCharBuffer(CharBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getChar());
+		}
+	}
+
+	@Override
+	public void getShortBuffer(ShortBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getShort());
+		}
+	}
+
+	@Override
+	public void getIntBuffer(IntBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getInt());
+		}
+	}
+
+	@Override
+	public void getLongBuffer(LongBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getLong());
+		}
+	}
+
+	@Override
+	public void getFloatBuffer(FloatBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getFloat());
+		}
+	}
+
+	@Override
+	public void getDoubleBuffer(DoubleBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getDouble());
+		}
+	}
+
+	@Override
+	public void putByteBuffer(ByteBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putByte(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putCharBuffer(CharBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putChar(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putShortBuffer(ShortBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putShort(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putIntBuffer(IntBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putInt(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putLongBuffer(LongBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putLong(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putFloatBuffer(FloatBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putFloat(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putDoubleBuffer(DoubleBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putDouble(buffer.get(i));
+		}
 	}
 
 

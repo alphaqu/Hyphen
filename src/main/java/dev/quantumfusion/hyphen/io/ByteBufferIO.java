@@ -2,15 +2,14 @@ package dev.quantumfusion.hyphen.io;
 
 import dev.quantumfusion.hyphen.HyphenSerializer;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.nio.*;
 import java.nio.charset.StandardCharsets;
 
 /**
  * <h2>Useful for debug and when UnsafeIO is unavailable.</h2>
  */
 @SuppressWarnings({"FinalMethodInFinalClass", "FinalStaticMethod", "unused"})
-public final class ByteBufferIO implements IOInterface {
+public final class ByteBufferIO implements IOInterface, IOBufferInterface {
 	public final ByteBuffer byteBuffer;
 
 	private ByteBufferIO(final ByteBuffer buffer) {
@@ -321,6 +320,102 @@ public final class ByteBufferIO implements IOInterface {
 	public final void putStringArray(final String[] value, final int length) {
 		for (int i = 0; i < length; i++) {
 			putString(value[i]);
+		}
+	}
+
+	@Override
+	public void getByteBuffer(ByteBuffer buffer, int length) {
+		buffer.put(buffer.position(), byteBuffer, byteBuffer.position(), length);
+		byteBuffer.position(byteBuffer.position() + length);
+	}
+
+	@Override
+	public void getCharBuffer(CharBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getChar());
+		}
+	}
+
+	@Override
+	public void getShortBuffer(ShortBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getShort());
+		}
+	}
+
+	@Override
+	public void getIntBuffer(IntBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getInt());
+		}
+	}
+
+	@Override
+	public void getLongBuffer(LongBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getLong());
+		}
+	}
+
+	@Override
+	public void getFloatBuffer(FloatBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getFloat());
+		}
+	}
+
+	@Override
+	public void getDoubleBuffer(DoubleBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			buffer.put(getDouble());
+		}
+	}
+
+	@Override
+	public void putByteBuffer(ByteBuffer buffer, int length) {
+		byteBuffer.put(byteBuffer.position(), buffer, buffer.position(), length);
+		byteBuffer.position(byteBuffer.position() + length);
+	}
+
+	@Override
+	public void putCharBuffer(CharBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putChar(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putShortBuffer(ShortBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putShort(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putIntBuffer(IntBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putInt(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putLongBuffer(LongBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putLong(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putFloatBuffer(FloatBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putFloat(buffer.get(i));
+		}
+	}
+
+	@Override
+	public void putDoubleBuffer(DoubleBuffer buffer, int length) {
+		for (int i = 0; i < length; i++) {
+			putDouble(buffer.get(i));
 		}
 	}
 }
