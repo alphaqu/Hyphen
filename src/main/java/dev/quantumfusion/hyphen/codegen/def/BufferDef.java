@@ -84,13 +84,20 @@ public class BufferDef implements SerializerDef {
 	}
 
 	@Override
+	public int getStaticSize() {
+		return 4;
+	}
+
+	@Override
 	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
-		mh.op(Opcodes.ICONST_4);
-		mh.visitLdcInsn(PrimitiveIODef.getSize(primitive));
+		int primitiveSize = PrimitiveIODef.getSize(primitive);
+
 		valueLoad.run();
 		mh.callInst(Opcodes.INVOKEVIRTUAL, buffer, "limit", int.class);
-		mh.op(Opcodes.IMUL);
-		mh.op(Opcodes.IADD);
+		if (primitiveSize != 1) {
+			mh.visitLdcInsn(primitiveSize);
+			mh.op(Opcodes.IMUL);
+		}
 	}
 
 	public enum BufferType {
