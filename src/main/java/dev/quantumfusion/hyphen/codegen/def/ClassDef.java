@@ -254,8 +254,9 @@ public final class ClassDef extends MethodDef {
 			mh.visitFieldInsn(GETFIELD, aClass, fieldName, field.getType());
 		} else {
 			try {
-				definedClass.getDeclaredMethod("get" + GenUtil.upperCase(fieldName));
-				mh.callInst(INVOKEVIRTUAL, aClass, fieldName, bytecodeClass);
+				String name = "get" + GenUtil.upperCase(fieldName);
+				aClass.getDeclaredMethod(name);
+				mh.callInst(INVOKEVIRTUAL, aClass, name, bytecodeClass);
 			} catch (NoSuchMethodException ignored) {
 				throw new HyphenException("Could not find a way to access \"" + fieldName + "\"",
 						"Try making the field public or add a getter");
