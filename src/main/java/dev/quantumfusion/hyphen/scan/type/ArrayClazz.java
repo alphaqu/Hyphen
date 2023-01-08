@@ -48,11 +48,6 @@ public class ArrayClazz extends Clazz {
 	}
 
 	@Override
-	public int defined() {
-		return 1 + component.defined();
-	}
-
-	@Override
 	public String toString() {
 		StringJoiner annotationJoiner = new StringJoiner("_", "<", ">");
 		this.annotations.forEach((aClass1, value) -> {

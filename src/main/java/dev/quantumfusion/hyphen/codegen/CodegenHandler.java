@@ -120,12 +120,12 @@ public class CodegenHandler<IO extends IOInterface, D> {
 			try {
 				writer.accept(mh);
 			} catch (Throwable thr) {
-				throw HyphenException.thr("class", "-", clazz.getDefinedClass().getSimpleName(), thr);
+				throw HyphenException.rethrow(clazz, null, thr);
 			}
 			mh.op(Type.getType(methodInfo.returnClass).getOpcode(IRETURN));
 			mh.visitEnd();
 		} catch (Throwable throwable) {
-			throw HyphenException.thr("method", "-", methodInfo.getName(), throwable);
+			throw HyphenException.rethrow(clazz, "hyphenMethod " + methodInfo.getName(), throwable);
 		}
 	}
 

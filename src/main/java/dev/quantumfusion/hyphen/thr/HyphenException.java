@@ -1,5 +1,7 @@
 package dev.quantumfusion.hyphen.thr;
 
+import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.util.Style;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,89 +29,79 @@ public class HyphenException extends RuntimeException {
 	}
 
 	public HyphenException(Throwable cause, @Nullable String possibleSolution) {
-		super(cause.getMessage(), cause);
+		this(cause.getMessage(), cause, possibleSolution);
+	}
+
+	public HyphenException(String message, Throwable cause, @Nullable String possibleSolution) {
+		super(message, cause);
 		this.setStackTrace(cause.getStackTrace());
 		this.possibleSolution = possibleSolution;
 	}
 
-	public static HyphenException thr(String type, String separator, Object clazz, Throwable throwable) {
+	public static HyphenException rethrow(Clazz aClass, @Nullable String entry, Throwable throwable) {
 		if (throwable instanceof HyphenException exception) {
-			return exception.append(type, separator, clazz);
+			return exception.rethrow(aClass, entry);
 		}
 		var exception = new HyphenException(throwable, null);
-		exception.append(type, separator, clazz);
+		exception.rethrow(aClass, entry);
 		return exception;
 	}
 
-	public HyphenException append(String type, String separator, Object clazz) {
-		this.path.add(new Entry(type, separator, clazz));
+	public HyphenException rethrow(Clazz aClass, @Nullable String entry) {
+		this.path.add(new Entry(aClass, entry));
 		return this;
 	}
 
 	@Override
 	public void printStackTrace(PrintStream s) {
-		s.println(this.niceException());
+		super.printStackTrace(s);
 	}
 
 	@Override
 	public void printStackTrace(PrintWriter s) {
-		s.println(this.niceException());
+		super.printStackTrace(s);
+	}
+	public record Entry(Clazz aClass, @Nullable String entry) {
+
 	}
 
-	public String niceException() {
-		StringBuilder sb = new StringBuilder("now handled as a " + Style.YELLOW + "<$ Hyphen Fatal Exception $>" + Style.RESET + "\n\n");
-		List<Entry> main = new ArrayList<>();
-		main.add(new Entry(null, null, this.getMessage()));
-		if (getCause() != null) {
-			main.add(new Entry("cause: ", null, getCause().getClass().getSimpleName()));
-		}
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(this.getClass().getName());
+		builder.append(": \n");
 
-		new Group(this.getClass().getSimpleName() + " Reason", null, main).append(sb);
+		builder.append("Cause: ");
+		String message = this.getMessage();
+		builder.append(message);
 
 		if (possibleSolution != null) {
-			new Group("Possible Solution", null, Collections.singletonList(new Entry(null, null, possibleSolution))).append(sb);
+			builder.append("Suggestion: ");
+			builder.append(this.possibleSolution);
+			builder.append("\n");
 		}
-
-		new Group("Path", Style.RED_BACKGROUND, this.path).append(sb);
-		new Group("Stacktrace", Style.RED_BACKGROUND, Arrays.stream(this.getStackTrace()).map(Entry::create).collect(Collectors.toList())).append(sb);
-		return sb.toString();
-	}
-
-	public record Entry(String type, String separator, Object object) {
-		public static Entry create(StackTraceElement object) {
-			return new Entry((object.isNativeMethod() ? "native" : "java") + ":" + object.getLineNumber(), Style.LINE_DOWN, object);
-		}
-	}
-
-	public record Group(String name, String topBackground, List<Entry> entries) {
-		public void append(StringBuilder sb) {
-			sb.append('\t').append(Style.GREEN).append(name).append(Style.RESET).append('\n');
-			boolean first = true;
-			for (Entry entry : entries) {
-				String path = " ↑  ";
-				String style = Style.RESET;
-				String accents = Style.PURPLE;
-				if (first) {
-					path = " -> ";
-					if (topBackground != null) {
-						style = Style.BLACK + topBackground;
-						accents = Style.BLACK;
-					}
-				}
-				sb.append("\t\t").append(style).append(accents).append(path);
-				if (entry.type != null) {
-					sb.append(style).append(entry.type);
-				}
-				if (entry.separator != null) {
-					sb.append(accents).append(' ').append(entry.separator).append(' ');
-				}
-				sb.append(style).append(entry.object);
-				sb.append(Style.RESET).append('\n');
-				first = false;
+		builder.append("\n");
+		builder.append("Object Stacktrace:");
+		Clazz lastClass = null;
+		for (Entry entry : this.path) {
+			if (lastClass != entry.aClass) {
+				lastClass = entry.aClass;
+			} else if (entry.entry == null) {
+				continue;
 			}
+			builder.append("\n\t");
+			if (entry.entry != null) {
+				builder.append("at ");
+				builder.append(entry.entry);
+				builder.append(" ");
+			}
+			builder.append("in ");
+			builder.append(entry.aClass);
 
-			sb.append('\n');
 		}
-	}
+		builder.append("\n\n");
+		builder.append("Stacktrace:");
 
+		return builder.toString();
+	}
 }

@@ -128,24 +128,26 @@ public class Clazz {
 			try {
 				fieldEntries.add(new FieldEntry(field.field(), Clazzifier.create(handler, new ScanUtil.FieldAnnotatedType(field.field(), field.type()), this, Direction.NORMAL)));
 			} catch (Throwable throwable) {
-				throw HyphenException.thr("field", Style.LINE_RIGHT, field, throwable);
+				throw HyphenException.rethrow(this, "field " + field.field().getName(), throwable);
 			}
 		}
 
 		return fieldEntries;
 	}
 
-	public int defined() {
-		return 1;
-	}
-
 	@Override
 	public String toString() {
-		StringJoiner annotationJoiner = new StringJoiner("_", "<", ">");
-		this.annotations.forEach((aClass1, value) -> {
-			annotationJoiner.add('@' + aClass1.getSimpleName() + value);
-		});
-		return aClass.getSimpleName() + "_" + annotationJoiner;
+		String annotations = "";
+
+		if (!this.annotations.isEmpty()) {
+			StringJoiner annotationJoiner = new StringJoiner("_", "<", ">");
+			this.annotations.forEach((aClass1, value) -> {
+				annotationJoiner.add('@' + aClass1.getSimpleName() + value);
+			});
+			annotations = "_" + annotationJoiner;
+		}
+
+		return aClass.getSimpleName() + annotations;
 	}
 
 	@Override

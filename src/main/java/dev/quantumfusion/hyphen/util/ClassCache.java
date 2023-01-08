@@ -81,7 +81,7 @@ public class ClassCache {
 
 		@Override
 		public String toString() {
-			return field.getName() + " : " + type;
+			return type + " " + field.getName();
 		}
 	}
 

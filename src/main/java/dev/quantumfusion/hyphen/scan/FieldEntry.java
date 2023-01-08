@@ -26,6 +26,6 @@ public record FieldEntry(Field field, Clazz clazz) {
 
 	@Override
 	public String toString() {
-		return field.getName() + " : " + clazz;
+		return clazz + " " + field.getName();
 	}
 }

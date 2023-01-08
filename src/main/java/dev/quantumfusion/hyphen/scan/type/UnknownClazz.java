@@ -27,11 +27,6 @@ public class UnknownClazz extends Clazz {
 	}
 
 	@Override
-	public int defined() {
-		return 0;
-	}
-
-	@Override
 	public String toString() {
 		return "UNKNOWN";
 	}

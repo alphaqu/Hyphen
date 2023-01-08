@@ -12,10 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
@@ -26,7 +23,7 @@ public class ParaClazz extends Clazz {
 	}
 
 	public static ParaClazz create(SerializerHandler<?, ?> handler, AnnotatedType rawAnnotatedType, @Nullable Clazz ctx, Direction dir) {
-		var parameters = new HashMap<String, Clazz>();
+		var parameters = new LinkedHashMap<String, Clazz>();
 		var rawType = ScanUtil.getClassFrom(rawAnnotatedType);
 
 		AnnotatedType annType;
@@ -44,10 +41,6 @@ public class ParaClazz extends Clazz {
 				parameters.put(key, value);
 			});
 		} else {
-			if (dir != Direction.SUB) {
-				throw new UnknownTypeException("Class with parameters comes from a non parameterized source.",
-						"Check if you forgot to declare the parameters and left the type raw in any of the fields.");
-			}
 			for (var typeParameter : rawType.getTypeParameters()) {
 				parameters.put(typeParameter.getTypeName(), Clazzifier.create(handler, ScanUtil.wrap(typeParameter), ctx, dir));
 			}
@@ -71,17 +64,8 @@ public class ParaClazz extends Clazz {
 	}
 
 	@Override
-	public int defined() {
-		int i = 1;
-		for (Clazz value : parameters.values()) {
-			i += value.defined();
-		}
-		return i;
-	}
-
-	@Override
 	public String toString() {
-		var sj = new StringJoiner(",", "{", "}");
+		var sj = new StringJoiner(",", "<", ">");
 		parameters.forEach((s, clazz) -> sj.add(s + "=" + clazz.toString()));
 		return super.toString() + sj;
 	}

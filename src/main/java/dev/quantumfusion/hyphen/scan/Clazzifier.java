@@ -43,7 +43,8 @@ public class Clazzifier {
 			}
 			throw new RuntimeException("Can not handle: " + annotatedType.getClass().getSimpleName());
 		} catch (Throwable throwable) {
-			throw HyphenException.thr("class", ":", annotatedType, throwable);
+			Class<?> classFrom = ScanUtil.getClassFrom(annotatedType);
+			throw HyphenException.rethrow(new Clazz(handler, classFrom),null, throwable);
 		}
 	}
 
