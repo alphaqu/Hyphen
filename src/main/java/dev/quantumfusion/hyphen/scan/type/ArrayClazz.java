@@ -17,8 +17,8 @@ import java.util.StringJoiner;
 public class ArrayClazz extends Clazz {
 	public final Clazz component;
 
-	public ArrayClazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations, Clazz component) {
-		super(handler, aClass, annotations);
+	protected ArrayClazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations, Clazz component) {
+		super(aClass, annotations);
 		this.component = component;
 	}
 
@@ -33,7 +33,7 @@ public class ArrayClazz extends Clazz {
 			}
 		}
 		component = Clazzifier.create(handler, getAnnotatedGenericComponentType(array), ctx, dir);
-		return new ArrayClazz(handler, component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(handler, array, ctx), component);
+		return new ArrayClazz(component.getBytecodeClass().arrayType(), ScanUtil.acquireAnnotations(handler, array, ctx), component);
 	}
 
 	private static AnnotatedType getAnnotatedGenericComponentType(AnnotatedType array) {

@@ -159,7 +159,7 @@ public class SerializerHandler<IO extends IOInterface, D> {
 	}
 
 	private MethodDef scan() {
-		final Clazz clazz = new Clazz(this, dataClass);
+		final Clazz clazz = Clazz.create(dataClass);
 		final MethodDef methodDef = acquireDefNewMethod(clazz);
 		methodDef.scan(this, clazz);
 		return methodDef;

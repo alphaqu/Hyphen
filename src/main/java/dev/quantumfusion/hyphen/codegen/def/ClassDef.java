@@ -33,7 +33,7 @@ public final class ClassDef extends MethodDef {
 		this.aClass = clazz.getDefinedClass();
 		boolean record = aClass.isRecord();
 		try {
-			for (FieldEntry field : clazz.getFields()) {
+			for (FieldEntry field : clazz.getFields(handler)) {
 				if (shouldFieldSerialize(field)) {
 					try {
 						SerializerDef serializerDef = handler.acquireDef(field.clazz());
@@ -65,7 +65,7 @@ public final class ClassDef extends MethodDef {
 
 			if (!handler.options.get(Options.DISABLE_PUT)) {
 				List<Class<?>> constructorParameters = new ArrayList<>();
-				for (FieldEntry field : new Clazz(handler, clazz.getDefinedClass()).getFields()) {
+				for (FieldEntry field : Clazz.create(clazz.getDefinedClass()).getFields(handler)) {
 					if (shouldFieldSerialize(field)) {
 						constructorParameters.add(field.clazz().getDefinedClass());
 					}

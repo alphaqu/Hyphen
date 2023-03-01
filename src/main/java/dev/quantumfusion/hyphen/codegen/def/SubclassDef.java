@@ -26,7 +26,7 @@ public final class SubclassDef extends MethodDef {
 	}
 
 	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
-		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(subclass)));
+		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(handler, subclass)));
 
 		long size = this.subDefs[0].getStaticSize();
 

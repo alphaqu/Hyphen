@@ -17,8 +17,8 @@ import java.util.*;
 public class ParaClazz extends Clazz {
 	public final Map<String, Clazz> parameters;
 
-	public ParaClazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations, Map<String, Clazz> parameters) {
-		super(handler, aClass, annotations);
+	protected ParaClazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations, Map<String, Clazz> parameters) {
+		super(aClass, annotations);
 		this.parameters = parameters;
 	}
 
@@ -46,7 +46,7 @@ public class ParaClazz extends Clazz {
 			}
 		}
 
-		return new ParaClazz(handler, rawType, ScanUtil.acquireAnnotations(handler, rawAnnotatedType, ctx), parameters);
+		return new ParaClazz(rawType, ScanUtil.acquireAnnotations(handler, rawAnnotatedType, ctx), parameters);
 	}
 
 	@Override

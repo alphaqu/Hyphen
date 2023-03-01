@@ -31,26 +31,27 @@ import java.util.*;
 public class Clazz {
 	@NotNull
 	public final Class<?> aClass;
-	protected final SerializerHandler<?, ?> handler;
 	// Object is the value
 	protected final Map<Class<? extends Annotation>, Object> annotations;
 
-	protected Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations) {
+	protected Clazz(@NotNull Class<?> aClass, Map<Class<? extends Annotation>, Object> annotations) {
 		this.aClass = aClass;
-		this.handler = handler;
 		this.annotations = annotations;
 	}
 
-	public Clazz(SerializerHandler<?, ?> handler, @NotNull Class<?> aClass) {
+	protected Clazz(@NotNull Class<?> aClass) {
 		this.aClass = aClass;
-		this.handler = handler;
 		var map = new HashMap<Class<? extends Annotation>, Object>();
 		ScanUtil.addAnnotations(aClass, map);
 		this.annotations = map;
 	}
 
 	public static Clazz create(SerializerHandler<?, ?> handler, AnnotatedType type, @Nullable Clazz ctx) {
-		return new Clazz(handler, (Class<?>) type.getType(), ScanUtil.acquireAnnotations(handler, type, ctx));
+		return new Clazz((Class<?>) type.getType(), ScanUtil.acquireAnnotations(handler, type, ctx));
+	}
+
+	public static Clazz create(@NotNull Class<?> aClass) {
+		return new Clazz(aClass);
 	}
 
 	/**
@@ -103,7 +104,7 @@ public class Clazz {
 		return UnknownClazz.UNKNOWN;
 	}
 
-	public Clazz asSub(Class<?> sub) {
+	public Clazz asSub(SerializerHandler<?, ?> handler, Class<?> sub) {
 		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, clazz -> ClassCache.getInherited(ScanUtil.getClassFrom(clazz)));
 		if (path == null) {
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
@@ -117,11 +118,11 @@ public class Clazz {
 		return ctx;
 	}
 
-	public List<FieldEntry> getFields() {
+	public List<FieldEntry> getFields(SerializerHandler<?, ?> handler) {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		final AnnotatedType aSuper = ClassCache.getSuperClass(aClass);
 		if (aSuper != null) {
-			fieldEntries.addAll(Clazzifier.create(handler, aSuper, this, Direction.SUPER).getFields());
+			fieldEntries.addAll(Clazzifier.create(handler, aSuper, this, Direction.SUPER).getFields(handler));
 		}
 		
 		for (var field : ClassCache.getFields(aClass)) {

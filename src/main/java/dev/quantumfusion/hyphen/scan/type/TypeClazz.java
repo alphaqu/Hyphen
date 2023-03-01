@@ -18,8 +18,8 @@ public class TypeClazz extends Clazz {
 	public final String typeName;
 	private final Class<?> bytecodeBound;
 
-	public TypeClazz(SerializerHandler<?, ?> handler, Map<Class<? extends Annotation>, Object> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
-		super(handler, bytecodeBound, annotations);
+	protected TypeClazz(Map<Class<? extends Annotation>, Object> annotations, Clazz defined, Class<?> bytecodeBound, String typeName) {
+		super(bytecodeBound, annotations);
 		this.defined = defined;
 		this.bytecodeBound = bytecodeBound;
 		this.typeName = typeName;
@@ -33,7 +33,7 @@ public class TypeClazz extends Clazz {
 			throw new RuntimeException("Type Knowledge Required");
 		}
 		final Type bound = type.getBounds()[0];
-		return new TypeClazz(handler, ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), ScanUtil.getClassFrom(bound), typeName);
+		return new TypeClazz(ScanUtil.acquireAnnotations(handler, typeVariable, ctx), ctx.define(typeName), ScanUtil.getClassFrom(bound), typeName);
 	}
 
 	@Override
@@ -52,13 +52,13 @@ public class TypeClazz extends Clazz {
 	}
 
 	@Override
-	public Clazz asSub(Class<?> sub) {
-		return this.defined.asSub(sub);
+	public Clazz asSub(SerializerHandler<?, ?> handler, Class<?> sub) {
+		return this.defined.asSub(handler, sub);
 	}
 
 	@Override
-	public List<FieldEntry> getFields() {
-		return this.defined.getFields();
+	public List<FieldEntry> getFields(SerializerHandler<?, ?> handler) {
+		return this.defined.getFields(handler);
 	}
 
 	@Override
