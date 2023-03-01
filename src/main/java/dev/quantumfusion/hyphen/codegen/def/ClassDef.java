@@ -274,7 +274,7 @@ public final class ClassDef extends MethodDef {
 				mh.callInst(INVOKEVIRTUAL, aClass, name, bytecodeClass);
 			}
 		}
-		GenUtil.shouldCastGeneric(mh, clazz.getDefinedClass(), bytecodeClass);
+		GenUtil.ensureCasted(mh, clazz.getDefinedClass(), bytecodeClass);
 	}
 
 

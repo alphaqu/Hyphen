@@ -50,7 +50,7 @@ public class SetDef extends MethodDef {
 
 			mh.varOp(ILOAD, iterator);
 			mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
-			GenUtil.shouldCastGeneric(mh, this.key.getDefinedClass(), Object.class);
+			GenUtil.ensureCasted(mh, this.key.getDefinedClass(), Object.class);
 			mh.varOp(ISTORE, entry);
 
 			this.keyDef.writePut(mh, () -> mh.varOp(ILOAD, entry));
@@ -115,7 +115,7 @@ public class SetDef extends MethodDef {
 
 				mh.varOp(ILOAD, iterator);
 				mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
-				GenUtil.shouldCastGeneric(mh, this.key.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.key.getDefinedClass(), Object.class);
 				mh.varOp(ISTORE, entry);
 				this.keyDef.writeMeasure(mh, () -> mh.varOp(ILOAD, entry));
 				mh.op(LADD);

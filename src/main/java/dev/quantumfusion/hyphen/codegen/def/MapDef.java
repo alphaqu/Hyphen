@@ -66,12 +66,12 @@ public class MapDef extends MethodDef {
 			this.keyDef.writePut(mh, () -> {
 				mh.varOp(ILOAD, entry);
 				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getKey", Object.class);
-				GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
 			});
 			this.valueDef.writePut(mh, () -> {
 				mh.varOp(ILOAD, entry);
 				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
-				GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
 			});
 		}
 	}
@@ -156,25 +156,25 @@ public class MapDef extends MethodDef {
 				if (x == 1) {
 					this.keyDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
-						GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
 					});
 				}
 				if (x == 2) {
 					this.valueDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
-						GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
 					});
 				}
 				if (x == 3) {
 					this.keyDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
 						mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getKey", Object.class);
-						GenUtil.shouldCastGeneric(mh, this.keyClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
 					});
 					this.valueDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
 						mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
-						GenUtil.shouldCastGeneric(mh, this.valueClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
 					});
 					mh.op(LADD);
 				}

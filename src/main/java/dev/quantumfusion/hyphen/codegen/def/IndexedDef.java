@@ -178,7 +178,7 @@ public abstract class IndexedDef extends MethodDef {
 		valueLoad.run();
 		mh.varOp(ILOAD, i);
 		getterFunc.accept(mh);
-		GenUtil.shouldCastGeneric(mh, component);
+		GenUtil.ensureCasted(mh, component);
 	}
 
 	public void loopArray(MethodHandler mh, Variable length, Consumer<Variable> value) {

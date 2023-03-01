@@ -57,14 +57,14 @@ public final class SubclassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
-		ifChainClasses(mh, valueLoad, (clz, serializerDef, i) -> {
+		iterClasses(mh, valueLoad, (clz, serializerDef, i) -> {
 			mh.loadIO();
 			mh.visitLdcInsn(i);
 			mh.putIO(byte.class);
 
 			serializerDef.writePut(mh, () -> {
 				valueLoad.run();
-				GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
+				GenUtil.ensureCasted(mh, clz, this.clazz.getBytecodeClass());
 			});
 			mh.op(RETURN);
 		});
@@ -73,11 +73,11 @@ public final class SubclassDef extends MethodDef {
 
 	@Override
 	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
-		ifChainClasses(mh, valueLoad, (clz, serializerDef, i) -> {
+		iterClasses(mh, valueLoad, (clz, serializerDef, i) -> {
 			if (serializerDef.hasDynamicSize()) {
 				serializerDef.writeMeasure(mh, () -> {
 					valueLoad.run();
-					GenUtil.shouldCastGeneric(mh, clz, this.clazz.getBytecodeClass());
+					GenUtil.ensureCasted(mh, clz, this.clazz.getBytecodeClass());
 				});
 			}
 			long ss = serializerDef.getStaticSize();
@@ -95,7 +95,7 @@ public final class SubclassDef extends MethodDef {
 		mh.op(LCONST_0);
 	}
 
-	private void ifChainClasses(MethodHandler mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
+	private void iterClasses(MethodHandler mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
 		final Variable clz = mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);

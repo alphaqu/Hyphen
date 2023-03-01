@@ -54,11 +54,11 @@ public final class GenUtil {
 		return Type.getDescriptor(aClass);
 	}
 
-	public static void shouldCastGeneric(MethodHandler mh, Clazz clazz) {
-		shouldCastGeneric(mh, clazz.getDefinedClass(), clazz.getBytecodeClass());
+	public static void ensureCasted(MethodHandler mh, Clazz clazz) {
+		ensureCasted(mh, clazz.getDefinedClass(), clazz.getBytecodeClass());
 	}
 
-	public static void shouldCastGeneric(MethodHandler mh, Class<?> actual, Class<?> bytecodeClass) {
+	public static void ensureCasted(MethodHandler mh, Class<?> actual, Class<?> bytecodeClass) {
 		if (!actual.isAssignableFrom(bytecodeClass)) {
 			mh.typeOp(CHECKCAST, actual);
 		}
