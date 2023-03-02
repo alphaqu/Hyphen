@@ -88,8 +88,4 @@ public class PackedBooleans {
 			mh.op(IOR);
 		}
 	}
-
-	public int getBytes() {
-		return stacks;
-	}
 }

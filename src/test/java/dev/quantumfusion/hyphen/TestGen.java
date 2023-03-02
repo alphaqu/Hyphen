@@ -9,7 +9,7 @@ public record TestGen(C3Def<Integer>[] def) {
 
 	public static void main(String[] args) {
 		var factory = SerializerFactory.createDebug(ByteBufferIO.class, TestGen.class);
-		factory.addGlobalAnnotation("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
+		factory.addAnnotationProvider("id", DataSubclasses.class, new Class[]{Integer.class, Float.class});
 
 		TestGen test = null;
 		var serializer = factory.build();

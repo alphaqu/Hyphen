@@ -2,13 +2,18 @@ package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.io.UnsafeIO;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class StringIODef implements SerializerDef {
+public class StringIODef extends SerializerDef {
+	public StringIODef() {
+		super(Clazz.create(String.class));
+	}
+
 	@Override
 	public void writePut(MethodHandler mh, Runnable valueLoad) {
 		mh.loadIO();

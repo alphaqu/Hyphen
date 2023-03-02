@@ -1,9 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
-import dev.quantumfusion.hyphen.codegen.CodegenHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.codegen.MethodInfo;
 import dev.quantumfusion.hyphen.codegen.statement.While;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
@@ -18,15 +16,14 @@ public class MapDef extends MethodDef {
 	private Clazz valueClazz;
 	private SerializerDef keyDef;
 	private SerializerDef valueDef;
-	private MethodInfo putLambdaMethod;
 
-
-	public MapDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		super(handler, clazz);
+	public MapDef(ParaClazz clazz) {
+		super(clazz);
 	}
 
 	@Override
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+	public void scan(SerializerGenerator<?, ?> handler) {
+		super.scan(handler);
 		this.keyClazz = clazz.define("K");
 		this.valueClazz = clazz.define("V");
 		this.keyDef = handler.acquireDef(this.keyClazz);
@@ -186,16 +183,5 @@ public class MapDef extends MethodDef {
 	@Override
 	public long getStaticSize() {
 		return 4; // size of the map
-	}
-
-	@Override
-	public void writeMethods(CodegenHandler<?, ?> handler, CodegenHandler.MethodWriter writer, boolean spark) {
-		super.writeMethods(handler, writer, spark);
-		//if (!handler.options.get(Options.DISABLE_MEASURE))
-		//	writer.writeMethod(this.clazz, this.putLambdaMethod, false, true,
-		//					   mh -> {
-		//						   this.keyDef.writePut(mh, () -> mh.parameterOp(ILOAD, 1));
-		//						   this.valueDef.writePut(mh, () -> mh.parameterOp(ILOAD, 2));
-		//					   });
 	}
 }

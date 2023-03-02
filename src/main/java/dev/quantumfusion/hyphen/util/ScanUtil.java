@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
 import dev.quantumfusion.hyphen.scan.annotations.HyphenAnnotation;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
@@ -57,7 +57,7 @@ public class ScanUtil {
 		return out;
 	}
 
-	public static Map<Class<? extends Annotation>, Object> acquireAnnotations(SerializerHandler<?, ?> handler, @NotNull AnnotatedType self, @Nullable Clazz parent) {
+	public static Map<Class<? extends Annotation>, Object> acquireAnnotations(SerializerGenerator<?, ?> handler, @NotNull AnnotatedType self, @Nullable Clazz parent) {
 		var out = new LinkedHashMap<Class<? extends Annotation>, Object>();
 		if (parent != null) {
 			final Class<?> parentClass = parent.getDefinedClass();
@@ -76,12 +76,12 @@ public class ScanUtil {
 
 
 		if (out.containsKey(DataGlobalAnnotation.class)) {
-			out.putAll(handler.globalAnnotations.get(out.get(DataGlobalAnnotation.class)));
+			out.putAll(handler.annotationProviders.get(out.get(DataGlobalAnnotation.class)));
 		}
 
 		final Class<?> classFrom = getClassFromOrNull(self.getType());
-		if (classFrom != null && handler.globalAnnotations.containsKey(classFrom)) {
-			out.putAll(handler.globalAnnotations.get(classFrom));
+		if (classFrom != null && handler.annotationProviders.containsKey(classFrom)) {
+			out.putAll(handler.annotationProviders.get(classFrom));
 		}
 
 		return out;

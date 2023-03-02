@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
@@ -26,13 +26,14 @@ public final class EnumDef extends MethodDef {
 	private Class<?> enumSizePrimitive;
 	private boolean isNullable;
 
-	public EnumDef(SerializerHandler<?, ?> handler, Clazz clazz) {
-		super(handler, clazz);
+	public EnumDef(Clazz clazz) {
+		super(clazz);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+	public void scan(SerializerGenerator<?, ?> handler) {
+		super.scan(handler);
 		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
 
 		this.isNullable = clazz.containsAnnotation(DataNullable.class);

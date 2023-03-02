@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ public class TypeClazz extends Clazz {
 		this.typeName = typeName;
 	}
 
-	public static TypeClazz create(SerializerHandler<?, ?> handler, AnnotatedType typeVariable, @Nullable Clazz ctx) {
+	public static TypeClazz create(SerializerGenerator<?, ?> handler, AnnotatedType typeVariable, @Nullable Clazz ctx) {
 		var type = (TypeVariable<?>) typeVariable.getType();
 		var typeName = type.getTypeName();
 
@@ -52,12 +52,12 @@ public class TypeClazz extends Clazz {
 	}
 
 	@Override
-	public Clazz asSub(SerializerHandler<?, ?> handler, Class<?> sub) {
+	public Clazz asSub(SerializerGenerator<?, ?> handler, Class<?> sub) {
 		return this.defined.asSub(handler, sub);
 	}
 
 	@Override
-	public List<FieldEntry> getFields(SerializerHandler<?, ?> handler) {
+	public List<FieldEntry> getFields(SerializerGenerator<?, ?> handler) {
 		return this.defined.getFields(handler);
 	}
 

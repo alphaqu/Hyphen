@@ -112,32 +112,4 @@ public final class GenUtil {
 				isInterface
 		);
 	}
-
-	public static void createMethodRef(
-			MethodVisitor mv,
-			Class<?> targetInterface,
-			String targetMethod,
-			Class<?> targetMethodReturnClass,
-			Class<?>[] targetMethodParameters,
-			String sourceClass,
-			String sourceMethod,
-			Class<?> sourceMethodReturnClass,
-			Class<?>[] capturedParameters,
-			Class<?>[] uncapturedParameters) {
-		mv.visitInvokeDynamicInsn(
-				targetMethod,
-				methodDesc(targetInterface, capturedParameters),
-				LAMBDA_METAFACTORY_HANDLE,
-				methodTypeDesc(targetMethodReturnClass, targetMethodParameters),
-				createHandle(
-						H_INVOKESTATIC,
-						sourceClass,
-						sourceMethod,
-						false,
-						sourceMethodReturnClass,
-						ArrayUtil.combine(capturedParameters, uncapturedParameters)
-				),
-				methodTypeDesc(sourceMethodReturnClass, uncapturedParameters)
-		);
-	}
 }

@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
@@ -15,27 +15,27 @@ import java.util.function.Consumer;
 import static org.objectweb.asm.Opcodes.*;
 
 public abstract class IndexedDef extends MethodDef {
-	protected final SerializerDef componentDef;
-	protected final Clazz component;
-	protected final Consumer<MethodHandler> getterFunc;
-	protected final Consumer<MethodHandler> lengthFunc;
-	protected final boolean componentNullable;
+	protected SerializerDef componentDef;
+	protected Clazz component;
+	protected boolean componentNullable;
 	private final Integer fixedSize;
 
-	public IndexedDef(String name, SerializerHandler<?, ?> handler, Clazz clazz, Clazz component, Consumer<MethodHandler> getterFunc, Consumer<MethodHandler> lengthFunc) {
-		super(handler, clazz, name);
-		this.component = component;
-		this.getterFunc = getterFunc;
+	public IndexedDef(String name, Clazz clazz) {
+		super(clazz, name);
 		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
-		this.lengthFunc = lengthFunc;
-		this.componentDef = handler.acquireDef(component);
-		this.componentNullable = component.containsAnnotation(DataNullable.class);
 	}
 
 	@Override
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
-
+	public void scan(SerializerGenerator<?, ?> handler) {
+		this.component = scanComponent(handler);
+		this.componentDef = handler.acquireDef(component);
+		this.componentNullable = component.containsAnnotation(DataNullable.class);
+		super.scan(handler);
 	}
+
+	public abstract Clazz scanComponent(SerializerGenerator<?, ?> handler);
+	public abstract void writeGetElement(MethodHandler mh);
+	public abstract void writeLength(MethodHandler mh);
 
 	public abstract void writeGetConverter(MethodHandler mh);
 
@@ -81,7 +81,7 @@ public abstract class IndexedDef extends MethodDef {
 		if (fixedSize == null) {
 			mh.loadIO();
 			valueLoad.run();
-			lengthFunc.accept(mh);
+			writeLength(mh);
 			mh.op(DUP);
 			mh.varOp(ISTORE, length);
 			mh.putIO(int.class);
@@ -136,7 +136,7 @@ public abstract class IndexedDef extends MethodDef {
 				// TODO: consider sing shifting if component size is a pot
 				mh.visitLdcInsn(componentSize);
 				valueLoad.run();
-				this.lengthFunc.accept(mh);
+				writeLength(mh);
 				mh.op(I2L);
 				mh.op(LMUL);
 			} else {
@@ -150,7 +150,7 @@ public abstract class IndexedDef extends MethodDef {
 			final Variable length = mh.addVar("length", int.class);
 			if (fixedSize == null) {
 				valueLoad.run();
-				lengthFunc.accept(mh);
+				writeLength(mh);
 				mh.varOp(ISTORE, length);
 			}
 			loopArray(mh, length, (i) -> {
@@ -177,7 +177,7 @@ public abstract class IndexedDef extends MethodDef {
 	private void loadArrayValue(MethodHandler mh, Runnable valueLoad, Variable i) {
 		valueLoad.run();
 		mh.varOp(ILOAD, i);
-		getterFunc.accept(mh);
+		writeGetElement(mh);
 		GenUtil.ensureCasted(mh, component);
 	}
 

@@ -1,17 +1,12 @@
 package dev.quantumfusion.hyphen.thr;
 
 import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.scan.type.ParaClazz;
-import dev.quantumfusion.hyphen.util.Style;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HyphenException extends RuntimeException {
 	private final List<Entry> path = new ArrayList<>();

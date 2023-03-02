@@ -1,17 +1,17 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class PrimitiveArrayIODef implements SerializerDef {
+public class PrimitiveArrayIODef extends SerializerDef {
 	protected final Class<?> primitiveArray;
 	protected final Integer fixedSize;
 
-	public PrimitiveArrayIODef(Clazz clazz, SerializerHandler<?, ?> serializerHandler) {
+	public PrimitiveArrayIODef(Clazz clazz) {
+		super(clazz);
 		this.primitiveArray = clazz.getDefinedClass();
 		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
 	}

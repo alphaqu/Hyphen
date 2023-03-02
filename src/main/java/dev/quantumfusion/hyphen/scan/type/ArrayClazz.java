@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.util.ScanUtil;
@@ -22,7 +22,7 @@ public class ArrayClazz extends Clazz {
 		this.component = component;
 	}
 
-	public static ArrayClazz create(SerializerHandler<?, ?> handler, AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
+	public static ArrayClazz create(SerializerGenerator<?, ?> handler, AnnotatedType array, @Nullable Clazz ctx, Direction dir) {
 		final Clazz component;
 		if (dir == Direction.SUB) {
 			if (ctx instanceof ArrayClazz arrayClazz) {

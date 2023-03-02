@@ -1,13 +1,12 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.ClassCache;
 import dev.quantumfusion.hyphen.util.ScanUtil;
-import dev.quantumfusion.hyphen.util.Style;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +45,7 @@ public class Clazz {
 		this.annotations = map;
 	}
 
-	public static Clazz create(SerializerHandler<?, ?> handler, AnnotatedType type, @Nullable Clazz ctx) {
+	public static Clazz create(SerializerGenerator<?, ?> handler, AnnotatedType type, @Nullable Clazz ctx) {
 		return new Clazz((Class<?>) type.getType(), ScanUtil.acquireAnnotations(handler, type, ctx));
 	}
 
@@ -104,7 +103,7 @@ public class Clazz {
 		return UnknownClazz.UNKNOWN;
 	}
 
-	public Clazz asSub(SerializerHandler<?, ?> handler, Class<?> sub) {
+	public Clazz asSub(SerializerGenerator<?, ?> handler, Class<?> sub) {
 		final AnnotatedType[] path = ScanUtil.findPath(ScanUtil.wrap(sub), (test) -> ScanUtil.getClassFrom(test) == aClass, clazz -> ClassCache.getInherited(ScanUtil.getClassFrom(clazz)));
 		if (path == null) {
 			throw new RuntimeException(sub.getSimpleName() + " does not inherit " + aClass.getSimpleName());
@@ -118,7 +117,7 @@ public class Clazz {
 		return ctx;
 	}
 
-	public List<FieldEntry> getFields(SerializerHandler<?, ?> handler) {
+	public List<FieldEntry> getFields(SerializerGenerator<?, ?> handler) {
 		List<FieldEntry> fieldEntries = new ArrayList<>();
 		final AnnotatedType aSuper = ClassCache.getSuperClass(aClass);
 		if (aSuper != null) {

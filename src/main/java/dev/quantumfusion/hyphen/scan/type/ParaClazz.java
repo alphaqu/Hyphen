@@ -1,9 +1,8 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.Clazzifier;
 import dev.quantumfusion.hyphen.scan.Direction;
-import dev.quantumfusion.hyphen.thr.UnknownTypeException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,7 @@ public class ParaClazz extends Clazz {
 		this.parameters = parameters;
 	}
 
-	public static ParaClazz create(SerializerHandler<?, ?> handler, AnnotatedType rawAnnotatedType, @Nullable Clazz ctx, Direction dir) {
+	public static ParaClazz create(SerializerGenerator<?, ?> handler, AnnotatedType rawAnnotatedType, @Nullable Clazz ctx, Direction dir) {
 		var parameters = new LinkedHashMap<String, Clazz>();
 		var rawType = ScanUtil.getClassFrom(rawAnnotatedType);
 

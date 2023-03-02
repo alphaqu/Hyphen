@@ -22,15 +22,13 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	public final Class<?> ioClass;
 	private final Map<String, Variable> variableMap = new LinkedHashMap<>();
 	private final Label start = new Label();
-	private final boolean instanceMethod;
 	private boolean compactVars;
 
-	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass, boolean instanceMethod) {
+	public MethodHandler(MethodVisitor methodVisitor, String self, Class<?> dataClass, Class<?> ioClass) {
 		super(ASM9, methodVisitor);
 		this.self = self;
 		this.dataClass = dataClass;
 		this.ioClass = ioClass;
-		this.instanceMethod = instanceMethod;
 		this.compactVars = false;
 
 		this.visitCode();
@@ -43,39 +41,14 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 			String self,
 			Class<?> dataClass, Class<?> ioClass,
 			boolean compactVars,
-			boolean spark, boolean synthetic
+			 boolean synthetic
 	) {
-		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | (spark ? 0 : ACC_STATIC) | (synthetic ? ACC_SYNTHETIC : 0),
-				methodInfo.getName(),
-				GenUtil.methodDesc(convert(methodInfo.returnClass, spark), parameters(methodInfo.parameters, spark)),
-				null, null), self, dataClass, ioClass, spark);
-
-		if (spark) {
-			this.addVar("this", Object.class);
-		}
+		this(cw.visitMethod(ACC_PUBLIC | ACC_FINAL | ACC_STATIC | (synthetic ? ACC_SYNTHETIC : 0),
+				methodInfo.name,
+				GenUtil.methodDesc(methodInfo.returnClass, methodInfo.parameters),
+				null, null), self, dataClass, ioClass);
 		this.compactVars = compactVars;
 	}
-
-	private static Class<?>[] parameters(Class<?>[] parameters, boolean raw) {
-		if (raw) {
-			final Class<?>[] a = new Class[parameters.length];
-			for (int i = 0; i < a.length; i++) {
-				a[i] = IOInterface.class.isAssignableFrom(parameters[i]) ? IOInterface.class : Object.class;
-			}
-			return a;
-		}
-		return parameters;
-	}
-
-	private static Class<?> convert(Class<?> parameters, boolean raw) {
-		if (raw) {
-			if (!parameters.isPrimitive()) {
-				return Object.class;
-			}
-		}
-		return parameters;
-	}
-
 
 	// Classification:tm:
 	public void typeOp(int opcode, Class<?> type) {
@@ -91,7 +64,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 	}
 
 	public void callInst(MethodInfo info) {
-		super.visitMethodInsn(INVOKESTATIC, self, info.getName(), GenUtil.methodDesc(info.returnClass, info.parameters), false);
+		super.visitMethodInsn(INVOKESTATIC, self, info.name, GenUtil.methodDesc(info.returnClass, info.parameters), false);
 	}
 
 	// Elegentification:tm:
@@ -111,7 +84,7 @@ public class MethodHandler extends MethodVisitor implements AutoCloseable {
 		}
 	}
 
-	void varOp(int op, String var) {
+	public void varOp(int op, String var) {
 		varOp(op, getVar(var));
 	}
 

@@ -1,30 +1,51 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.codegen.def.SerializerDef;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.def.*;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.type.ParaClazz;
 import dev.quantumfusion.hyphen.util.ScanUtil;
 
 import java.lang.annotation.Annotation;
+import java.nio.*;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * The Factory where you create a {@link HyphenSerializer} <br>
  * <p>
- * If you are looking at the code, this is mostly a wrapper around {@link SerializerHandler}
+ * If you are looking at the code, this is mostly a wrapper around {@link SerializerGenerator}
  * as this class requires a lot of documentation which takes up a lot of screen space.
  *
  * @param <IO> IO Class
  * @param <D>  Data Class
  */
 public class SerializerFactory<IO extends IOInterface, D> {
-	//For anyone reading. Here is the logic. This class is just documentation
-	private final SerializerHandler<IO, D> sh;
+	public final Class<IO> ioClass;
+	public final Class<D> dataClass;
+	private final EnumMap<Options, Boolean> options;
+	private final Map<Class<?>, DynamicDefFactory> definitions;
+	private final Map<Object, Map<Class<? extends Annotation>, Object>> annotationProviders = new HashMap<>();
+
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private String className = "HyphenSerializer";
+	private Path exportPath = null;
 
 	private SerializerFactory(Class<IO> ioClass, Class<D> dataClass, boolean debug) {
-		this.sh = new SerializerHandler<>(ioClass, dataClass, debug);
+		this.ioClass = ioClass;
+		this.dataClass = dataClass;
+		this.definitions = new HashMap<>(BUILD_IN_DEFINITIONS);
+		this.options = new EnumMap<>(Options.class);
+		for (Options value : Options.values()) {
+			this.options.put(value, value.defaultValue);
+		}
+		if (debug) {
+			this.options.put(Options.SHORT_METHOD_NAMES, false);
+			this.options.put(Options.SHORT_VARIABLE_NAMES, false);
+		}
 	}
 
 	// ======================================== CREATE ========================================
@@ -69,7 +90,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @param value  The option on state
 	 */
 	public void setOption(Options option, Boolean value) {
-		this.sh.options.put(option, value);
+		this.options.put(option, value);
 	}
 
 	/**
@@ -79,14 +100,14 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @param classLoader The intended classloader
 	 */
 	public void setClassLoader(ClassLoader classLoader) {
-		this.sh.definer = new ClassDefiner(classLoader);
+		this.classLoader = classLoader;
 	}
 
 	/**
 	 * Sets the class name of the output {@link HyphenSerializer}
 	 */
-	public void setClassName(String name) {
-		this.sh.name = name;
+	public void setClassName(String className) {
+		this.className = className;
 	}
 
 	/**
@@ -96,7 +117,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @see SerializerFactory#setExportDir
 	 */
 	public void setExportPath(Path path) {
-		this.sh.exportPath = path;
+		this.exportPath = path;
 	}
 
 	/**
@@ -106,7 +127,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @see SerializerFactory#setExportPath
 	 */
 	public void setExportDir(Path path) {
-		this.setExportPath(path.resolve(this.sh.name + ".class"));
+		this.setExportPath(path.resolve(this.className + ".class"));
 	}
 
 	// ====================================== DEFINITIONS =====================================
@@ -119,7 +140,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @see SerializerFactory#addDynamicDef(Class, DynamicDefFactory)
 	 */
 	public void addStaticDef(Class<?> target, SerializerDef def) {
-		this.sh.definitions.put(target, (clazz, sh) -> def);
+		this.definitions.put(target, (clazz) -> def);
 	}
 
 	/**
@@ -130,7 +151,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @see SerializerFactory#addStaticDef(Class, SerializerDef) (Class, DynamicDefFactory)
 	 */
 	public void addDynamicDef(Class<?> target, DynamicDefFactory factory) {
-		this.sh.definitions.put(target, factory);
+		this.definitions.put(target, factory);
 	}
 
 	// ====================================== ANNOTATIONS =====================================
@@ -143,8 +164,8 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @param annotation The Annotation you are adding to the applications
 	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
-	public void addGlobalAnnotation(String id, Class<? extends Annotation> annotation, Object value) {
-		addGlobalAnnotationInternal(id, annotation, value);
+	public void addAnnotationProvider(String id, Class<? extends Annotation> annotation, Object value) {
+		addAnnotationProviderInternal(id, annotation, value);
 	}
 
 	/**
@@ -155,11 +176,11 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @param annotation The Annotation you are adding to the applications
 	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
-	public void addGlobalAnnotation(Class<?> clazz, Class<? extends Annotation> annotation, Object value) {
-		addGlobalAnnotationInternal(clazz, annotation, value);
+	public void addAnnotationProvider(Class<?> clazz, Class<? extends Annotation> annotation, Object value) {
+		addAnnotationProviderInternal(clazz, annotation, value);
 	}
 
-	private void addGlobalAnnotationInternal(Object id, Class<? extends Annotation> annotation, Object value) {
+	private void addAnnotationProviderInternal(Object id, Class<? extends Annotation> annotation, Object value) {
 		var valueGetter = ScanUtil.getAnnotationValueGetter(annotation);
 		if (valueGetter != null) {
 			var returnType = valueGetter.getReturnType();
@@ -169,7 +190,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 			}
 		}
 
-		this.sh.globalAnnotations.computeIfAbsent(id, s -> new HashMap<>()).put(annotation, value);
+		this.annotationProviders.computeIfAbsent(id, s -> new HashMap<>()).put(annotation, value);
 	}
 
 	/**
@@ -178,7 +199,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 * @return A Serializer Powered by Hyphen.
 	 */
 	public HyphenSerializer<IO, D> build() {
-		return sh.build();
+		return new SerializerGenerator<>(ioClass, dataClass, className, exportPath, classLoader, options, definitions, annotationProviders).build();
 	}
 
 
@@ -191,9 +212,35 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		 * Create a SerializerDef dependant on the field
 		 *
 		 * @param clazz             The Clazz that the field is. Read more at {@link Clazz}
-		 * @param serializerHandler The SerializerHandler. Used to request another definition, as an example it may be used to serialize a parameter in the object.
 		 * @return SerializerDef
 		 */
-		SerializerDef create(Clazz clazz, SerializerHandler<?, ?> serializerHandler);
+		SerializerDef create(Clazz clazz);
+	}
+
+	private static final Map<Class<?>, DynamicDefFactory> BUILD_IN_DEFINITIONS = new HashMap<>();
+	static {
+
+		addStaticDef(PrimitiveIODef::new,
+				boolean.class, byte.class, short.class, char.class, int.class, float.class, long.class, double.class);
+		addDynamicDef(PrimitiveArrayIODef::new,
+				boolean[].class, byte[].class, short[].class, char[].class, int[].class, float[].class, long[].class, double[].class);
+		addDynamicDef(BufferDef::new, ByteBuffer.class, ShortBuffer.class, CharBuffer.class, IntBuffer.class, FloatBuffer.class, LongBuffer.class, DoubleBuffer.class);
+		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
+		BUILD_IN_DEFINITIONS.put(String.class, (c) -> new StringIODef());
+		BUILD_IN_DEFINITIONS.put(List.class, ListDef::new);
+		BUILD_IN_DEFINITIONS.put(Map.class, (c) -> new MapDef((ParaClazz) c));
+		BUILD_IN_DEFINITIONS.put(Set.class, (c) -> new SetDef((ParaClazz) c));
+	}
+
+	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
+		for (Class<?> aClass : clazz) {
+			BUILD_IN_DEFINITIONS.put(aClass, (sh) -> creator.apply(aClass));
+		}
+	}
+
+	private static void addDynamicDef(DynamicDefFactory creator, Class<?>... clazz) {
+		for (Class<?> aClass : clazz) {
+			BUILD_IN_DEFINITIONS.put(aClass, creator);
+		}
 	}
 }

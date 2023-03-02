@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
@@ -20,14 +20,14 @@ public final class SubclassDef extends MethodDef {
 	private SerializerDef[] subDefs;
 	private boolean allSameStaticSize;
 
-	public SubclassDef(SerializerHandler<?, ?> handler, Clazz clazz, Class<?>[] subClasses) {
-		super(handler, clazz, "SUB{ # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
+	public SubclassDef(Clazz clazz, Class<?>[] subClasses) {
+		super(clazz, "SUB{ # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
 		this.subClasses = subClasses;
 	}
 
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+	public void scan(SerializerGenerator<?, ?> handler) {
 		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(handler, subclass)));
-
+		super.scan(handler);
 		long size = this.subDefs[0].getStaticSize();
 
 		for (int i = 1; i < this.subDefs.length; i++) {

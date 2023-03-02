@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.statement.While;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
@@ -17,12 +17,13 @@ public class SetDef extends MethodDef {
 	private Clazz key;
 	private SerializerDef keyDef;
 
-	public SetDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		super(handler, clazz);
+	public SetDef(ParaClazz clazz) {
+		super(clazz);
 	}
 
 	@Override
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+	public void scan(SerializerGenerator<?, ?> handler) {
+		super.scan(handler);
 		this.key = clazz.define("E");
 		this.keyDef = handler.acquireDef(key);
 	}

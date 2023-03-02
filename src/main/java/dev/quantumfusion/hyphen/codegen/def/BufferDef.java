@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.io.IOBufferInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataBufferType;
@@ -10,15 +10,13 @@ import org.objectweb.asm.Opcodes;
 
 import java.nio.*;
 
-public class BufferDef implements SerializerDef {
+public class BufferDef extends SerializerDef {
 	protected final Class<?> buffer;
 	protected final Class<?> primitive;
 	protected final BufferType type;
 
-	public BufferDef(Clazz clazz, SerializerHandler<?, ?> serializerHandler) {
-		if (!IOBufferInterface.class.isAssignableFrom(serializerHandler.ioClass)) {
-			throw new UnsupportedOperationException("IO implementation does not support buffers");
-		}
+	public BufferDef(Clazz clazz) {
+		super(clazz);
 		Class<?> definedClass = clazz.getDefinedClass();
 		if (definedClass == ByteBuffer.class) this.primitive = byte.class;
 		else if (definedClass == CharBuffer.class) this.primitive = char.class;
@@ -40,6 +38,14 @@ public class BufferDef implements SerializerDef {
 		if (type != BufferType.HEAP && definedClass != ByteBuffer.class) {
 			throw new HyphenException("Only ByteBuffer supports Native buffers.", "Use ByteBuffer or make the buffer type HEAP");
 		}
+	}
+
+	@Override
+	public void scan(SerializerGenerator<?, ?> handler) {
+		if (!IOBufferInterface.class.isAssignableFrom(handler.ioClass)) {
+			throw new UnsupportedOperationException("IO implementation does not support buffers");
+		}
+		super.scan(handler);
 	}
 
 	@Override

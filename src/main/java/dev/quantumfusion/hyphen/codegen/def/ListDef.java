@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
@@ -11,18 +11,25 @@ import java.util.List;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ListDef extends IndexedDef {
-
-	public ListDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component) {
-		super("list", handler, clazz, component, (mh) -> {
-			mh.callInst(INVOKEINTERFACE, List.class, "get", Object.class, int.class);
-			mh.typeOp(CHECKCAST, component.getBytecodeClass());
-		}, (mh) -> {
-			mh.callInst(INVOKEINTERFACE, List.class, "size", int.class);
-		});
+	public ListDef(Clazz clazz) {
+		super("list", clazz);
 	}
 
-	public ListDef(SerializerHandler<?, ?> handler, ParaClazz clazz) {
-		this(handler, clazz, clazz.define("E"));
+	@Override
+	public Clazz scanComponent(SerializerGenerator<?, ?> handler) {
+		ParaClazz paraClazz = (ParaClazz) clazz;
+		return paraClazz.define("E");
+	}
+
+	@Override
+	public void writeGetElement(MethodHandler mh) {
+		mh.callInst(INVOKEINTERFACE, List.class, "get", Object.class, int.class);
+		mh.typeOp(CHECKCAST, component.getBytecodeClass());
+	}
+
+	@Override
+	public void writeLength(MethodHandler mh) {
+		mh.callInst(INVOKEINTERFACE, List.class, "size", int.class);
 	}
 
 	@Override

@@ -17,7 +17,12 @@ public class AlphasSerializer {
 		final String[] thing2 = new String[]{"fg", "fdas"};
 		final List<String> fdas = List.of("fdas", "fdasfas", "fdsafdsfsdf", "fdsafsadfadsfsd", "fdass", "faserq");
 		IntArrayTest shader = new IntArrayTest(new int[]{4,3,3,3,3});
-		test(new DashShader(new Another<>(new C1<>(new C1<>(new GetterTest(69, 69))), null)));
+		test(new Test(new int[][]{
+				{24, 24},
+				{456, 456},
+				{645, 645},
+				{243, 243},
+		}));
 	}
 
 	public static <O> void test(O data) {
@@ -42,35 +47,12 @@ public class AlphasSerializer {
 		}
 
 	}
-	public static class Another<V, A> {
-		public V data;
-		public C1<A> a;
-		public Another(V data,  C1<A> a) {
-			this.data = data;
-			this.a = a;
-		}
+	public static class Test {
+		public int[][] hi;
 
-		@Override
-		public String toString() {
-			return "Another{" +
-					"data=" + data +
-					", a=" + a +
-					'}';
+		public Test(int[][] hi) {
+			this.hi = hi;
 		}
 	}
-	public static class DashShader {
-		public Another<C1<C1<GetterTest>>, C1> data;
 
-
-		public DashShader(Another<C1<C1<GetterTest>>, C1> data) {
-			this.data = data;
-		}
-
-		@Override
-		public String toString() {
-			return "DashShader{" +
-					"data=" + data +
-					'}';
-		}
-	}
 }

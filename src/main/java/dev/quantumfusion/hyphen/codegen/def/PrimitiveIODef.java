@@ -1,12 +1,14 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.scan.type.Clazz;
 
-public class PrimitiveIODef implements SerializerDef {
+public class PrimitiveIODef extends SerializerDef {
 	protected final Class<?> primitive;
 	protected final int size;
 
 	public PrimitiveIODef(Class<?> primitive) {
+		super(Clazz.create(primitive));
 		this.primitive = primitive;
 		size = getSize(primitive);
 	}

@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
@@ -9,17 +9,25 @@ import static org.objectweb.asm.Opcodes.AALOAD;
 import static org.objectweb.asm.Opcodes.ARRAYLENGTH;
 
 public class ArrayDef extends IndexedDef {
-	protected final SerializerDef componentDef;
-	protected final Clazz component;
 
-	public ArrayDef(SerializerHandler<?, ?> handler, Clazz clazz, Clazz component) {
-		super("arr", handler, clazz, component, (mh) -> mh.op(AALOAD), (mh) -> mh.op(ARRAYLENGTH));
-		this.component = component;
-		this.componentDef = handler.acquireDef(component);
+	public ArrayDef(Clazz clazz) {
+		super("arr",  clazz);
 	}
 
-	public ArrayDef(SerializerHandler<?, ?> handler, ArrayClazz clazz) {
-		this(handler, clazz, clazz.component);
+	@Override
+	public Clazz scanComponent(SerializerGenerator<?, ?> handler) {
+		ArrayClazz arrayClazz = (ArrayClazz) clazz;
+		return arrayClazz.component;
+	}
+
+	@Override
+	public void writeGetElement(MethodHandler mh) {
+		mh.op(AALOAD);
+	}
+
+	@Override
+	public void writeLength(MethodHandler mh) {
+		mh.op(ARRAYLENGTH);
 	}
 
 	@Override

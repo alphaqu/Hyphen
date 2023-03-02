@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
 import dev.quantumfusion.hyphen.scan.type.Clazz;
 import dev.quantumfusion.hyphen.scan.type.ParaClazz;
@@ -13,11 +13,11 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.*;
 
 public class Clazzifier {
-	public static Clazz create(SerializerHandler<?, ?> handler, @NotNull Type type, @Nullable Clazz ctx, Direction dir) {
+	public static Clazz create(SerializerGenerator<?, ?> handler, @NotNull Type type, @Nullable Clazz ctx, Direction dir) {
 		return create(handler, ScanUtil.wrap(type), ctx, dir);
 	}
 
-	public static Clazz create(SerializerHandler<?, ?> handler, @NotNull AnnotatedType annotatedType, @Nullable Clazz ctx, Direction dir) {
+	public static Clazz create(SerializerGenerator<?, ?> handler, @NotNull AnnotatedType annotatedType, @Nullable Clazz ctx, Direction dir) {
 		try {
 			var type = annotatedType.getType();
 			if (type instanceof ParameterizedType) {

@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.scan.type;
 
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.scan.FieldEntry;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public class UnknownClazz extends Clazz {
 	}
 
 	@Override
-	public List<FieldEntry> getFields(SerializerHandler<?, ?> handler) {
+	public List<FieldEntry> getFields(SerializerGenerator<?, ?> handler) {
 		return List.of();
 	}
 

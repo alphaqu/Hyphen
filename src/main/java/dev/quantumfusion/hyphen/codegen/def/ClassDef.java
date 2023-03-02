@@ -1,7 +1,7 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.Options;
-import dev.quantumfusion.hyphen.SerializerHandler;
+import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.MethodHandler;
 import dev.quantumfusion.hyphen.codegen.PackedBooleans;
 import dev.quantumfusion.hyphen.codegen.Variable;
@@ -23,14 +23,17 @@ public final class ClassDef extends MethodDef {
 
 	private Class<?>[] constructorParameters;
 	private Class<?> aClass;
+	private boolean shouldCompactBooleans;
 
-	public ClassDef(SerializerHandler<?, ?> handler, Clazz clazz) {
-		super(handler, clazz);
+	public ClassDef(Clazz clazz) {
+		super(clazz);
 	}
 
 	@Override
-	public void scan(SerializerHandler<?, ?> handler, Clazz clazz) {
+	public void scan(SerializerGenerator<?, ?> handler) {
+		super.scan(handler);
 		this.aClass = clazz.getDefinedClass();
+		this.shouldCompactBooleans = handler.isEnabled(Options.COMPACT_BOOLEANS);
 		boolean record = aClass.isRecord();
 		try {
 			for (FieldEntry field : clazz.getFields(handler)) {
@@ -63,7 +66,7 @@ public final class ClassDef extends MethodDef {
 				}
 			}
 
-			if (!handler.options.get(Options.DISABLE_PUT)) {
+			if (!handler.isEnabled(Options.DISABLE_PUT)) {
 				List<Class<?>> constructorParameters = new ArrayList<>();
 				for (FieldEntry field : Clazz.create(clazz.getDefinedClass()).getFields(handler)) {
 					if (shouldFieldSerialize(field)) {
@@ -161,7 +164,7 @@ public final class ClassDef extends MethodDef {
 	}
 
 	private boolean shouldCompactBoolean(FieldEntry fieldEntry) {
-		return (options.get(Options.COMPACT_BOOLEANS) && fieldEntry.getFieldType() == boolean.class);
+		return (shouldCompactBooleans && fieldEntry.getFieldType() == boolean.class);
 	}
 
 	@Override
