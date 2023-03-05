@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
@@ -22,13 +22,13 @@ public class BoxedIODef extends PrimitiveIODef {
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		super.writeGet(mh);
 		mh.callInst(INVOKESTATIC, boxed, "valueOf", boxed, primitive);
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		super.writePut(mh, () -> {
 			valueLoad.run();
 			mh.callInst(INVOKEVIRTUAL, boxed, primitive.getSimpleName() + "Value", primitive);

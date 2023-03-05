@@ -1,23 +1,25 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class PrimitiveArrayIODef extends SerializerDef {
+public class PrimitiveArrayIODef extends SerializerDef<Struct> {
 	protected final Class<?> primitiveArray;
 	protected final Integer fixedSize;
 
-	public PrimitiveArrayIODef(Clazz clazz) {
+	public PrimitiveArrayIODef(Struct clazz) {
 		super(clazz);
-		this.primitiveArray = clazz.getDefinedClass();
-		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
+		this.primitiveArray = clazz.getValueClass();
+
+		DataFixedArraySize annotation = clazz.getAnnotation(DataFixedArraySize.class);
+		this.fixedSize = annotation != null ? annotation.value() : null;
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 		if (fixedSize == null) {
@@ -32,7 +34,7 @@ public class PrimitiveArrayIODef extends SerializerDef {
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		mh.loadIO();
 		if (fixedSize == null) {
 			mh.op(DUP);
@@ -44,7 +46,7 @@ public class PrimitiveArrayIODef extends SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+	public void writeMeasure(MethodWriter mh, Runnable valueLoad) {
 		int size = PrimitiveIODef.getSize(this.primitiveArray.getComponentType());
 
 		valueLoad.run();

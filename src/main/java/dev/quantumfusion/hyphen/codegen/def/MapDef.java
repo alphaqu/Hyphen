@@ -1,38 +1,38 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.statement.While;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.scan.type.ParaClazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class MapDef extends MethodDef {
-	private Clazz keyClazz;
-	private Clazz valueClazz;
+public class MapDef extends MethodDef<ClassStruct> {
+	private Struct keyStruct;
+	private Struct valueStruct;
 	private SerializerDef keyDef;
 	private SerializerDef valueDef;
 
-	public MapDef(ParaClazz clazz) {
-		super(clazz);
+	public MapDef(Struct clazz) {
+		super((ClassStruct) clazz);
 	}
 
 	@Override
 	public void scan(SerializerGenerator<?, ?> handler) {
 		super.scan(handler);
-		this.keyClazz = clazz.define("K");
-		this.valueClazz = clazz.define("V");
-		this.keyDef = handler.acquireDef(this.keyClazz);
-		this.valueDef = handler.acquireDef(this.valueClazz);
+		this.keyStruct = struct.getParameter("K");
+		this.valueStruct = struct.getParameter("V");
+		this.keyDef = handler.acquireDef(this.keyStruct);
+		this.valueDef = handler.acquireDef(this.valueStruct);
 		//this.putLambdaMethod = handler.codegenHandler.createMethodInfo(clazz, "$lambda$put", Void.TYPE, handler.ioClass, this.keyClazz.getBytecodeClass(), this.valueClazz.getBytecodeClass());
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		valueLoad.run();
 		mh.loadIO();
 		mh.op(DUP2, SWAP);
@@ -63,18 +63,18 @@ public class MapDef extends MethodDef {
 			this.keyDef.writePut(mh, () -> {
 				mh.varOp(ILOAD, entry);
 				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getKey", Object.class);
-				GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.keyStruct, Object.class);
 			});
 			this.valueDef.writePut(mh, () -> {
 				mh.varOp(ILOAD, entry);
 				mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
-				GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.valueStruct, Object.class);
 			});
 		}
 	}
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		var length = mh.addVar("length", int.class);
 		var i = mh.addVar("i", int.class);
 
@@ -104,7 +104,7 @@ public class MapDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		int x = (this.keyDef.hasDynamicSize() ? 1 : 0) | (this.valueDef.hasDynamicSize() ? 2 : 0);
 
 		long staticSize = this.keyDef.getStaticSize() + this.valueDef.getStaticSize();
@@ -153,25 +153,25 @@ public class MapDef extends MethodDef {
 				if (x == 1) {
 					this.keyDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
-						GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.keyStruct, Object.class);
 					});
 				}
 				if (x == 2) {
 					this.valueDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
-						GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.valueStruct, Object.class);
 					});
 				}
 				if (x == 3) {
 					this.keyDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
 						mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getKey", Object.class);
-						GenUtil.ensureCasted(mh, this.keyClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.keyStruct, Object.class);
 					});
 					this.valueDef.writeMeasure(mh, () -> {
 						mh.varOp(ILOAD, entry);
 						mh.callInst(INVOKEINTERFACE, Map.Entry.class, "getValue", Object.class);
-						GenUtil.ensureCasted(mh, this.valueClazz.getDefinedClass(), Object.class);
+						GenUtil.ensureCasted(mh, this.valueStruct, Object.class);
 					});
 					mh.op(LADD);
 				}

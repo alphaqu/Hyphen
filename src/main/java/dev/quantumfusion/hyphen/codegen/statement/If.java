@@ -1,13 +1,13 @@
 package dev.quantumfusion.hyphen.codegen.statement;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import org.objectweb.asm.Label;
 
 public class If implements AutoCloseable {
-	protected final MethodHandler mh;
+	protected final MethodWriter mh;
 	protected final Label next = new Label();
 
-	public If(MethodHandler mh, int op) {
+	public If(MethodWriter mh, int op) {
 		this.mh = mh;
 		mh.visitJumpInsn(op, next);
 	}

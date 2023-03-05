@@ -1,36 +1,35 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.scan.type.ArrayClazz;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
+import dev.quantumfusion.hyphen.scan.struct.ArrayStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
 import static org.objectweb.asm.Opcodes.AALOAD;
 import static org.objectweb.asm.Opcodes.ARRAYLENGTH;
 
-public class ArrayDef extends IndexedDef {
+public class ArrayDef extends IndexedDef<ArrayStruct> {
 
-	public ArrayDef(Clazz clazz) {
+	public ArrayDef(ArrayStruct clazz) {
 		super("arr",  clazz);
 	}
 
 	@Override
-	public Clazz scanComponent(SerializerGenerator<?, ?> handler) {
-		ArrayClazz arrayClazz = (ArrayClazz) clazz;
-		return arrayClazz.component;
+	public Struct scanComponent(SerializerGenerator<?, ?> handler) {
+		return struct.component;
 	}
 
 	@Override
-	public void writeGetElement(MethodHandler mh) {
+	public void writeGetElement(MethodWriter mh) {
 		mh.op(AALOAD);
 	}
 
 	@Override
-	public void writeLength(MethodHandler mh) {
+	public void writeLength(MethodWriter mh) {
 		mh.op(ARRAYLENGTH);
 	}
 
 	@Override
-	public void writeGetConverter(MethodHandler mh) {
+	public void writeGetConverter(MethodWriter mh) {
 	}
 }

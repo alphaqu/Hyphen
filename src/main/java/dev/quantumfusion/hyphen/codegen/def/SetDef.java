@@ -1,10 +1,10 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.statement.While;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.scan.type.ParaClazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.HashSet;
@@ -13,23 +13,23 @@ import java.util.Set;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class SetDef extends MethodDef {
-	private Clazz key;
+public class SetDef extends MethodDef<ClassStruct> {
+	private Struct key;
 	private SerializerDef keyDef;
 
-	public SetDef(ParaClazz clazz) {
-		super(clazz);
+	public SetDef(Struct clazz) {
+		super((ClassStruct) clazz);
 	}
 
 	@Override
 	public void scan(SerializerGenerator<?, ?> handler) {
 		super.scan(handler);
-		this.key = clazz.define("E");
+		this.key = struct.getParameter("E");
 		this.keyDef = handler.acquireDef(key);
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		valueLoad.run();
 		mh.loadIO();
 		mh.op(DUP2, SWAP);
@@ -51,7 +51,7 @@ public class SetDef extends MethodDef {
 
 			mh.varOp(ILOAD, iterator);
 			mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
-			GenUtil.ensureCasted(mh, this.key.getDefinedClass(), Object.class);
+			GenUtil.ensureCasted(mh, this.key.getValueClass(), Object.class);
 			mh.varOp(ISTORE, entry);
 
 			this.keyDef.writePut(mh, () -> mh.varOp(ILOAD, entry));
@@ -59,7 +59,7 @@ public class SetDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		var length = mh.addVar("length", int.class);
 		var i = mh.addVar("i", int.class);
 
@@ -88,7 +88,7 @@ public class SetDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		boolean hasDynamic = this.keyDef.hasDynamicSize();
 
 		long staticSize = this.keyDef.getStaticSize();
@@ -116,7 +116,7 @@ public class SetDef extends MethodDef {
 
 				mh.varOp(ILOAD, iterator);
 				mh.callInst(INVOKEINTERFACE, Iterator.class, "next", Object.class);
-				GenUtil.ensureCasted(mh, this.key.getDefinedClass(), Object.class);
+				GenUtil.ensureCasted(mh, this.key.getValueClass(), Object.class);
 				mh.varOp(ISTORE, entry);
 				this.keyDef.writeMeasure(mh, () -> mh.varOp(ILOAD, entry));
 				mh.op(LADD);

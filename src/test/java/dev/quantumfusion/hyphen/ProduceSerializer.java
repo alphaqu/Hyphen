@@ -3,11 +3,7 @@ package dev.quantumfusion.hyphen;
 import dev.quantumfusion.hyphen.codegen.def.EnumDef;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
-import dev.quantumfusion.hyphen.scan.simple.ExtendTest;
-import dev.quantumfusion.hyphen.scan.simple.arrays.FixedNullableIntArrayTest;
-import dev.quantumfusion.hyphen.scan.simple.arrays.NullableIntArrayTest;
-import dev.quantumfusion.hyphen.scan.simple.buffer.ByteBufferTest;
-import dev.quantumfusion.hyphen.scan.simple.buffer.IntBufferTest;
+import dev.quantumfusion.hyphen.test.simple.ExtendTest;
 
 import java.io.IOException;
 import java.nio.file.Path;

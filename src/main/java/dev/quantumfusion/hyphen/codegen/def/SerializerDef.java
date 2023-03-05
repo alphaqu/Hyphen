@@ -1,18 +1,18 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
 /**
  * A SerializerDef is responsible for writing code that handles a given class. <br>
  * In some cases it may require a separate method and in those cases a {@link MethodDef} is used which inherits {@link SerializerDef}
  */
-public abstract class SerializerDef {
-	public final Clazz clazz;
+public abstract class SerializerDef<D extends Struct> {
+	public final D struct;
 	private boolean isScanned = false;
-	protected SerializerDef(Clazz clazz) {
-		this.clazz = clazz;
+	protected SerializerDef(D struct) {
+		this.struct = struct;
 	}
 
 	/**
@@ -29,14 +29,14 @@ public abstract class SerializerDef {
 	 * @param mh        A MethodHandler
 	 * @param valueLoad A Runnable which pushes the Clazz value onto the stack.
 	 */
-	public abstract void writePut(MethodHandler mh, Runnable valueLoad);
+	public abstract void writePut(MethodWriter mh, Runnable valueLoad);
 
 	/**
 	 * Writes code for decoding the Clazz the definition is designed to handle.
 	 *
 	 * @param mh A MethodHandler
 	 */
-	public abstract void writeGet(MethodHandler mh);
+	public abstract void writeGet(MethodWriter mh);
 
 	/**
 	 * Writes code for measuring the size required to encode the value
@@ -44,7 +44,7 @@ public abstract class SerializerDef {
 	 * @param mh        A MethodHandler
 	 * @param valueLoad A Runnable which pushes the Clazz value onto the stack.
 	 */
-	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+	public void writeMeasure(MethodWriter mh, Runnable valueLoad) {
 		if (!hasDynamicSize()) {
 			mh.visitLdcInsn(getStaticSize());
 		} else {

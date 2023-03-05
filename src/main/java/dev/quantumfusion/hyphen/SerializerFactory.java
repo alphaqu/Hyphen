@@ -1,12 +1,10 @@
 package dev.quantumfusion.hyphen;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
 import dev.quantumfusion.hyphen.codegen.def.*;
 import dev.quantumfusion.hyphen.io.IOInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataGlobalAnnotation;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
-import dev.quantumfusion.hyphen.scan.type.ParaClazz;
-import dev.quantumfusion.hyphen.util.ScanUtil;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
 import java.lang.annotation.Annotation;
 import java.nio.*;
@@ -28,7 +26,7 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	public final Class<D> dataClass;
 	private final EnumMap<Options, Boolean> options;
 	private final Map<Class<?>, DynamicDefFactory> definitions;
-	private final Map<Object, Map<Class<? extends Annotation>, Object>> annotationProviders = new HashMap<>();
+	private final Map<Object, List<Annotation>> annotationProviders = new HashMap<>();
 
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	private String className = "HyphenSerializer";
@@ -162,10 +160,9 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 *
 	 * @param id         The {@link DataGlobalAnnotation#value()} that is targeted
 	 * @param annotation The Annotation you are adding to the applications
-	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
-	public void addAnnotationProvider(String id, Class<? extends Annotation> annotation, Object value) {
-		addAnnotationProviderInternal(id, annotation, value);
+	public void addAnnotationProvider(String id, Annotation annotation) {
+		addAnnotationProviderInternal(id, annotation);
 	}
 
 	/**
@@ -174,23 +171,13 @@ public class SerializerFactory<IO extends IOInterface, D> {
 	 *
 	 * @param clazz      The {@link DataGlobalAnnotation} field class that is targeted
 	 * @param annotation The Annotation you are adding to the applications
-	 * @param value      The Annotation value. If the annotation does not contain a value this will be ignored. It may be {@code null}
 	 */
-	public void addAnnotationProvider(Class<?> clazz, Class<? extends Annotation> annotation, Object value) {
-		addAnnotationProviderInternal(clazz, annotation, value);
+	public void addAnnotationProvider(Class<?> clazz, Annotation annotation) {
+		addAnnotationProviderInternal(clazz, annotation);
 	}
 
-	private void addAnnotationProviderInternal(Object id, Class<? extends Annotation> annotation, Object value) {
-		var valueGetter = ScanUtil.getAnnotationValueGetter(annotation);
-		if (valueGetter != null) {
-			var returnType = valueGetter.getReturnType();
-			var valueType = value.getClass();
-			if (valueType != returnType) {
-				throw new RuntimeException("Annotation " + annotation.getSimpleName() + " value type " + returnType.getSimpleName() + " does not match parameter " + valueType.getSimpleName());
-			}
-		}
-
-		this.annotationProviders.computeIfAbsent(id, s -> new HashMap<>()).put(annotation, value);
+	private void addAnnotationProviderInternal(Object id, Annotation annotation) {
+		this.annotationProviders.computeIfAbsent(id, s -> new ArrayList<>()).add(annotation);
 	}
 
 	/**
@@ -211,10 +198,10 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		/**
 		 * Create a SerializerDef dependant on the field
 		 *
-		 * @param clazz             The Clazz that the field is. Read more at {@link Clazz}
+		 * @param struct             The Structure that the field is. Read more at {@link ClassStruct}
 		 * @return SerializerDef
 		 */
-		SerializerDef create(Clazz clazz);
+		SerializerDef<?> create(Struct struct);
 	}
 
 	private static final Map<Class<?>, DynamicDefFactory> BUILD_IN_DEFINITIONS = new HashMap<>();
@@ -228,11 +215,11 @@ public class SerializerFactory<IO extends IOInterface, D> {
 		addStaticDef(BoxedIODef::new, Boolean.class, Byte.class, Short.class, Character.class, Integer.class, Float.class, Long.class, Double.class);
 		BUILD_IN_DEFINITIONS.put(String.class, (c) -> new StringIODef());
 		BUILD_IN_DEFINITIONS.put(List.class, ListDef::new);
-		BUILD_IN_DEFINITIONS.put(Map.class, (c) -> new MapDef((ParaClazz) c));
-		BUILD_IN_DEFINITIONS.put(Set.class, (c) -> new SetDef((ParaClazz) c));
+		BUILD_IN_DEFINITIONS.put(Map.class, MapDef::new);
+		BUILD_IN_DEFINITIONS.put(Set.class, SetDef::new);
 	}
 
-	private static void addStaticDef(Function<Class<?>, SerializerDef> creator, Class<?>... clazz) {
+	private static void addStaticDef(Function<Class<?>, SerializerDef<?>> creator, Class<?>... clazz) {
 		for (Class<?> aClass : clazz) {
 			BUILD_IN_DEFINITIONS.put(aClass, (sh) -> creator.apply(aClass));
 		}

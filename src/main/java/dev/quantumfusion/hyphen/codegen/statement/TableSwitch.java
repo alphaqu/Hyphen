@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.codegen.statement;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import org.objectweb.asm.Label;
 
 import java.util.ArrayList;
@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.function.IntConsumer;
 
 public class TableSwitch implements AutoCloseable {
-	protected final MethodHandler mh;
+	protected final MethodWriter mh;
 	protected final List<Label> labels = new ArrayList<>();
 	protected final Label defaultLabel = new Label();
 
 
-	public TableSwitch(MethodHandler mh, int min, int max) {
+	public TableSwitch(MethodWriter mh, int min, int max) {
 		this.mh = mh;
 		for (int i = min; i < max; i++) {
 			labels.add(new Label());

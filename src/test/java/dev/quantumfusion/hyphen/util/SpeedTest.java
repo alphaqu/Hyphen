@@ -4,7 +4,7 @@ import dev.quantumfusion.hyphen.HyphenSerializer;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.codegen.def.EnumDef;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.poly.enums.EnumTest;
+import dev.quantumfusion.hyphen.test.poly.enums.EnumTest;
 
 import static dev.quantumfusion.hyphen.Options.FAST_ALLOC;
 

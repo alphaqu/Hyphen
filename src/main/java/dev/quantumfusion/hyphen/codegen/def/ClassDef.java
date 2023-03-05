@@ -1,14 +1,16 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.Options;
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.PackedBooleans;
 import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
-import dev.quantumfusion.hyphen.scan.FieldEntry;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.StructField;
+import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
@@ -18,33 +20,37 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public final class ClassDef extends MethodDef {
+public final class ClassDef extends MethodDef<ClassStruct> {
 	private final List<ClassField> fields = new ArrayList<>();
 
 	private Class<?>[] constructorParameters;
 	private Class<?> aClass;
 	private boolean shouldCompactBooleans;
 
-	public ClassDef(Clazz clazz) {
-		super(clazz);
+	public ClassDef(ClassStruct struct) {
+		super(struct);
 	}
 
 	@Override
 	public void scan(SerializerGenerator<?, ?> handler) {
 		super.scan(handler);
-		this.aClass = clazz.getDefinedClass();
+		this.aClass = struct.getValueClass();
 		this.shouldCompactBooleans = handler.isEnabled(Options.COMPACT_BOOLEANS);
 		boolean record = aClass.isRecord();
 		try {
-			for (FieldEntry field : clazz.getFields(handler)) {
+			List<StructField> classFields = struct.getAllFields(handler.scanner);
+
+			for (StructField field : classFields) {
 				if (shouldFieldSerialize(field)) {
 					try {
-						SerializerDef serializerDef = handler.acquireDef(field.clazz());
+						SerializerDef<?> serializerDef;
+						serializerDef = handler.acquireDef(field.type);
+
 						ClassFieldAccess access = null;
-						String fieldName = field.field().getName();
+						String fieldName = field.field.getName();
 						if (record) {
 							access = ClassFieldAccess.Record;
-						} else if (Modifier.isPublic(field.field().getModifiers())) {
+						} else if (Modifier.isPublic(field.field.getModifiers())) {
 							access = ClassFieldAccess.Field;
 						} else {
 							try {
@@ -61,16 +67,17 @@ public final class ClassDef extends MethodDef {
 
 						this.fields.add(new ClassField(serializerDef, field, access));
 					} catch (Throwable throwable) {
-						throw HyphenException.rethrow(clazz, "field " + field.getFieldName(), throwable);
+						throw HyphenException.rethrow(struct, "field " + "\"" + field.field.getName() + "\"", throwable);
 					}
 				}
 			}
 
 			if (!handler.isEnabled(Options.DISABLE_PUT)) {
+				Struct scan = handler.scanner.scan(struct.aClass, null);
 				List<Class<?>> constructorParameters = new ArrayList<>();
-				for (FieldEntry field : Clazz.create(clazz.getDefinedClass()).getFields(handler)) {
-					if (shouldFieldSerialize(field)) {
-						constructorParameters.add(field.clazz().getDefinedClass());
+				for (StructField classField : ((ClassStruct) scan).getAllFields(handler.scanner)) {
+					if (shouldFieldSerialize(classField)) {
+						constructorParameters.add(classField.type.getValueClass());
 					}
 				}
 				this.constructorParameters = constructorParameters.toArray(Class[]::new);
@@ -86,28 +93,29 @@ public final class ClassDef extends MethodDef {
 				this.constructorParameters = null;
 			}
 		} catch (Throwable throwable) {
-			throw HyphenException.rethrow(clazz, null, throwable);
+			throw HyphenException.rethrow(struct, null, throwable);
 		}
 	}
 
-	private boolean shouldFieldSerialize(FieldEntry field) {
-		return !Modifier.isTransient(field.field().getModifiers());
+	private boolean shouldFieldSerialize(StructField field) {
+		return !Modifier.isTransient(field.field.getModifiers());
 	}
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		var packedBooleans = new PackedBooleans();
 		for (var entry : fields) {
-			if (entry.fieldEntry.isNullable() || shouldCompactBoolean(entry.fieldEntry)) {
+			if (entry.isNullable() || shouldCompactBoolean(entry.fieldEntry)) {
 				packedBooleans.countBoolean();
 			}
 		}
 		packedBooleans.writeGet(mh);
 		mh.typeOp(NEW, aClass);
 		mh.op(DUP);
-		for (var entry : fields) {
+		for (int i = 0; i < fields.size(); i++) {
+			var entry = fields.get(i);
 			var fieldEntry = entry.fieldEntry;
-			if (fieldEntry.isNullable()) {
+			if (entry.isNullable()) {
 				packedBooleans.getBoolean(mh);
 				try (var anIf = new IfElse(mh, IFNE)) {
 					entry.def.writeGet(mh);
@@ -119,20 +127,21 @@ public final class ClassDef extends MethodDef {
 			} else {
 				entry.def.writeGet(mh);
 			}
+			GenUtil.ensureCasted(mh, constructorParameters[i], fieldEntry.type.getBytecodeClass());
 		}
 		mh.callInst(INVOKESPECIAL, aClass, "<init>", Void.TYPE, constructorParameters);
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		var info = new PackedBooleans();
 		for (var entry : fields) {
 			var fieldEntry = entry.fieldEntry;
-			if (fieldEntry.isNullable()) {
+			if (entry.isNullable()) {
 				info.initBoolean(mh);
 				loadField(mh, entry, valueLoad);
 				mh.op(DUP);
-				mh.varOp(ISTORE, mh.addVar(fieldEntry.getFieldName() + "temp", fieldEntry.getFieldType()));
+				mh.varOp(ISTORE, mh.addVar(fieldEntry.field.getName() + "temp", fieldEntry.type.getValueClass()));
 				try (var anIf = new IfElse(mh, IFNULL)) {
 					info.falseBoolean(mh);
 					anIf.elseEnd();
@@ -151,8 +160,8 @@ public final class ClassDef extends MethodDef {
 			if (shouldCompactBoolean(fieldEntry)) {
 				continue;
 			}
-			if (fieldEntry.isNullable()) {
-				final Variable cache = mh.getVar(fieldEntry.getFieldName() + "temp");
+			if (entry.isNullable()) {
+				final Variable cache = mh.getVar(fieldEntry.field.getName() + "temp");
 				mh.varOp(ILOAD, cache);
 				try (var i = new If(mh, IFNULL)) {
 					entry.def.writePut(mh, () -> mh.varOp(ILOAD, cache));
@@ -163,8 +172,8 @@ public final class ClassDef extends MethodDef {
 		}
 	}
 
-	private boolean shouldCompactBoolean(FieldEntry fieldEntry) {
-		return (shouldCompactBooleans && fieldEntry.getFieldType() == boolean.class);
+	private boolean shouldCompactBoolean(StructField fieldEntry) {
+		return (shouldCompactBooleans && fieldEntry.type.getValueClass() == boolean.class);
 	}
 
 	@Override
@@ -176,7 +185,7 @@ public final class ClassDef extends MethodDef {
 		int size = 0;
 		int booleans = 0;
 		for (var entry : this.fields) {
-			if (entry.fieldEntry.isNullable() || shouldCompactBoolean(entry.fieldEntry)) {
+			if (entry.isNullable() || shouldCompactBoolean(entry.fieldEntry)) {
 				booleans++;
 			} else {
 				size += entry.def.getStaticSize();
@@ -193,7 +202,7 @@ public final class ClassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		if (this.fields.isEmpty()) {
 			mh.op(LCONST_0);
 		} else {
@@ -207,10 +216,10 @@ public final class ClassDef extends MethodDef {
 				var fieldDef = entry.def;
 				var staticSize = fieldDef.getStaticSize();
 				var isDynamicSize = fieldDef.hasDynamicSize();
-				if (fieldEntry.isNullable()) {
+				if (entry.isNullable()) {
 					if (isDynamicSize) {
 						loadField(mh, entry, valueLoad);
-						var cache = mh.addVar(fieldEntry.getFieldName() + "temp", fieldEntry.getFieldType());
+						var cache = mh.addVar(fieldEntry.field.getName() + "temp", fieldEntry.type.getValueClass());
 						mh.op(DUP);
 						mh.varOp(ISTORE, cache);
 						try (var anIf = new IfElse(mh, IFNULL)) {
@@ -247,7 +256,7 @@ public final class ClassDef extends MethodDef {
 		}
 	}
 
-	private void ifNullMeasureWrite(MethodHandler mh, int i, IfElse anIf) {
+	private void ifNullMeasureWrite(MethodWriter mh, int i, IfElse anIf) {
 		// if we arent the first, just add
 		if (i > 0) {
 			mh.op(LADD);
@@ -259,10 +268,10 @@ public final class ClassDef extends MethodDef {
 		}
 	}
 
-	private void loadField(MethodHandler mh, ClassField entry, Runnable dataLoad) {
+	private void loadField(MethodWriter mh, ClassField entry, Runnable dataLoad) {
 		dataLoad.run();
-		var clazz = entry.fieldEntry.clazz();
-		var field = entry.fieldEntry.field();
+		var clazz = entry.fieldEntry.type;
+		var field = entry.fieldEntry.field;
 		var bytecodeClass = clazz.getBytecodeClass();
 		var fieldName = field.getName();
 		switch (entry.access) {
@@ -277,11 +286,14 @@ public final class ClassDef extends MethodDef {
 				mh.callInst(INVOKEVIRTUAL, aClass, name, bytecodeClass);
 			}
 		}
-		GenUtil.ensureCasted(mh, clazz.getDefinedClass(), bytecodeClass);
+		GenUtil.ensureCasted(mh, clazz.getValueClass(), bytecodeClass);
 	}
 
 
-	public record ClassField(SerializerDef def, FieldEntry fieldEntry, ClassFieldAccess access) {
+	public record ClassField(SerializerDef<?> def, StructField fieldEntry, ClassFieldAccess access) {
+		public boolean isNullable() {
+			return fieldEntry.type.isAnnotationPresent(DataNullable.class);
+		}
 	}
 
 	public enum ClassFieldAccess {

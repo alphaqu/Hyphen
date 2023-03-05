@@ -1,11 +1,14 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.TableSwitch;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
+import dev.quantumfusion.hyphen.scan.struct.WildcardStruct;
+import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.ArrayUtil;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.Type;
@@ -15,18 +18,49 @@ import java.util.stream.Collectors;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public final class SubclassDef extends MethodDef {
+public final class SubclassDef extends MethodDef<Struct> {
 	private final Class<?>[] subClasses;
-	private SerializerDef[] subDefs;
+	private SerializerDef<?>[] subDefs;
 	private boolean allSameStaticSize;
 
-	public SubclassDef(Clazz clazz, Class<?>[] subClasses) {
+	public SubclassDef(Struct clazz, Class<?>[] subClasses) {
 		super(clazz, "SUB{ # " + Arrays.stream(subClasses).map(Class::getSimpleName).collect(Collectors.joining(", ")) + "}");
 		this.subClasses = subClasses;
 	}
 
 	public void scan(SerializerGenerator<?, ?> handler) {
-		this.subDefs = ArrayUtil.map(subClasses, SerializerDef[]::new, subclass -> handler.acquireDef(clazz.asSub(handler, subclass)));
+		boolean skipFailedSubclasses = false;
+		Struct targetStruct;
+		if (struct instanceof WildcardStruct wildcardStruct) {
+			if (wildcardStruct.lowerBound != null) {
+				if (subDefs.length > 0) {
+					throw new HyphenException("Lower bounded wildcards do not support additional subclasses", "Remove the annotation or do not use a lower bound (super)");
+				}
+
+
+				skipFailedSubclasses = true;
+				targetStruct = ClassStruct.OBJECT;
+			} else {
+				Struct upperBound = wildcardStruct.upperBound;
+				assert upperBound != null;
+				targetStruct = upperBound;
+			}
+		} else {
+			targetStruct = struct;
+		}
+		targetStruct = targetStruct.getValueStruct();
+
+
+		Struct finalTargetStruct = targetStruct;
+		this.subDefs = ArrayUtil.map(
+				subClasses,
+				SerializerDef[]::new,
+				subtype -> {
+					Struct subtype1 = handler.scanner.getSubtype(subtype, finalTargetStruct);
+					return handler.acquireDef(subtype1);
+				}
+		);
+
 		super.scan(handler);
 		long size = this.subDefs[0].getStaticSize();
 
@@ -40,7 +74,7 @@ public final class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		mh.loadIO();
 		// TODO: consider using dynamic max size like enums
 		mh.getIO(byte.class);
@@ -56,7 +90,7 @@ public final class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		iterClasses(mh, valueLoad, (clz, serializerDef, i) -> {
 			mh.loadIO();
 			mh.visitLdcInsn(i);
@@ -64,7 +98,7 @@ public final class SubclassDef extends MethodDef {
 
 			serializerDef.writePut(mh, () -> {
 				valueLoad.run();
-				GenUtil.ensureCasted(mh, clz, this.clazz.getBytecodeClass());
+				GenUtil.ensureCasted(mh, clz, this.struct.getBytecodeClass());
 			});
 			mh.op(RETURN);
 		});
@@ -72,12 +106,12 @@ public final class SubclassDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		iterClasses(mh, valueLoad, (clz, serializerDef, i) -> {
 			if (serializerDef.hasDynamicSize()) {
 				serializerDef.writeMeasure(mh, () -> {
 					valueLoad.run();
-					GenUtil.ensureCasted(mh, clz, this.clazz.getBytecodeClass());
+					GenUtil.ensureCasted(mh, clz, this.struct.getBytecodeClass());
 				});
 			}
 			long ss = serializerDef.getStaticSize();
@@ -95,7 +129,7 @@ public final class SubclassDef extends MethodDef {
 		mh.op(LCONST_0);
 	}
 
-	private void iterClasses(MethodHandler mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
+	private void iterClasses(MethodWriter mh, Runnable valueLoad, ArrayUtil.DualForEach<Class<?>, SerializerDef> action) {
 		final Variable clz = mh.addVar("clz", Class.class);
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, Object.class, "getClass", Class.class);
@@ -129,7 +163,7 @@ public final class SubclassDef extends MethodDef {
 			return true;
 		}
 
-		for (SerializerDef subDef : this.subDefs) {
+		for (SerializerDef<?> subDef : this.subDefs) {
 			if (subDef.hasDynamicSize()) {
 				return true;
 			}

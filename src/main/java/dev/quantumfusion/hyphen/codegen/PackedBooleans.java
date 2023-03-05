@@ -19,7 +19,7 @@ public class PackedBooleans {
 		}
 	}
 
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		for (int i = stacks; i > 0; i--) {
 			mh.loadIO();
 			mh.getIO(byte.class);
@@ -32,7 +32,7 @@ public class PackedBooleans {
 
 	}
 
-	public void getBoolean(MethodHandler mh) {
+	public void getBoolean(MethodWriter mh) {
 		int pos = (booleansAmount++) % 8;
 		if (pos == 0) {
 			stacks++;
@@ -49,26 +49,26 @@ public class PackedBooleans {
 		mh.op(ICONST_1, IAND);
 	}
 
-	public void writePut(MethodHandler mh) {
+	public void writePut(MethodWriter mh) {
 		for (int i = 0; i < stacks; i++) {
 			mh.putIO(byte.class);
 		}
 	}
 
-	public void initBoolean(MethodHandler mh) {
+	public void initBoolean(MethodWriter mh) {
 		if (booleansAmount++ % 8 == 0) {
 			stacks++;
 			mh.loadIO();
 		}
 	}
 
-	public void falseBoolean(MethodHandler mh) {
+	public void falseBoolean(MethodWriter mh) {
 		if ((booleansAmount - 1) % 8 == 0) {
 			mh.op(ICONST_0);
 		}
 	}
 
-	public void trueBoolean(MethodHandler mh) {
+	public void trueBoolean(MethodWriter mh) {
 		final int pos = (booleansAmount - 1) % 8;
 		// iload boolean
 		if (pos == 0) {
@@ -79,7 +79,7 @@ public class PackedBooleans {
 		}
 	}
 
-	public void consumeBoolean(MethodHandler mh) {
+	public void consumeBoolean(MethodWriter mh) {
 		final int pos = (booleansAmount - 1) % 8;
 		// iload boolean
 		mh.visitLdcInsn(pos);

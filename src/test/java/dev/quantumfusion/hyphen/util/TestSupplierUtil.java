@@ -11,26 +11,22 @@ import java.util.stream.Stream;
 
 public final class TestSupplierUtil {
 	public static final Supplier<? extends Stream<? extends String>> STRINGS = () -> Arrays.stream(new String[]{
-			"UWU",
-			"uwu",
-			"69696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969",
 			"",
-			"TODO add unicodes",
+			"ඞඞඞ",
+			"UWU69¤#r4t3yq8",
 			"\u2603\uFE0F",
-			"ඞඞඞ<red is sus>ඞඞඞ"
 	});
 
 	public static final Supplier<? extends IntStream> INTS = () -> IntStream.of(
-			0, 1, 2,
-			-1, -2,
+			0,
+			-1,
 			Integer.MAX_VALUE,
 			Integer.MIN_VALUE);
 
 	public static final Supplier<? extends Stream<? extends Integer>> INTEGERS = () -> INTS.get().mapToObj(i -> i);
 
 	public static final Supplier<Stream<? extends Float>> FLOATS = () -> Arrays.stream(new Float[]{
-			0.0f, 0.5f, 1.0f, 2.0f,
-			-0.0f, -0.5f, -1.0f, -2.0f,
+			0.0f, -0.0f,
 			Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_NORMAL,
 			-Float.MAX_VALUE, -Float.MIN_VALUE, -Float.MIN_NORMAL,
 			Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY

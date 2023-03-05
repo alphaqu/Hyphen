@@ -1,10 +1,11 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import dev.quantumfusion.hyphen.util.GenUtil;
 import org.objectweb.asm.ConstantDynamic;
@@ -17,7 +18,7 @@ import java.lang.invoke.MethodHandles;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public final class EnumDef extends MethodDef {
+public final class EnumDef extends MethodDef<ClassStruct> {
 	public static boolean USE_CONSTANT_DYNAMIC = false;
 	public static boolean USE_CONSTANT_DYNAMIC_INVOKE = false;
 
@@ -26,7 +27,7 @@ public final class EnumDef extends MethodDef {
 	private Class<?> enumSizePrimitive;
 	private boolean isNullable;
 
-	public EnumDef(Clazz clazz) {
+	public EnumDef(ClassStruct clazz) {
 		super(clazz);
 	}
 
@@ -34,9 +35,9 @@ public final class EnumDef extends MethodDef {
 	@SuppressWarnings("unchecked")
 	public void scan(SerializerGenerator<?, ?> handler) {
 		super.scan(handler);
-		this.en = (Class<? extends Enum<?>>) clazz.getDefinedClass();
+		this.en = (Class<? extends Enum<?>>) struct.getValueClass();
 
-		this.isNullable = clazz.containsAnnotation(DataNullable.class);
+		this.isNullable = struct.isAnnotationPresent(DataNullable.class);
 		this.enSize = this.en.getEnumConstants().length + (this.isNullable ? 1 : 0);
 
 		if (this.enSize == 0) {
@@ -56,7 +57,7 @@ public final class EnumDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		Label end = null;
 		if (this.isNullable) {
 			var l = new Label();
@@ -116,7 +117,7 @@ public final class EnumDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 
@@ -148,7 +149,7 @@ public final class EnumDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		throw new UnsupportedOperationException("Enums don't have a dynamic size");
 	}
 }

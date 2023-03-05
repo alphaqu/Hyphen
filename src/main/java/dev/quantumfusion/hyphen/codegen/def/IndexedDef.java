@@ -1,46 +1,51 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.Variable;
 import dev.quantumfusion.hyphen.codegen.statement.If;
 import dev.quantumfusion.hyphen.codegen.statement.IfElse;
 import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
 import dev.quantumfusion.hyphen.scan.annotations.DataNullable;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.util.GenUtil;
 
 import java.util.function.Consumer;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public abstract class IndexedDef extends MethodDef {
+public abstract class IndexedDef<D extends Struct> extends MethodDef<D> {
 	protected SerializerDef componentDef;
-	protected Clazz component;
+	protected Struct component;
 	protected boolean componentNullable;
 	private final Integer fixedSize;
 
-	public IndexedDef(String name, Clazz clazz) {
+	public IndexedDef(String name, D clazz) {
 		super(clazz, name);
-		this.fixedSize = (Integer) clazz.getAnnotationValue(DataFixedArraySize.class);
+		DataFixedArraySize annotation = clazz.getAnnotation(DataFixedArraySize.class);
+		if (annotation != null) {
+			this.fixedSize = annotation.value();
+		} else {
+			this.fixedSize = null;
+		}
 	}
 
 	@Override
 	public void scan(SerializerGenerator<?, ?> handler) {
 		this.component = scanComponent(handler);
 		this.componentDef = handler.acquireDef(component);
-		this.componentNullable = component.containsAnnotation(DataNullable.class);
+		this.componentNullable = component.isAnnotationPresent(DataNullable.class);
 		super.scan(handler);
 	}
 
-	public abstract Clazz scanComponent(SerializerGenerator<?, ?> handler);
-	public abstract void writeGetElement(MethodHandler mh);
-	public abstract void writeLength(MethodHandler mh);
+	public abstract Struct scanComponent(SerializerGenerator<?, ?> handler);
+	public abstract void writeGetElement(MethodWriter mh);
+	public abstract void writeLength(MethodWriter mh);
 
-	public abstract void writeGetConverter(MethodHandler mh);
+	public abstract void writeGetConverter(MethodWriter mh);
 
 	@Override
-	protected void writeMethodGet(MethodHandler mh) {
+	protected void writeMethodGet(MethodWriter mh) {
 		final Variable length = mh.addVar("length", int.class);
 
 		if (fixedSize == null) {
@@ -75,7 +80,7 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodPut(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodPut(MethodWriter mh, Runnable valueLoad) {
 		final Variable length = mh.addVar("length", int.class);
 
 		if (fixedSize == null) {
@@ -128,7 +133,7 @@ public abstract class IndexedDef extends MethodDef {
 	}
 
 	@Override
-	protected void writeMethodMeasure(MethodHandler mh, Runnable valueLoad) {
+	protected void writeMethodMeasure(MethodWriter mh, Runnable valueLoad) {
 		if (this.fixedSize == null && !componentNullable) {
 			long componentSize = this.componentDef.getStaticSize();
 
@@ -174,14 +179,14 @@ public abstract class IndexedDef extends MethodDef {
 		}
 	}
 
-	private void loadArrayValue(MethodHandler mh, Runnable valueLoad, Variable i) {
+	private void loadArrayValue(MethodWriter mh, Runnable valueLoad, Variable i) {
 		valueLoad.run();
 		mh.varOp(ILOAD, i);
 		writeGetElement(mh);
 		GenUtil.ensureCasted(mh, component);
 	}
 
-	public void loopArray(MethodHandler mh, Variable length, Consumer<Variable> value) {
+	public void loopArray(MethodWriter mh, Variable length, Consumer<Variable> value) {
 		final Variable i = mh.addVar("i", int.class, ICONST_0);
 		var top = mh.defineLabel();
 		mh.varOp(ILOAD, i);

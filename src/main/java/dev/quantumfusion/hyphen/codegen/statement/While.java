@@ -1,21 +1,21 @@
 package dev.quantumfusion.hyphen.codegen.statement;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import org.objectweb.asm.Label;
 
 import static org.objectweb.asm.Opcodes.GOTO;
 
 public class While implements AutoCloseable {
-	protected final MethodHandler mh;
+	protected final MethodWriter mh;
 	protected final Label start = new Label();
 	protected final Label stop = new Label();
 
-	protected While(MethodHandler mh) {
+	protected While(MethodWriter mh) {
 		this.mh = mh;
 		this.mh.visitLabel(start);
 	}
 
-	public static While create(MethodHandler mh) {
+	public static While create(MethodWriter mh) {
 		return new While(mh);
 	}
 

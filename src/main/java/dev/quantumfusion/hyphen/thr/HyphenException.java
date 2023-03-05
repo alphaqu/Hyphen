@@ -1,6 +1,6 @@
 package dev.quantumfusion.hyphen.thr;
 
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintStream;
@@ -29,11 +29,10 @@ public class HyphenException extends RuntimeException {
 
 	public HyphenException(String message, Throwable cause, @Nullable String possibleSolution) {
 		super(message, cause);
-		this.setStackTrace(cause.getStackTrace());
 		this.possibleSolution = possibleSolution;
 	}
 
-	public static HyphenException rethrow(Clazz aClass, @Nullable String entry, Throwable throwable) {
+	public static HyphenException rethrow(Struct aClass, @Nullable String entry, Throwable throwable) {
 		if (throwable instanceof HyphenException exception) {
 			return exception.rethrow(aClass, entry);
 		}
@@ -42,7 +41,7 @@ public class HyphenException extends RuntimeException {
 		return exception;
 	}
 
-	public HyphenException rethrow(Clazz aClass, @Nullable String entry) {
+	public HyphenException rethrow(Struct aClass, @Nullable String entry) {
 		this.path.add(new Entry(aClass, entry));
 		return this;
 	}
@@ -56,7 +55,7 @@ public class HyphenException extends RuntimeException {
 	public void printStackTrace(PrintWriter s) {
 		super.printStackTrace(s);
 	}
-	public record Entry(Clazz aClass, @Nullable String entry) {
+	public record Entry(Struct aClass, @Nullable String entry) {
 
 	}
 
@@ -69,15 +68,17 @@ public class HyphenException extends RuntimeException {
 		builder.append("Cause: ");
 		String message = this.getMessage();
 		builder.append(message);
+		builder.append("\n");
+
 
 		if (possibleSolution != null) {
-			builder.append("Suggestion: ");
+			builder.append("Suggestion: \n");
 			builder.append(this.possibleSolution);
 			builder.append("\n");
 		}
 		builder.append("\n");
 		builder.append("Object Stacktrace:");
-		Clazz lastClass = null;
+		Struct lastClass = null;
 		for (Entry entry : this.path) {
 			if (lastClass != entry.aClass) {
 				lastClass = entry.aClass;
@@ -91,7 +92,7 @@ public class HyphenException extends RuntimeException {
 				builder.append(" ");
 			}
 			builder.append("in ");
-			builder.append(entry.aClass);
+			builder.append(entry.aClass.simpleString());
 
 		}
 		builder.append("\n\n");

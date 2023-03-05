@@ -1,14 +1,15 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
-public class PrimitiveIODef extends SerializerDef {
+public class PrimitiveIODef extends SerializerDef<Struct> {
 	protected final Class<?> primitive;
 	protected final int size;
 
 	public PrimitiveIODef(Class<?> primitive) {
-		super(Clazz.create(primitive));
+		super(new ClassStruct(primitive));
 		this.primitive = primitive;
 		size = getSize(primitive);
 	}
@@ -28,14 +29,14 @@ public class PrimitiveIODef extends SerializerDef {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 		mh.putIO(this.primitive);
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		mh.loadIO();
 		mh.getIO(this.primitive);
 	}

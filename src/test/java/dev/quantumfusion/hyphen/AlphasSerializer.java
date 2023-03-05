@@ -1,10 +1,16 @@
 package dev.quantumfusion.hyphen;
 
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.poly.classes.c.C1;
-import dev.quantumfusion.hyphen.scan.simple.GetterTest;
-import dev.quantumfusion.hyphen.scan.simple.arrays.IntArrayTest;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.annotations.DataFixedArraySize;
+import dev.quantumfusion.hyphen.scan.annotations.DataSubclasses;
+import dev.quantumfusion.hyphen.test.poly.classes.c.C1;
+import dev.quantumfusion.hyphen.test.poly.classes.c.CoWrappedC1;
+import dev.quantumfusion.hyphen.test.poly.classes.c.IntC1;
+import dev.quantumfusion.hyphen.test.poly.classes.c.WrappedC1;
+import dev.quantumfusion.hyphen.test.poly.classes.pair.Pair;
+import dev.quantumfusion.hyphen.test.poly.classes.pair.SelfPair;
+import dev.quantumfusion.hyphen.test.poly.wildcards.IntC1PartialError;
+import dev.quantumfusion.hyphen.test.simple.arrays.IntArrayTest;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,12 +23,7 @@ public class AlphasSerializer {
 		final String[] thing2 = new String[]{"fg", "fdas"};
 		final List<String> fdas = List.of("fdas", "fdasfas", "fdsafdsfsdf", "fdsafsadfadsfsd", "fdass", "faserq");
 		IntArrayTest shader = new IntArrayTest(new int[]{4,3,3,3,3});
-		test(new Test(new int[][]{
-				{24, 24},
-				{456, 456},
-				{645, 645},
-				{243, 243},
-		}));
+		test(new Test(new Test2<>(234, new ArrayList<>())));
 	}
 
 	public static <O> void test(O data) {
@@ -48,10 +49,20 @@ public class AlphasSerializer {
 
 	}
 	public static class Test {
-		public int[][] hi;
+		public Test2<?, List<Integer>> data;
 
-		public Test(int[][] hi) {
-			this.hi = hi;
+		public Test(Test2<?, List<Integer>> data) {
+			this.data = data;
+		}
+	}
+
+	public static class Test2<O, V extends List<O>> {
+		public O o;
+		public V v;
+
+		public Test2(O o, V v) {
+			this.o = o;
+			this.v = v;
 		}
 	}
 

@@ -1,34 +1,35 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.io.UnsafeIO;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class StringIODef extends SerializerDef {
+public class StringIODef extends SerializerDef<Struct> {
 	public StringIODef() {
-		super(Clazz.create(String.class));
+		super(new ClassStruct(String.class));
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "putString", Void.TYPE, String.class);
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		mh.loadIO();
 		mh.callInst(INVOKEVIRTUAL, mh.ioClass, "getString", String.class);
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+	public void writeMeasure(MethodWriter mh, Runnable valueLoad) {
 		valueLoad.run();
 		if (mh.ioClass == UnsafeIO.class) {
 			mh.callInst(INVOKESTATIC, UnsafeIO.class, "getStringBytes", int.class, String.class);

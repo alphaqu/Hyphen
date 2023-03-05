@@ -4,14 +4,16 @@ import dev.quantumfusion.hyphen.FailTest;
 import dev.quantumfusion.hyphen.Options;
 import dev.quantumfusion.hyphen.SerializerFactory;
 import dev.quantumfusion.hyphen.io.ByteBufferIO;
-import dev.quantumfusion.hyphen.scan.poly.general.DoubleC1Pain;
+import dev.quantumfusion.hyphen.test.poly.general.DoubleC1Pain;
 import org.junit.jupiter.api.*;
 import org.objectweb.asm.Opcodes;
 import org.opentest4j.AssertionFailedError;
+import org.opentest4j.TestSkippedException;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,52 +46,52 @@ public class RecursiveTestUtil {
 
 	@TestFactory
 	DynamicNode testPolyExtractWrapped() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrapped");
+		return testAll("dev.quantumfusion.hyphen.test.poly.extract.wrapped");
 	}
 
 	@TestFactory
 	DynamicNode testPolyExtractWrappedExtends() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrappedExtends");
+		return testAll("dev.quantumfusion.hyphen.test.poly.extract.wrappedExtends");
 	}
 
 	@TestFactory
 	DynamicNode testPolyExtractWrappedSuper() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.extract.wrappedSuper");
+		return testAll("dev.quantumfusion.hyphen.test.poly.extract.wrappedSuper");
 	}
 
 	@TestFactory
 	DynamicNode testPolyGeneral() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.general");
+		return testAll("dev.quantumfusion.hyphen.test.poly.general");
 	}
 
 	@TestFactory
 	DynamicNode testPolyEnums() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.enums");
+		return testAll("dev.quantumfusion.hyphen.test.poly.enums");
 	}
 
 	@TestFactory
 	DynamicNode testPolyWildcards() {
-		return testAll("dev.quantumfusion.hyphen.scan.poly.wildcards");
+		return testAll("dev.quantumfusion.hyphen.test.poly.wildcards");
 	}
 
 	@TestFactory
 	DynamicNode testSimple() {
-		return testAll("dev.quantumfusion.hyphen.scan.simple");
+		return testAll("dev.quantumfusion.hyphen.test.simple");
 	}
 
 	@TestFactory
 	DynamicNode testSimpleMap() {
-		return testAll("dev.quantumfusion.hyphen.scan.simple.map");
+		return testAll("dev.quantumfusion.hyphen.test.simple.map");
 	}
 
 	@TestFactory
 	DynamicNode testSimpleArrays() {
-		return testAll("dev.quantumfusion.hyphen.scan.simple.arrays");
+		return testAll("dev.quantumfusion.hyphen.test.simple.arrays");
 	}
 
 	@TestFactory
 	DynamicNode testSimpleBuffers() {
-		return testAll("dev.quantumfusion.hyphen.scan.simple.buffer");
+		return testAll("dev.quantumfusion.hyphen.test.simple.buffer");
 	}
 
 	public static DynamicNode testAll(String packageName) {
@@ -105,36 +107,31 @@ public class RecursiveTestUtil {
 	}
 
 	public static <O> DynamicNode test(Class<O> clazz) {
+		// Run all the tests
 		try {
-			// generation
+			// Generate the serializer
 			var factory = SerializerFactory.create(ByteBufferIO.class, clazz);
 			factory.setOption(Options.SHORT_METHOD_NAMES, false);
 			factory.setOption(Options.SHORT_VARIABLE_NAMES, false);
 			var serializer = factory.build();
 
-			var expectedScan = clazz.getDeclaredAnnotation(ExpectedResult.class);
-			if (expectedScan != null) {
-				// TODO add fingerprint methods that check if scan was correct
-				var expected = expectedScan.value();
-			}
 
-			// create data
+			// Generate the test data
 			Stream<? extends O> datas;
 			try {
-				//noinspection unchecked
 				Method declaredMethod = clazz.getDeclaredMethod("generate" + clazz.getSimpleName());
 				Assumptions.assumeTrue((declaredMethod.getModifiers() & Opcodes.ACC_STATIC) != 0, "generate is not static");
 				datas = ((Supplier<? extends Stream<? extends O>>) declaredMethod.invoke(null)).get();
 			} catch (NoSuchMethodException e) {
-
-				Assumptions.assumeTrue(true, "missing generate method");
-				return DynamicTest.dynamicTest(clazz.getSimpleName(), () -> {
-				});
+				throw new TestSkippedException("Test does not have data generator.");
+			} catch (InvocationTargetException | IllegalAccessException e) {
+				throw new RuntimeException(e);
 			}
 
-			Assertions.assertFalse(clazz.isAnnotationPresent(FailTest.class), "Expected test to fail");
+
 			return DynamicContainer.dynamicContainer(clazz.getSimpleName(),
-					datas.limit(10).map(data -> {
+					datas.map(data -> {
+						// Get the display name
 						String displayName;
 						try {
 							displayName = data.toString();
@@ -143,6 +140,8 @@ public class RecursiveTestUtil {
 								throw t;
 							});
 						}
+
+						// Run the actual test
 						return DynamicTest.dynamicTest(displayName, () -> {
 							List<Object> errors = new ArrayList<>();
 

@@ -1,23 +1,24 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.io.IOBufferInterface;
 import dev.quantumfusion.hyphen.scan.annotations.DataBufferType;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.scan.struct.ClassStruct;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import dev.quantumfusion.hyphen.thr.HyphenException;
 import org.objectweb.asm.Opcodes;
 
 import java.nio.*;
 
-public class BufferDef extends SerializerDef {
+public class BufferDef extends SerializerDef<ClassStruct> {
 	protected final Class<?> buffer;
 	protected final Class<?> primitive;
 	protected final BufferType type;
 
-	public BufferDef(Clazz clazz) {
-		super(clazz);
-		Class<?> definedClass = clazz.getDefinedClass();
+	public BufferDef(Struct clazz) {
+		super((ClassStruct) clazz);
+		Class<?> definedClass = clazz.getValueClass();
 		if (definedClass == ByteBuffer.class) this.primitive = byte.class;
 		else if (definedClass == CharBuffer.class) this.primitive = char.class;
 		else if (definedClass == ShortBuffer.class) this.primitive = short.class;
@@ -29,12 +30,14 @@ public class BufferDef extends SerializerDef {
 			throw new HyphenException("Type Class is not a ByteBuffer", "Use one of java nio bytebuffers");
 		}
 
-		this.buffer = clazz.getDefinedClass();
-		Object annotationValue = clazz.getAnnotationValue(DataBufferType.class);
+		this.buffer = clazz.getValueClass();
+		DataBufferType annotationValue = clazz.getAnnotation(DataBufferType.class);
+
 		if (annotationValue == null) {
-			annotationValue = BufferType.HEAP;
+			this.type = BufferType.HEAP;
+		} else {
+			this.type = annotationValue.value();
 		}
-		this.type = (BufferType) annotationValue;
 		if (type != BufferType.HEAP && definedClass != ByteBuffer.class) {
 			throw new HyphenException("Only ByteBuffer supports Native buffers.", "Use ByteBuffer or make the buffer type HEAP");
 		}
@@ -49,7 +52,7 @@ public class BufferDef extends SerializerDef {
 	}
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 		mh.op(Opcodes.DUP);
@@ -64,11 +67,11 @@ public class BufferDef extends SerializerDef {
 		mh.putIO(int.class);
 		// IO | VALUE | INT
 
-		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "put" + buffer.getSimpleName(),  Void.TYPE, buffer, int.class);
+		mh.callInst(Opcodes.INVOKEVIRTUAL, mh.ioClass, "put" + buffer.getSimpleName(), Void.TYPE, buffer, int.class);
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		mh.loadIO();
 		mh.loadIO();
 		mh.getIO(int.class);
@@ -83,7 +86,7 @@ public class BufferDef extends SerializerDef {
 		// BYTEBUFFER
 	}
 
-	protected void allocateBuffer(MethodHandler mh) {
+	protected void allocateBuffer(MethodWriter mh) {
 		switch (type) {
 			case HEAP -> mh.callInst(Opcodes.INVOKESTATIC, buffer, "allocate", buffer, int.class);
 			case NATIVE -> {
@@ -99,7 +102,7 @@ public class BufferDef extends SerializerDef {
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+	public void writeMeasure(MethodWriter mh, Runnable valueLoad) {
 		long primitiveSize = PrimitiveIODef.getSize(primitive);
 
 		valueLoad.run();

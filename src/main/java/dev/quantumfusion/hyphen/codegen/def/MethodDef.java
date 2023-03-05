@@ -1,15 +1,15 @@
 package dev.quantumfusion.hyphen.codegen.def;
 
 import dev.quantumfusion.hyphen.Options;
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
 import dev.quantumfusion.hyphen.codegen.MethodInfo;
-import dev.quantumfusion.hyphen.codegen.SerializerGenerator;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.SerializerGenerator;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import org.jetbrains.annotations.Nullable;
 
 import static org.objectweb.asm.Opcodes.ILOAD;
 
-public abstract class MethodDef extends SerializerDef {
+public abstract class MethodDef<D extends Struct> extends SerializerDef<D> {
 	@Nullable
 	private MethodInfo getInfo;
 	@Nullable
@@ -18,68 +18,68 @@ public abstract class MethodDef extends SerializerDef {
 	private MethodInfo measureInfo;
 	public final String suffix;
 
-	public MethodDef(Clazz clazz) {
-		this(clazz, "");
+	public MethodDef(D struct) {
+		this(struct, "");
 	}
 
-	public MethodDef(Clazz clazz, String suffix) {
-		super(clazz);
+	public MethodDef(D struct, String suffix) {
+		super(struct);
 		this.suffix = suffix;
 	}
 
 	@Override
 	public void scan(SerializerGenerator<?, ?> handler) {
 		super.scan(handler);
-		var definedClass = clazz.getDefinedClass();
+		var definedClass = struct.getValueClass();
 
 		if (!handler.isEnabled(Options.DISABLE_GET)) {
-			this.getInfo = handler.createMethodInfo(clazz, "get", suffix, definedClass, handler.ioClass);
+			this.getInfo = handler.createMethodInfo(struct, "get", suffix, definedClass, handler.ioClass);
 		}
 		if (!handler.isEnabled(Options.DISABLE_PUT)) {
-			this.putInfo = handler.createMethodInfo(clazz, "put", suffix, Void.TYPE, handler.ioClass, definedClass);
+			this.putInfo = handler.createMethodInfo(struct, "put", suffix, Void.TYPE, handler.ioClass, definedClass);
 		}
 		if (!handler.isEnabled(Options.DISABLE_MEASURE) && this.hasDynamicSize()) {
-			this.measureInfo = handler.createMethodInfo(clazz, "measure", suffix, long.class, definedClass);
+			this.measureInfo = handler.createMethodInfo(struct, "measure", suffix, long.class, definedClass);
 		}
 
 	}
 
-	protected abstract void writeMethodPut(MethodHandler mh, Runnable valueLoad);
+	protected abstract void writeMethodPut(MethodWriter mh, Runnable valueLoad);
 
-	protected abstract void writeMethodGet(MethodHandler mh);
+	protected abstract void writeMethodGet(MethodWriter mh);
 
-	protected abstract void writeMethodMeasure(MethodHandler mh, Runnable valueLoad);
+	protected abstract void writeMethodMeasure(MethodWriter mh, Runnable valueLoad);
 
 	@Override
-	public void writePut(MethodHandler mh, Runnable valueLoad) {
+	public void writePut(MethodWriter mh, Runnable valueLoad) {
 		mh.loadIO();
 		valueLoad.run();
 		mh.callInst(putInfo);
 	}
 
 	@Override
-	public void writeGet(MethodHandler mh) {
+	public void writeGet(MethodWriter mh) {
 		mh.loadIO();
 		mh.callInst(getInfo);
 	}
 
 	@Override
-	public void writeMeasure(MethodHandler mh, Runnable valueLoad) {
+	public void writeMeasure(MethodWriter mh, Runnable valueLoad) {
 		valueLoad.run();
 		mh.callInst(measureInfo);
 	}
 
 	public void generateMethods(SerializerGenerator<?, ?> handler) {
 		if (this.getInfo != null) {
-			handler.generateMethod(this.clazz, this.getInfo, false, this::writeMethodGet);
+			handler.generateMethod(this.struct, this.getInfo, false, this::writeMethodGet);
 		}
 
 		if (this.putInfo != null) {
-			handler.generateMethod(this.clazz, this.putInfo, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
+			handler.generateMethod(this.struct, this.putInfo, false, mh -> this.writeMethodPut(mh, () -> mh.parameterOp(ILOAD, 1)));
 		}
 
 		if (this.measureInfo != null) {
-			handler.generateMethod(this.clazz, this.measureInfo, false, mh -> this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0)));
+			handler.generateMethod(this.struct, this.measureInfo, false, mh -> this.writeMethodMeasure(mh, () -> mh.parameterOp(ILOAD, 0)));
 		}
 	}
 

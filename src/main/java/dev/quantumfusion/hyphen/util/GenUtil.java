@@ -1,9 +1,8 @@
 package dev.quantumfusion.hyphen.util;
 
-import dev.quantumfusion.hyphen.codegen.MethodHandler;
-import dev.quantumfusion.hyphen.scan.type.Clazz;
+import dev.quantumfusion.hyphen.codegen.MethodWriter;
+import dev.quantumfusion.hyphen.scan.struct.Struct;
 import org.objectweb.asm.Handle;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import java.lang.invoke.*;
@@ -54,11 +53,15 @@ public final class GenUtil {
 		return Type.getDescriptor(aClass);
 	}
 
-	public static void ensureCasted(MethodHandler mh, Clazz clazz) {
-		ensureCasted(mh, clazz.getDefinedClass(), clazz.getBytecodeClass());
+	public static void ensureCasted(MethodWriter mh, Struct clazz) {
+		ensureCasted(mh, clazz, clazz.getBytecodeClass());
 	}
 
-	public static void ensureCasted(MethodHandler mh, Class<?> actual, Class<?> bytecodeClass) {
+	public static void ensureCasted(MethodWriter mh, Struct clazz, Class<?> bytecodeClass) {
+		ensureCasted(mh, clazz.getValueClass(), bytecodeClass);
+	}
+
+	public static void ensureCasted(MethodWriter mh, Class<?> actual, Class<?> bytecodeClass) {
 		if (!actual.isAssignableFrom(bytecodeClass)) {
 			mh.typeOp(CHECKCAST, actual);
 		}
