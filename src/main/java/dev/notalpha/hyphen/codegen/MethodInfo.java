@@ -17,7 +17,8 @@ public class MethodInfo {
 	public final String name;
 
 	/**
-	 * <h2>DO NOT USE THIS.</h2>
+	 * DO NOT USE THIS.
+	 * <br><br>
 	 * USE {@link SerializerGenerator#createMethodInfo(Struct, String, String, Class, Class[])}} INSTEAD
 	 */
 	public MethodInfo(String name, Class<?> returnClass, Class<?>... parameters) {
