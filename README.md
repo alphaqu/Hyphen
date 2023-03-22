@@ -3,4 +3,4 @@ Hyphen is a serializer which is designed for unreal performance while having a m
 
 ## Documentation 
 All of the documentation is available on
-https://docs.quantumfusion.dev/
+https://notalpha.dev/docs
