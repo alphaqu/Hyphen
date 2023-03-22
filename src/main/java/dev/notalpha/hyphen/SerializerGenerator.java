@@ -72,7 +72,7 @@ public class SerializerGenerator<IO extends IOInterface, D> {
 		this.scanner = new StructScanner(annotationProviders);
 
 		// Initialize the class generation
-		this.methodDeduplication = new HashMap<>();
+		this.methodDeduplication = options.get(Options.SHORT_METHOD_NAMES).booleanValue() ? new HashMap<>() : null;
 		this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
 		this.cw.visit(V16, ACC_PUBLIC | ACC_FINAL, this.className, null, GenUtil.internal(Object.class), new String[]{GenUtil.internal(HyphenSerializer.class)});
 		try (var mh = new MethodWriter(this.cw.visitMethod(ACC_PUBLIC, "<init>", GenUtil.methodDesc(Void.TYPE), null, null), this.className, dataClass, ioClass)) {
@@ -81,7 +81,7 @@ public class SerializerGenerator<IO extends IOInterface, D> {
 			mh.op(RETURN);
 		}
 
-		if (options != null && options.get(Options.FAST_ALLOC)) {
+		if (options.get(Options.FAST_ALLOC)) {
 			try (var mh = new MethodWriter(this.cw.visitMethod(ACC_STATIC, "<clinit>", GenUtil.methodDesc(Void.TYPE), null, null), this.className, dataClass, ioClass)) {
 				mh.visitTypeInsn(NEW, this.className);
 				mh.op(DUP);
