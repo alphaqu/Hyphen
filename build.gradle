@@ -5,7 +5,7 @@ plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
-group 'dev.quantumfusion'
+group 'dev.notalpha'
 version '0.4.0-rc.3'
 
 repositories {
@@ -51,7 +51,7 @@ publishing {
             pom {
                 name = project.name
                 description = "Serialize at the speed of light."
-                url = "https://github.com/TeamQuantumFusion/Hyphen"
+                url = "https://github.com/notalpha/Hyphen"
 
                 licenses {
                     license {
@@ -60,8 +60,8 @@ publishing {
                     }
                 }
                 scm {
-                    connection = "scm:git:git://github.com/TeamQuantumFusion/Hyphen.git"
-                    developerConnection = "scm:git:ssh://github.com:TeamQuantumFusion/Hyphen.git"
+                    connection = "scm:git:git://github.com/notalpha/Hyphen.git"
+                    developerConnection = "scm:git:ssh://github.com:notalpha/Hyphen.git"
                     url = "http://github.com/TeamQuantumFusion/Hyphen/tree/rework-9"
                 }
                 developers {
